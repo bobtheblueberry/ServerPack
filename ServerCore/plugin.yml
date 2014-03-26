@@ -1,0 +1,32 @@
+name: ServerCore
+version: 1.0
+main: me.toxiccoke.servercore.Commands
+author: ToxicCokeIsGay
+description: Gives players a special tag!
+commands:
+    gm:
+        description: Sets Gamemode
+        aliases: [gamemode]
+        usage: /<command> 0/1
+        permission: sc.gm
+    fly:
+        description: Turns fly on/off
+        usage: /<command>
+        permission: toxiccoke.gay
+    heal:
+    tp:
+    warn:
+    day:
+    night:
+    sun:
+    rain:
+    spawn:
+    setspawn:
+    ban:
+    kick:
+    poke:
+#   help:
+    nick:
+    v:
+        alaises: [vanish]
+    party:

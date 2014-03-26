@@ -1,0 +1,23 @@
+name: TokenShop
+main: me.toxiccoke.tokenshop.TokenShop
+version: 1.0
+description: This is an example description
+author: ToxiccokeIsGay
+commands:
+    shop:
+        description: Does shoppy things
+        usage: /<command>
+        permission: tokenshop.shop
+    givecoins:
+        description: Gives coins freely
+        aliases: [givecoin]
+        usage: /<command> [coins] (player)
+        permission: tokenshop.give
+    hatshop:
+        description: Shops for hats, give gaben your money
+        usage: /<command>
+        permission: tokenshop.hatshop
+    coins:
+        aliases: [coin]
+        description: Displays how many coins you have
+        usage: /<command>
