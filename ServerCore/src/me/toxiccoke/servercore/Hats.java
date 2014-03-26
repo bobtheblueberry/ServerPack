@@ -14,18 +14,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Hats extends JavaPlugin implements Listener {
+public class Hats implements Listener {
 
-	private final ArrayList<String> players = new ArrayList<String>(); // ARRAYLIST
-																		// WITH
-																		// ALL
-																		// THE
-																		// PLAYERS
-																		// WHICH
-																		// HAS
-																		// MAGMACUBE
-																		// OVER
-																		// HEAD
+	/**
+	 * ARRAYLIST WITH ALL THE PLAYERS WHICH HAS MAGMACUBE OVER HEAD
+	 */
+	private final ArrayList<String> players = new ArrayList<String>();
 
 	@SuppressWarnings("deprecation")
 	@EventHandler
@@ -43,7 +37,7 @@ public class Hats extends JavaPlugin implements Listener {
 					/* SPAWN MAGMACUBE */
 					MagmaCube magmacube = (MagmaCube) p.getWorld()
 							.spawnCreature(p.getLocation(), /* ENTITY_TYPE_TO_SPAWN */
-									EntityType.MAGMA_CUBE);
+							EntityType.MAGMA_CUBE);
 					magmacube.setSize(2);
 					magmacube.setMaxHealth(100);
 					magmacube.getWorld().playEffect(magmacube.getLocation(),

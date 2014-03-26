@@ -26,12 +26,14 @@ public class Commands extends JavaPlugin implements Listener {
 	final Logger log = Logger.getLogger("Minecraft");
 	public static Commands plugin;
 
+	
 	@Override
 	public void onEnable() {
 		System.out.println("ServerCore Enabled");
 		plugin = this;
 
 		getServer().getPluginManager().registerEvents(this, this);
+		getServer().getPluginManager().registerEvents(new Hats(), this);
 		CommandHandler ch = new CommandHandler();
 		getCommand("gm").setExecutor(ch);
 		getCommand("fly").setExecutor(ch);
@@ -50,7 +52,9 @@ public class Commands extends JavaPlugin implements Listener {
 		getCommand("poke").setExecutor(ch);
 		getCommand("v").setExecutor(ch);
 		getCommand("nick").setExecutor(ch);
-		getCommand("party").setExecutor(ch);
+
+		Partys p = new Partys();
+		getCommand("party").setExecutor(p);
 
 	}
 

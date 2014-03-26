@@ -2,7 +2,7 @@ name: ServerCore
 version: 1.0
 main: me.toxiccoke.servercore.Commands
 author: ToxicCokeIsGay
-description: Gives players a special tag!
+description: Server Core Commands
 commands:
     gm:
         description: Sets Gamemode
@@ -12,21 +12,55 @@ commands:
     fly:
         description: Turns fly on/off
         usage: /<command>
-        permission: toxiccoke.gay
+        permission: toxiccoke.fly
     heal:
+        usage: /<command>
+        description: Restores health to full
     tp:
+        usage: /<command> [player]
+        description: Teleports player
     warn:
+        usage: /<command> [player] [message]
+        description: Issues warning to player
     day:
+        usage: /<command>
+        description: Sets time to day
     night:
+        usage: /<command>
+        description: Sets time to night
     sun:
+        usage: /<command>
+        description: Sets weather so sun
     rain:
+        usage: /<command>
+        description: Sets weather to rain
     spawn:
+        usage: /<command>
+        description: Teleports to spawn
     setspawn:
+        usage: /<command>
+        description: Changes the spawn location
     ban:
+        usage: /<command> [player] (reason)
+        description: Banishes a player
     kick:
+        usage: /<command> [player] (reason)
+        description: Kicks player from server
     poke:
+        usage: /<command> [player]
+        description: Give your friends a gay gesture
 #   help:
+        usage: /<command> (page)
+        description: Shows help page
     nick:
+        usage: /<command> (nickname)
+        description: Changes nickname
     v:
-        alaises: [vanish]
+        usage: /<command>
+        description: Vanishes
+        aliases: [vanish]
     party:
+        usage: /<command>
+        description: Party Commands
+        aliases: [p]
+
