@@ -1,0 +1,7 @@
+name: KitPVP
+main: me.toxiccoke.kitpvp.menu
+version: 1.0
+description: This is an example description
+author: YourName
+commands:
+    menu:
