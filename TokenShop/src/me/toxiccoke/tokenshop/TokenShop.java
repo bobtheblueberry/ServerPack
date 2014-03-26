@@ -108,7 +108,7 @@ public class TokenShop extends JavaPlugin implements Listener {
 					toys.setItem(
 							ind++,
 							createItem(t.mat(), t.displayName,
-									"§bYou got dis toy babe"));
+									"§bYou own this toy"));
 
 			}
 		for (Toy t : Toy.toys)
@@ -185,7 +185,7 @@ public class TokenShop extends JavaPlugin implements Listener {
 		objective.setDisplayName(ChatColor.GOLD + "[AquilaMc Bank] ");
 		Score score = objective.getScore(Bukkit
 				.getOfflinePlayer(ChatColor.GREEN + "Coins:"));
-		score.setScore( MyAPI.getCoinCount(player));
+		score.setScore(MyAPI.getCoinCount(player));
 		player.setScoreboard(board);
 
 	}
