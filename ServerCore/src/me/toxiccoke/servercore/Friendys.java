@@ -118,7 +118,7 @@ public class Friendys implements CommandExecutor {
 				s.append(ChatColor.BLUE);
 			else
 				s.append(ChatColor.GRAY);
-			s.append(player.getName());
+			s.append(f);
 		}
 		p.sendMessage(s.toString());
 	}
