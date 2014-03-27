@@ -27,7 +27,7 @@ public class Partys implements CommandExecutor {
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage("You must be a player");
+			sender.sendMessage(ChatColor.YELLOW + "You must be a player");
 			return true;
 		}
 		Player p = (Player) sender;
