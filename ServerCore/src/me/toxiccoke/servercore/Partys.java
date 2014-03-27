@@ -42,160 +42,162 @@ public class Partys implements CommandExecutor {
 				list(party, p);
 			return true;
 
-		} else {
-			String arg1 = args[0];
-			if (arg1.equals("help")) {
-				help(p);
-				return true;
-			} else if (arg1.equals("create")) {
+		}
+		String arg1 = args[0].toLowerCase();
+		if (arg1.equals("help")) {
+			help(p);
+			return true;
+		} else if (arg1.equals("create")) {
 
-				boolean owner = false;
-				boolean inParty = false;
-				for (Party part : parties)
-					if (part.owner.getName().equals(p.getName())) {
-						owner = true;
-						break;
-					} else
-						for (Player s : part.players)
-							if (s.getName().equals(p.getName())) {
-								inParty = true;
-								break;
-							}
-				if (owner) {
-					p.sendMessage("You already have a party! Do /party disband");
-					return true;
-				} else if (inParty) {
-					p.sendMessage("You cannot create a party because you are in a party already. Do /party leave");
-					return true;
-				}
-				// create a party
-				Party newParty = new Party(p);
-				parties.add(newParty);
-				p.sendMessage("Party created");
+			boolean owner = false;
+			boolean inParty = false;
+			for (Party part : parties)
+				if (part.owner.getName().equals(p.getName())) {
+					owner = true;
+					break;
+				} else
+					for (Player s : part.players)
+						if (s.getName().equals(p.getName())) {
+							inParty = true;
+							break;
+						}
+			if (owner) {
+				p.sendMessage("You already have a party! Do /party disband");
 				return true;
-			} else if (arg1.equals("invite")) {
-				if (!isInParty(p)) {
-					p.sendMessage("You are not in a party!");
-					return true;
-				}
-				if (args.length < 2) {
-					p.sendMessage("Proper usage is /party invte [player]");
-					return true;
-				}
-				String name = args[1];
-				OfflinePlayer invi = Bukkit.getServer().getOfflinePlayer(name);
-				if (invi == null) {
-					p.sendMessage("Unknown player: " + name);
-					return true;
-				}
-				if (p.getName().equals(invi.getName())) {
-					p.sendMessage("You can't invite yourself");
-					return true;
-				}
-
-				if (!invi.isOnline()) {
-					p.sendMessage(name + " is not online");
-					return true;
-				}
-				Player invited = Bukkit.getServer().getPlayer(name);
-				// Delete old invite
-				PartyInvite i = getInvite(invited);
-				if (i != null)
-					invites.remove(i);
-				invites.add(new PartyInvite(invited, getParty(p)));
-				invited.sendMessage("You have been invited to join " + p.getName() + "'s party");
-				invited.sendMessage("To join " + p.getName() + "'s party, type /party accept");
+			} else if (inParty) {
+				p.sendMessage("You cannot create a party because you are in a party already. Do /party leave");
 				return true;
-
-			} else if (arg1.equals("leave")) {
-				Party party = null;
-				boolean owner = false;
-				for (Party part : parties)
-					if (part.owner.getName().equals(p.getName())) {
-						party = part;
-						owner = true;
-						break;
-					} else
-						for (Player s : part.players)
-							if (s.getName().equals(p.getName())) {
-								party = part;
-								break;
-							}
-				if (party == null) {
-					p.sendMessage("You do not belong to a party");
-					return true;
-				}
-				if (owner) {
-					p.sendMessage("Use /party disband");
-					return true;
-				}
-				party.players.remove(p);
-				p.sendMessage("You have left the party");
-				for (Player friend : party.players)
-					if (friend.isOnline())
-						friend.sendMessage(p.getName() + " has left the party");
-				if (party.owner.isOnline())
-					party.owner.sendMessage(p.getName() + " has left the party");
-
+			}
+			// create a party
+			Party newParty = new Party(p);
+			parties.add(newParty);
+			p.sendMessage("Party created");
+			return true;
+		} else if (arg1.equals("invite")) {
+			if (!isInParty(p)) {
+				p.sendMessage("You are not in a party!");
 				return true;
-
-			} else if (arg1.equals("list")) {
-				Party party = getParty(p);
-				if (party == null)
-					p.sendMessage("You are not in a party!");
-				else
-					list(party, p);
+			}
+			if (args.length < 2) {
+				p.sendMessage("Proper usage is /party invte [player]");
 				return true;
-			} else if (arg1.equals("accept")) {
-				PartyInvite i = getInvite(p);
-				if (i == null) {
-					p.sendMessage("You have not been invited to join a party");
-					return true;
-				}
-				// can't join a party if you are in one
-				if (isInParty(p)) {
-					p.sendMessage("You are already in a party. To leave, do /party leave");
-					return true;
-				}
-				// The party may have been disbanded
-				boolean disbanded = true;
-				for (Party party : parties)
-					if (party.equals(i.party)) {
-						disbanded = false;
-						break;
-					}
-				if (disbanded) {
-					p.sendMessage("That party has been disbanded");
-					return true;
-				}
-				invites.remove(i);
-				i.party.players.add(p);
-				p.sendMessage("You have joined a party");
-				list(i.party, p);
-				for (Player friend : i.party.players)
-					if (friend.isOnline())
-						friend.sendMessage(p + " has join the party");
-				if (i.party.owner.isOnline())
-					i.party.owner.sendMessage(p + " has join the party");
-
+			}
+			String name = args[1];
+			OfflinePlayer invi = Bukkit.getServer().getOfflinePlayer(name);
+			if (invi == null) {
+				p.sendMessage("Unknown player: " + name);
 				return true;
-			} else if (arg1.equals("disband")) {
-				for (Party part : parties)
-					if (part.owner.getName().equals(p.getName())) {
-						for (Player member : part.players)
-							if (member.isOnline())
-								member.sendMessage("Your party has been disbanded");
-						parties.remove(part);
-						p.sendMessage("Party disbanded");
-						return true;
-					}
-				p.sendMessage("You do not own a party");
+			}
+			if (p.getName().equals(invi.getName())) {
+				p.sendMessage("You can't invite yourself");
 				return true;
 			}
 
-		}
-		return false;
+			if (!invi.isOnline()) {
+				p.sendMessage(name + " is not online");
+				return true;
+			}
+			Player invited = Bukkit.getServer().getPlayer(name);
+			// Delete old invite
+			PartyInvite i = getInvite(invited);
+			if (i != null)
+				invites.remove(i);
+			invites.add(new PartyInvite(invited, getParty(p)));
+			invited.sendMessage("You have been invited to join " + p.getName() + "'s party");
+			invited.sendMessage("To join " + p.getName() + "'s party, type /party accept");
+			p.sendMessage(invited.getName() + ChatColor.GOLD + " has been invited to your party");
+			return true;
 
+		} else if (arg1.equals("leave")) {
+			Party party = null;
+			boolean owner = false;
+			for (Party part : parties)
+				if (part.owner.getName().equals(p.getName())) {
+					party = part;
+					owner = true;
+					break;
+				} else
+					for (Player s : part.players)
+						if (s.getName().equals(p.getName())) {
+							party = part;
+							break;
+						}
+			if (party == null) {
+				p.sendMessage("You do not belong to a party");
+				return true;
+			}
+			if (owner) {
+				p.sendMessage("Use /party disband");
+				return true;
+			}
+			party.players.remove(p);
+			p.sendMessage("You have left the party");
+			for (Player friend : party.players)
+				if (friend.isOnline())
+					friend.sendMessage(p.getName() + " has left the party");
+			if (party.owner.isOnline())
+				party.owner.sendMessage(p.getName() + " has left the party");
+
+			return true;
+
+		} else if (arg1.equals("list")) {
+			Party party = getParty(p);
+			if (party == null)
+				p.sendMessage("You are not in a party!");
+			else
+				list(party, p);
+			return true;
+		} else if (arg1.equals("accept")) {
+			PartyInvite i = getInvite(p);
+			if (i == null) {
+				p.sendMessage("You have not been invited to join a party");
+				return true;
+			}
+			// can't join a party if you are in one
+			if (isInParty(p)) {
+				if (isPartyOwner(p))
+					p.sendMessage(ChatColor.GOLD + "You are already in a party. To leave, do /party disband");
+				else
+					p.sendMessage(ChatColor.GOLD +"You are already in a party. To leave, do /party leave");
+				return true;
+			}
+			// The party may have been disbanded
+			boolean disbanded = true;
+			for (Party party : parties)
+				if (party.equals(i.party)) {
+					disbanded = false;
+					break;
+				}
+			if (disbanded) {
+				p.sendMessage("That party has been disbanded");
+				return true;
+			}
+			for (Player friend : i.party.players)
+				if (friend.isOnline())
+					friend.sendMessage(p.getName() + " has joined the party");
+			if (i.party.owner.isOnline())
+				i.party.owner.sendMessage(p.getName() + " has joined the party");
+			invites.remove(i);
+			i.party.players.add(p);
+			p.sendMessage("You have joined a party");
+			list(i.party, p);
+
+			return true;
+		} else if (arg1.equals("disband")) {
+			for (Party part : parties)
+				if (part.owner.getName().equals(p.getName())) {
+					for (Player member : part.players)
+						if (member.isOnline())
+							member.sendMessage("Your party has been disbanded");
+					parties.remove(part);
+					p.sendMessage("Party disbanded");
+					return true;
+				}
+			p.sendMessage("You do not own a party");
+			return true;
+		}
+		help(p);
+		return true;
 	}
 
 	private void list(Party party, Player p) {
@@ -226,6 +228,13 @@ public class Partys implements CommandExecutor {
 
 	private boolean isInParty(Player plr) {
 		return getParty(plr) != null;
+	}
+
+	private boolean isPartyOwner(Player plr) {
+		for (Party part : parties)
+			if (part.owner.getName().equals(plr.getName()))
+				return true;
+		return false;
 	}
 
 	private Party getParty(Player plr) {

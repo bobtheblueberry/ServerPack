@@ -55,7 +55,9 @@ public class Commands extends JavaPlugin implements Listener {
 
 		Partys p = new Partys();
 		getCommand("party").setExecutor(p);
-
+		getCommand("friend").setExecutor(new Friendys());
+		
+		FriendAPI.init();
 	}
 
 	ArrayList<Player> vanished = new ArrayList<Player>();

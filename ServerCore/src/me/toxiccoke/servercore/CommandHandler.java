@@ -138,7 +138,7 @@ public class CommandHandler implements CommandExecutor {
 			}
 			p.getLocation().getWorld().setStorm(false);
 			Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY
-					+ " Set the world time to sun ");
+					+ " Set the world weather to sun ");
 
 			return true;
 			// rain command
@@ -150,7 +150,7 @@ public class CommandHandler implements CommandExecutor {
 			}
 			p.getLocation().getWorld().setStorm(true);
 			Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY
-					+ " Set the world time to rain ");
+					+ " Set the world weather to rain ");
 			return true;
 			// commands setspawn
 		} else if (cmd.getName().equalsIgnoreCase("setspawn")) {
