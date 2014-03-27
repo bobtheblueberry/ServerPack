@@ -172,6 +172,12 @@ public class Partys implements CommandExecutor {
 				i.party.players.add(p);
 				p.sendMessage("You have joined a party");
 				list(i.party, p);
+				for (Player friend : i.party.players)
+					if (friend.isOnline())
+						friend.sendMessage(p + " has join the party");
+				if (i.party.owner.isOnline())
+					i.party.owner.sendMessage(p + " has join the party");
+
 				return true;
 			} else if (arg1.equals("disband")) {
 				for (Party part : parties)

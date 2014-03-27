@@ -272,6 +272,7 @@ public class CommandHandler implements CommandExecutor {
 			p.sendMessage(ChatColor.GRAY + "You have changed your nickname to " + nick);
 			this.getConfig().set(p.getName(), nick);
 			Commands.plugin.saveConfig();
+			return true;
 		}
 		// help command
 		if (cmd.getName().equalsIgnoreCase("help")) {
@@ -304,6 +305,7 @@ public class CommandHandler implements CommandExecutor {
 				p.sendMessage(ChatColor.YELLOW
 						+ "/poke - Poke the  specifyed player to tell the player your trying to speak to them.");
 				p.sendMessage(ChatColor.YELLOW + "/v - Vanishes u from players");
+				return true;
 
 			} else if (cmd.getName().equalsIgnoreCase("v")) {
 				if (!Commands.plugin.vanished.contains(p)) {
