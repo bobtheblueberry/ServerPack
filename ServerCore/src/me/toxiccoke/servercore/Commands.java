@@ -34,6 +34,8 @@ public class Commands extends JavaPlugin implements Listener {
 
 		getServer().getPluginManager().registerEvents(this, this);
 		getServer().getPluginManager().registerEvents(new Hats(), this);
+		getServer().getPluginManager().registerEvents(new Events(), this);
+		
 		CommandHandler ch = new CommandHandler();
 		getCommand("gm").setExecutor(ch);
 		getCommand("fly").setExecutor(ch);
