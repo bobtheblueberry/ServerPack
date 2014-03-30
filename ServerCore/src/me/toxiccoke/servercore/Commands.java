@@ -31,9 +31,12 @@ public class Commands extends JavaPlugin implements Listener {
 		System.out.println("ServerCore Enabled");
 		plugin = this;
 
+		Friendys fwends = new Friendys();
 		getServer().getPluginManager().registerEvents(this, this);
 		getServer().getPluginManager().registerEvents(new Hats(), this);
 		getServer().getPluginManager().registerEvents(new Events(), this);
+		getServer().getPluginManager().registerEvents(fwends, this);
+		
 		CommandHandler ch = new CommandHandler();
 		getCommand("gm").setExecutor(ch);
 		getCommand("fly").setExecutor(ch);
@@ -48,14 +51,14 @@ public class Commands extends JavaPlugin implements Listener {
 		getCommand("setspawn").setExecutor(ch);
 		getCommand("ban").setExecutor(ch);
 		getCommand("kick").setExecutor(ch);
-		getCommand("help").setExecutor(ch);
+		//getCommand("help").setExecutor(ch);
 		getCommand("poke").setExecutor(ch);
 		getCommand("v").setExecutor(ch);
 		getCommand("nick").setExecutor(ch);
 
 		Partys p = new Partys();
 		getCommand("party").setExecutor(p);
-		getCommand("friend").setExecutor(new Friendys());
+		getCommand("friend").setExecutor(fwends);
 		
 		FriendAPI.init();
 	}

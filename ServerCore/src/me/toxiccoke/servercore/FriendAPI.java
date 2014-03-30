@@ -28,7 +28,7 @@ public class FriendAPI {
 					changed = false;
 				}
 			}
-		}, 0L, 2400L);//save every 2 minutes if needed
+		}, 0L, 2400L);// save every 2 minutes if needed
 	}
 
 	private FriendAPI() {
@@ -85,7 +85,7 @@ public class FriendAPI {
 		return null;
 	}
 
-	static private Person getAdd(String person) {
+	static public Person getAdd(String person) {
 		Person p = get(person);
 		if (p == null) {
 			p = new Person(person);
@@ -133,14 +133,34 @@ public class FriendAPI {
 	}
 
 	static public class Person {
-		LinkedList<String> friends;
-		String name;
+		private LinkedList<String> friends;
+		private String name;
+		/**
+		 * if true then requests to add this person as a friend should not be
+		 * allowed
+		 */
+		private boolean requestsDisabled;
 
 		public Person(String name) {
 			this.name = name;
 			friends = new LinkedList<String>();
 		}
 
+		public void setRequestsDisabled(boolean disabled) {
+			if (disabled == requestsDisabled)
+				return;
+			requestsDisabled = disabled;
+			changed = true;
+		}
+
+		public boolean isRequestsDisabled() {
+			return requestsDisabled;
+		}
+
+		public String[] getFriends() {
+			return friends.toArray(new String[friends.size()]);
+		}
+		
 		@Override
 		public boolean equals(Object o) {
 			return (o == null) ? false : o.toString().equals(name);
@@ -159,11 +179,13 @@ public class FriendAPI {
 			return;
 		try {
 			StreamDecoder e = new StreamDecoder(f);
+			@SuppressWarnings("unused")
+			int version = e.read();
 			int n = e.read4();
 			int i = 0;
 			while (i++ < n) {
 				Person p = new Person(e.readStr());
-				System.out.println(p.name);
+				p.requestsDisabled = e.readBool();
 				int fr = e.read4();
 				for (int a = 0; a < fr; a++)
 					p.friends.add(e.readStr());
@@ -179,9 +201,11 @@ public class FriendAPI {
 	static public void saveFriends() {
 		try {
 			StreamEncoder e = new StreamEncoder(getFile());
+			e.write(1);// Version 1
 			e.write4(people.size());
 			for (Person p : people) {
 				e.writeStr(p.name);
+				e.writeBool(p.requestsDisabled);
 				e.write4(p.friends.size());
 				for (String s : p.friends)
 					e.writeStr(s);
