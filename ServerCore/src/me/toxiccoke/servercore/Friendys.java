@@ -1,15 +1,60 @@
 package me.toxiccoke.servercore;
 
 import me.toxiccoke.servercore.FriendAPI.FriendRequest;
+import me.toxiccoke.servercore.FriendAPI.Person;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.FireworkEffect.Type;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.meta.FireworkMeta;
 
-public class Friendys implements CommandExecutor {
+public class Friendys implements CommandExecutor, Listener {
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent e) {
+		Player p = e.getPlayer();
+		// Tell their friends if they are online
+		Person person = FriendAPI.get(p.getName());
+		if (person == null)
+			return;
+		for (String s : person.getFriends()) {
+			Player friend = Bukkit.getServer().getPlayer(s);
+			if (friend == null || !friend.isOnline())
+				continue;
+			// green[red+green] yello players name
+			friend.sendMessage(ChatColor.GREEN + "[" + ChatColor.RED + "+" + ChatColor.GREEN + "]" + ChatColor.YELLOW
+					+ p.getName());
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent e) {
+		Player p = e.getPlayer();
+		// Tell their friends if they are online
+		Person person = FriendAPI.get(p.getName());
+		if (person == null)
+			return;
+		for (String s : person.getFriends()) {
+			Player friend = Bukkit.getServer().getPlayer(s);
+			if (friend == null || !friend.isOnline())
+				continue;
+			// green[red+green] yello players name
+			friend.sendMessage(ChatColor.GREEN + "[" + ChatColor.BLUE + "-" + ChatColor.GREEN + "]" + ChatColor.YELLOW
+					+ p.getName());
+		}
+	}
+	
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		if (!(sender instanceof Player)) {
@@ -47,7 +92,7 @@ public class Friendys implements CommandExecutor {
 			}
 			Player c = Bukkit.getServer().getPlayer(args[1]);
 			if (c == null || !c.isOnline()) {
-				p.sendMessage(ChatColor.GOLD + "Unknown Player: "+ChatColor.GRAY + args[1]);
+				p.sendMessage(ChatColor.GOLD + "Unknown Player: " + ChatColor.GRAY + args[1]);
 				return true;
 			}
 			if (c.getName().equals(p.getName())) {
@@ -56,6 +101,11 @@ public class Friendys implements CommandExecutor {
 			}
 			if (FriendAPI.friends(p.getName(), c.getName())) {
 				p.sendMessage(ChatColor.GOLD + "You are already friends with " + c.getName());
+				return true;
+			}
+			Person person = FriendAPI.get(c.getName());
+			if (person != null && person.isRequestsDisabled()) {
+				p.sendMessage(c.getName() + ChatColor.GOLD + " has friend requests disabled");
 				return true;
 			}
 			FriendAPI.addRequest(p.getName(), c.getName());
@@ -92,6 +142,14 @@ public class Friendys implements CommandExecutor {
 			if (sdr != null)
 				sdr.sendMessage(req.confirmer + ChatColor.GOLD + " denied your request to become friends");
 			return true;
+		} else if (arg1.equals("disable")) {
+			FriendAPI.getAdd(p.getName()).setRequestsDisabled(true);
+			p.sendMessage(ChatColor.GOLD + "Friend Requests disabled.");
+			return true;
+		} else if (arg1.equals("enable")) {
+			FriendAPI.getAdd(p.getName()).setRequestsDisabled(false);
+			p.sendMessage(ChatColor.GOLD + "Friend Requests enabled.");
+			return true;
 		}
 		help(p);
 		return true;
@@ -100,12 +158,19 @@ public class Friendys implements CommandExecutor {
 	private void help(Player p) {
 		p.sendMessage(ChatColor.GOLD + "-----------------------------------------------------");
 		p.sendMessage(ChatColor.GREEN + "Friend Commands");
+		Person per = FriendAPI.get(p.getName());
+		String msg = (per != null && per.isRequestsDisabled()) ? "disabled" : "enabled";
+		p.sendMessage(ChatColor.YELLOW + "Friend requests are currently " + msg);
+
 		p.sendMessage(ChatColor.YELLOW + "/friend help" + ChatColor.BLUE + " - Prints this help message");
 		p.sendMessage(ChatColor.YELLOW + "/friend list" + ChatColor.BLUE + " - Lists your friends");
 		p.sendMessage(ChatColor.YELLOW + "/friend accept" + ChatColor.BLUE + " - Accept friend request");
 		p.sendMessage(ChatColor.YELLOW + "/friend deny" + ChatColor.BLUE + " - Deny friend request");
 		p.sendMessage(ChatColor.YELLOW + "/friend add [name]" + ChatColor.BLUE + " - Adds a friend");
 		p.sendMessage(ChatColor.YELLOW + "/friend remove [name]" + ChatColor.BLUE + " - Removes a friend");
+		p.sendMessage(ChatColor.YELLOW + "/friend disable" + ChatColor.BLUE
+				+ " - Disables other players from adding you as a friend");
+		p.sendMessage(ChatColor.YELLOW + "/friend enable" + ChatColor.BLUE + " - Re-enter the social world");
 		p.sendMessage(ChatColor.GOLD + "-----------------------------------------------------");
 	}
 

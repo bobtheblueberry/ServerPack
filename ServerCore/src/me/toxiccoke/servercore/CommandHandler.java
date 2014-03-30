@@ -31,7 +31,7 @@ public class CommandHandler implements CommandExecutor {
 		} else if (cmd.getName().equalsIgnoreCase("heal")) {
 			if (!sender.hasPermission("sc.heal")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+						+ ChatColor.RED + "You don't have access to this command");
 				return true;
 			}
 			if (args.length == 0) {
