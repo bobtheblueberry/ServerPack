@@ -36,7 +36,7 @@ public class Partys implements CommandExecutor {
 			return false;
 
 		if (args.length == 0) {
-			p.sendMessage("Do /party help for commands");
+			p.sendMessage(ChatColor.YELLOW + "Do /party help for commands");
 			Party party = getParty(p);
 			if (party != null)
 				list(party, p);
@@ -62,10 +62,10 @@ public class Partys implements CommandExecutor {
 								break;
 							}
 				if (owner) {
-					p.sendMessage("You already have a party! Do /party disband");
+					p.sendMessage(ChatColor.YELLOW + "You already have a party! Do /party disband");
 					return true;
 				} else if (inParty) {
-					p.sendMessage("You cannot create a party because you are in a party already. Do /party leave");
+					p.sendMessage(ChatColor.YELLOW + "You cannot create a party because you are in a party already. Do /party leave");
 					return true;
 				}
 				// create a party
@@ -75,26 +75,26 @@ public class Partys implements CommandExecutor {
 				return true;
 			} else if (arg1.equals("invite")) {
 				if (!isInParty(p)) {
-					p.sendMessage("You are not in a party!");
+					p.sendMessage(ChatColor.YELLOW + "You are not in a party!");
 					return true;
 				}
 				if (args.length < 2) {
-					p.sendMessage("Proper usage is /party invte [player]");
+					p.sendMessage(ChatColor.YELLOW + "Proper usage is /party invte [player]");
 					return true;
 				}
 				String name = args[1];
 				OfflinePlayer invi = Bukkit.getServer().getOfflinePlayer(name);
 				if (invi == null) {
-					p.sendMessage("Unknown player: " + name);
+					p.sendMessage(ChatColor.YELLOW + "Unknown player: " + name);
 					return true;
 				}
 				if (p.getName().equals(invi.getName())) {
-					p.sendMessage("You can't invite yourself");
+					p.sendMessage(ChatColor.YELLOW + "You can't invite yourself");
 					return true;
 				}
 
 				if (!invi.isOnline()) {
-					p.sendMessage(name + " is not online");
+					p.sendMessage(name + ChatColor.YELLOW + " is not online");
 					return true;
 				}
 				Player invited = Bukkit.getServer().getPlayer(name);
@@ -103,8 +103,8 @@ public class Partys implements CommandExecutor {
 				if (i != null)
 					invites.remove(i);
 				invites.add(new PartyInvite(invited, getParty(p)));
-				invited.sendMessage("You have been invited to join " + p.getName() + "'s party");
-				invited.sendMessage("To join " + p.getName() + "'s party, type /party accept");
+				invited.sendMessage(ChatColor.YELLOW + "You have been invited to join " + p.getName() + "'s party");
+				invited.sendMessage(ChatColor.YELLOW + "To join " + p.getName() + "'s party, type /party accept");
 				return true;
 
 			} else if (arg1.equals("leave")) {
@@ -122,39 +122,39 @@ public class Partys implements CommandExecutor {
 								break;
 							}
 				if (party == null) {
-					p.sendMessage("You do not belong to a party");
+					p.sendMessage(ChatColor.YELLOW + "You do not belong to a party");
 					return true;
 				}
 				if (owner) {
-					p.sendMessage("Use /party disband");
+					p.sendMessage(ChatColor.YELLOW + "Use /party disband");
 					return true;
 				}
 				party.players.remove(p);
-				p.sendMessage("You have left the party");
+				p.sendMessage(ChatColor.YELLOW + "You have left the party");
 				for (Player friend : party.players)
 					if (friend.isOnline())
-						friend.sendMessage(p.getName() + " has left the party");
+						friend.sendMessage(ChatColor.YELLOW + p.getName() + " has left the party");
 				if (party.owner.isOnline())
-					party.owner.sendMessage(p.getName() + " has left the party");
+					party.owner.sendMessage(ChatColor.YELLOW + p.getName() + " has left the party");
 
 				return true;
 
 			} else if (arg1.equals("list")) {
 				Party party = getParty(p);
 				if (party == null)
-					p.sendMessage("You are not in a party!");
+					p.sendMessage(ChatColor.YELLOW + "You are not in a party!");
 				else
 					list(party, p);
 				return true;
 			} else if (arg1.equals("accept")) {
 				PartyInvite i = getInvite(p);
 				if (i == null) {
-					p.sendMessage("You have not been invited to join a party");
+					p.sendMessage(ChatColor.YELLOW + "You have not been invited to join a party");
 					return true;
 				}
 				// can't join a party if you are in one
 				if (isInParty(p)) {
-					p.sendMessage("You are already in a party. To leave, do /party leave");
+					p.sendMessage(ChatColor.YELLOW + "You are already in a party. To leave, do /party leave");
 					return true;
 				}
 				// The party may have been disbanded
@@ -165,12 +165,12 @@ public class Partys implements CommandExecutor {
 						break;
 					}
 				if (disbanded) {
-					p.sendMessage("That party has been disbanded");
+					p.sendMessage(ChatColor.YELLOW + "That party has been disbanded");
 					return true;
 				}
 				invites.remove(i);
 				i.party.players.add(p);
-				p.sendMessage("You have joined a party");
+				p.sendMessage(ChatColor.YELLOW + "You have joined a party");
 				list(i.party, p);
 				for (Player friend : i.party.players)
 					if (friend.isOnline())
@@ -184,12 +184,12 @@ public class Partys implements CommandExecutor {
 					if (part.owner.getName().equals(p.getName())) {
 						for (Player member : part.players)
 							if (member.isOnline())
-								member.sendMessage("Your party has been disbanded");
+								member.sendMessage(ChatColor.YELLOW + "Your party has been disbanded");
 						parties.remove(part);
-						p.sendMessage("Party disbanded");
+						p.sendMessage(ChatColor.YELLOW + "Party disbanded");
 						return true;
 					}
-				p.sendMessage("You do not own a party");
+				p.sendMessage(ChatColor.YELLOW + "You do not own a party");
 				return true;
 			}
 
