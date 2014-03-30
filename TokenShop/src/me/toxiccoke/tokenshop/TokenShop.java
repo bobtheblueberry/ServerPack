@@ -47,23 +47,15 @@ public class TokenShop extends JavaPlugin implements Listener {
 			// Add the hats that are owned first
 			for (Hat h : Hat.hats) {
 				if (b.get(h.refCode))
-					hats.setItem(
-							ind++,
-							createItem(h.mat, 1, (short) 0, h.displayName,
-									"§bYou own this hat"));
+					hats.setItem(ind++, createItem(h.mat, 1, (short) 0, h.displayName, "§bYou own this hat"));
 
 			}
 		for (Hat h : Hat.hats)
 			if (!b.get(h.refCode))
-				hats.setItem(
-						ind++,
-						createItem(h.mat, 1, (short) 0, h.displayName,
-								"§cPrice: " + h.price));
+				hats.setItem(ind++, createItem(h.mat, 1, (short) 0, h.displayName, "§cPrice: " + h.price));
 
-		hats.setItem(
-				16,
-				createItem(Material.FIRE, 1, (short) 0, Hat.removeHatLabel,
-						"§aClick to remove your current hat"));
+		hats.setItem(16,
+				createItem(Material.FIRE, 1, (short) 0, Hat.removeHatLabel, "§aClick to remove your current hat"));
 		hats.setItem(17, getCloseButton());
 		return hats;
 
@@ -79,18 +71,12 @@ public class TokenShop extends JavaPlugin implements Listener {
 			// Add the hats that are owned first
 			for (Pet p : Pet.pets) {
 				if (b.get(p.refCode))
-					pets.setItem(
-							ind++,
-							createItem(p.getEgg(), p.displayName,
-									"§bYou own this pet"));
+					pets.setItem(ind++, createItem(p.getEgg(), p.displayName, "§bYou own this pet"));
 
 			}
 		for (Pet p : Pet.pets)
 			if (!b.get(p.refCode))
-				pets.setItem(
-						ind++,
-						createItem(p.getEgg(), p.displayName, "§cPrice: "
-								+ p.price));
+				pets.setItem(ind++, createItem(p.getEgg(), p.displayName, "§cPrice: " + p.price));
 		pets.setItem(17, getCloseButton());
 		return pets;
 
@@ -105,56 +91,36 @@ public class TokenShop extends JavaPlugin implements Listener {
 			// Add the hats that are owned first
 			for (Toy t : Toy.toys) {
 				if (b.get(t.refCode))
-					toys.setItem(
-							ind++,
-							createItem(t.mat(), t.displayName,
-									"§bYou own this toy"));
+					toys.setItem(ind++, createItem(t.mat(), t.displayName, "§bYou own this toy"));
 
 			}
 		for (Toy t : Toy.toys)
 			if (!b.get(t.refCode))
-				toys.setItem(
-						ind++,
-						createItem(t.mat(), t.displayName, "§cPrice: "
-								+ t.price));
+				toys.setItem(ind++, createItem(t.mat(), t.displayName, "§cPrice: " + t.price));
 		toys.setItem(17, getCloseButton());
 		return toys;
 	}
 
 	private ItemStack getCloseButton() {
-		return createItem(Material.MINECART, 1, (short) 0, "§aClose",
-				"§aClick to got back to the game");
+		return createItem(Material.MINECART, 1, (short) 0, "§aClose", "§aClick to got back to the game");
 	}
 
 	public TokenShop() {
 		shop = Bukkit.createInventory(null, 9, shopInvName);
 
 		// menus
-		shop.setItem(
-				0,
-				createItem(Material.STICK, 1, (short) 0, "§aToys",
-						"§aClick to see"));
-		shop.setItem(
-				1,
-				createItem(Material.SKULL_ITEM, 1, (short) 0, "§bHats",
-						"§bClick to see"));
-		shop.setItem(
-				2,
-				createItem(Material.BONE, 1, (short) 0, "§cPets",
-						"§cClick to see"));
+		shop.setItem(0, createItem(Material.STICK, 1, (short) 0, "§aToys", "§aClick to see"));
+		shop.setItem(1, createItem(Material.SKULL_ITEM, 1, (short) 0, "§bHats", "§bClick to see"));
+		shop.setItem(2, createItem(Material.BONE, 1, (short) 0, "§cPets", "§cClick to see"));
 
-		shop.setItem(
-				8,
-				createItem(Material.MINECART, 1, (short) 0, "§aClose",
-						"§aClick to got back to the game"));
+		shop.setItem(8, createItem(Material.MINECART, 1, (short) 0, "§aClose", "§aClick to got back to the game"));
 
 	}
 
 	Scoreboard coins;
 
 	public void onEnable() {
-		getServer().getPluginManager()
-				.registerEvents(new EventHandlers(), this);
+		getServer().getPluginManager().registerEvents(new EventHandlers(), this);
 		getServer().getPluginManager().registerEvents(this, this);
 
 		plugin = this;
@@ -169,7 +135,6 @@ public class TokenShop extends JavaPlugin implements Listener {
 		getCommand("hatshop").setExecutor(t);
 	}
 
-
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
@@ -183,15 +148,13 @@ public class TokenShop extends JavaPlugin implements Listener {
 		Objective objective = board.registerNewObjective("test", "dummy");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		objective.setDisplayName(ChatColor.GOLD + "[AquilaMc Bank] ");
-		Score score = objective.getScore(Bukkit
-				.getOfflinePlayer(ChatColor.GREEN + "Coins:"));
+		Score score = objective.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Coins:"));
 		score.setScore(MyAPI.getCoinCount(player));
 		player.setScoreboard(board);
 
 	}
 
-	public ItemStack createItem(Material material, int amount, short shrt,
-			String displayname, String lore) {
+	public ItemStack createItem(Material material, int amount, short shrt, String displayname, String lore) {
 		ItemStack item = new ItemStack(material, amount, shrt);
 		return createItem(item, displayname, lore);
 	}
@@ -224,6 +187,8 @@ public class TokenShop extends JavaPlugin implements Listener {
 	@EventHandler
 	public void invClick(InventoryClickEvent e) {
 		Player p = (Player) e.getWhoClicked();
+		if (e.getInventory() == null)
+			return;
 		if (e.getInventory().getName().equals(TokenShop.shop.getName())) {
 			e.setCancelled(true);
 		}
@@ -243,16 +208,16 @@ public class TokenShop extends JavaPlugin implements Listener {
 		if (!e.getCurrentItem().hasItemMeta()) {
 			return;
 		}
+		if (e.getCurrentItem().getItemMeta() == null || e.getCurrentItem().getItemMeta().getDisplayName() == null)
+			return;
 		// menu openers / closers
 		if (e.getCurrentItem().getItemMeta().getDisplayName().equals("§aToys"))
 			p.getPlayer().openInventory(generateToys(p.getName()));
 
-		if (e.getCurrentItem().getItemMeta().getDisplayName()
-				.equals(hatInvName))
+		if (e.getCurrentItem().getItemMeta().getDisplayName().equals(hatInvName))
 			p.getPlayer().openInventory(generateHats(p.getName()));
 
-		if (e.getCurrentItem().getItemMeta().getDisplayName()
-				.equals(petInvName))
+		if (e.getCurrentItem().getItemMeta().getDisplayName().equals(petInvName))
 			p.getPlayer().openInventory(generatePets(p.getName()));
 
 		if (e.getCurrentItem().getItemMeta().getDisplayName().equals("§aClose"))

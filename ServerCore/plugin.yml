@@ -63,4 +63,8 @@ commands:
         usage: /<command>
         description: Party Commands
         aliases: [p]
+    friend:
+        usage: /<command>
+        description: Friend Commands
+        aliases: [f,friends]
 

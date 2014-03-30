@@ -44,6 +44,7 @@ public class TokenCommand implements CommandExecutor {
 					}
 					
 					MyAPI.giveCoins(player, a);
+					p.sendMessage("§6[§cAquilaMc§6]§c §a"+ a +"§6 coins given to §c"+player.getName());
 				} else {
 					MyAPI.giveCoins(p, a);
 				}
@@ -57,8 +58,7 @@ public class TokenCommand implements CommandExecutor {
 			return true;
 		}
 		if (cmd.equals("coins")) {
-			p.sendMessage(ChatColor.GOLD + "§6" + " [AquilaMc] " + "§c"
-					+ " Coin balance: §a" + MyAPI.getCoinCount(p));
+			p.sendMessage("§6[§cAquilaMc§6]§c Coin balance: §a" + MyAPI.getCoinCount(p));
 			return true;
 		}
 
