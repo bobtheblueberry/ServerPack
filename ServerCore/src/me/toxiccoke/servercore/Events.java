@@ -7,6 +7,8 @@ import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.FireworkEffect.Type;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,7 +26,7 @@ public class Events implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		e.setJoinMessage(ChatColor.DARK_GRAY + p.getDisplayName() + ChatColor.GRAY + "");
+		e.setJoinMessage(ChatColor.GRAY + "");
 
 		Firework f = (Firework) e.getPlayer().getWorld().spawn(e.getPlayer().getLocation(), Firework.class);
 
@@ -44,18 +46,10 @@ public class Events implements Listener {
 	private final ArrayList<String> players = new ArrayList<String>();
 
 	@EventHandler
-	public void onInteract(PlayerInteractEvent e) {
+	public void onInteract(PlayerInteractEntityEvent e) {
 		Player p = e.getPlayer();
-		if (p.getItemInHand() != null) {
-			ItemStack itemInHand = p.getItemInHand();
-			if (itemInHand.getType().equals(Material.FIREBALL)) {
-				if (players.contains(p.getName())) {
-					p.setPassenger(null);
-				} else {
-					p.setPassenger(p);
-
-				}
-			}
-		}
+		Player target = (Player) e.getRightClicked();
+		target.setPassenger(p);
+		p.sendMessage(ChatColor.YELLOW + "You're riding " + target.getName());
 	}
 }
