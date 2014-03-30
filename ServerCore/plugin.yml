@@ -1,7 +1,7 @@
 name: ServerCore
 version: 1.0
 main: me.toxiccoke.servercore.Commands
-author: ToxicCokeIsGay
+author: toxiccoke
 description: Server Core Commands
 commands:
     gm:

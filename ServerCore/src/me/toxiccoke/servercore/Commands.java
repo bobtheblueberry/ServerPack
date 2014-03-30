@@ -3,7 +3,6 @@ package me.toxiccoke.servercore;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -35,7 +34,6 @@ public class Commands extends JavaPlugin implements Listener {
 		getServer().getPluginManager().registerEvents(this, this);
 		getServer().getPluginManager().registerEvents(new Hats(), this);
 		getServer().getPluginManager().registerEvents(new Events(), this);
-		
 		CommandHandler ch = new CommandHandler();
 		getCommand("gm").setExecutor(ch);
 		getCommand("fly").setExecutor(ch);
@@ -50,7 +48,7 @@ public class Commands extends JavaPlugin implements Listener {
 		getCommand("setspawn").setExecutor(ch);
 		getCommand("ban").setExecutor(ch);
 		getCommand("kick").setExecutor(ch);
-		// getCommand("help").setExecutor(ch);
+		getCommand("help").setExecutor(ch);
 		getCommand("poke").setExecutor(ch);
 		getCommand("v").setExecutor(ch);
 		getCommand("nick").setExecutor(ch);
