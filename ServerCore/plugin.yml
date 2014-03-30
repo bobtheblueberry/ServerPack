@@ -49,7 +49,7 @@ commands:
     poke:
         usage: /<command> [player]
         description: Give your friends a gay gesture
-#   help:
+    help:
         usage: /<command> (page)
         description: Shows help page
     nick:

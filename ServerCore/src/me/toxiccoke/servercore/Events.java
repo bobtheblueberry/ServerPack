@@ -7,6 +7,8 @@ import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.FireworkEffect.Type;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,13 +21,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Events extends JavaPlugin implements Listener {
+public class Events implements Listener {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		e.setJoinMessage(ChatColor.DARK_GRAY + p.getDisplayName()
-				+ ChatColor.GRAY + "");
+		e.setJoinMessage(ChatColor.GRAY + "");
 		
 		Firework f = (Firework) e.getPlayer().getWorld()
 				.spawn(e.getPlayer().getLocation(), Firework.class);
@@ -38,7 +39,6 @@ public class Events extends JavaPlugin implements Listener {
 		f.setFireworkMeta(fm);
 
 	}
-
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		e.setQuitMessage(" ");
@@ -46,19 +46,14 @@ public class Events extends JavaPlugin implements Listener {
 	
     private final ArrayList<String> players = new ArrayList<String>();
 	
-    @EventHandler
-    public void onInteract(PlayerInteractEvent e) {
-     Player p = e.getPlayer();
-     if (p.getItemInHand() != null) {
-      ItemStack itemInHand = p.getItemInHand();
-      if (itemInHand.getType().equals(Material.FIREBALL)) {
-       if (players.contains(p.getName())) {
-        p.setPassenger(null);
-       }else{
-    	   p.setPassenger(p);
+           
     	   
+       
+       @EventHandler
+       public void onInteract(PlayerInteractEntityEvent e) {
+    	   Player p = e.getPlayer();
+           Player target = (Player) e.getRightClicked();
+           target.setPassenger(p);
+           p.sendMessage(ChatColor.YELLOW + "You're riding " + target.getName());
              }
-          }
        }
-    }
-}
