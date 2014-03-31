@@ -33,7 +33,6 @@ public class Commands extends JavaPlugin implements Listener {
 
 		Friendys fwends = new Friendys();
 		getServer().getPluginManager().registerEvents(this, this);
-		getServer().getPluginManager().registerEvents(new Hats(), this);
 		getServer().getPluginManager().registerEvents(new Events(), this);
 		getServer().getPluginManager().registerEvents(fwends, this);
 		

@@ -1,8 +1,9 @@
 name: TokenShop
 main: me.toxiccoke.tokenshop.TokenShop
-version: 1.0
+version: 0.1
 description: This is an example description
 author: ToxiccokeIsGay
+depend: [ServerCore]
 commands:
     shop:
         description: Does shoppy things
@@ -17,7 +18,14 @@ commands:
         description: Shops for hats, give gaben your money
         usage: /<command>
         permission: tokenshop.hatshop
+        aliases: [hat]
     coins:
         aliases: [coin]
         description: Displays how many coins you have
         usage: /<command>
+    petshop:
+        description: Shops for pets, give gaben your money
+        usage: /<command>
+        permission: tokenshop.petshop
+        aliases: [pet,pets]
+        

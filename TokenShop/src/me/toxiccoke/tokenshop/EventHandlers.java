@@ -3,7 +3,13 @@ package me.toxiccoke.tokenshop;
 import java.util.Hashtable;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.entity.Creature;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.MagmaCube;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,7 +35,6 @@ public class EventHandlers implements Listener {
 				MyAPI.giveCoins(p, 1);
 			}
 		}
-
 		if ((e.getEntity() instanceof Player)) {
 			Player player = (Player) e.getEntity();
 			if ((player.getKiller() instanceof Player)) {
@@ -42,8 +47,7 @@ public class EventHandlers implements Listener {
 	@EventHandler
 	public static void invClick(InventoryClickEvent e) {
 		String invN = e.getInventory().getName();
-		if (!invN.equals(TokenShop.hatInvName)
-				&& !invN.equals(TokenShop.petInvName)
+		if (!invN.equals(TokenShop.hatInvName) && !invN.equals(TokenShop.petInvName)
 				&& !invN.equals(TokenShop.toyInvName)) {
 			return;
 		}
@@ -62,8 +66,8 @@ public class EventHandlers implements Listener {
 			// might be remove hat
 			if (name.equals(Hat.removeHatLabel)) {
 				p.getInventory().setHelmet(new ItemStack(Material.AIR, 1));
-				p.sendMessage(ChatColor.GOLD + "[AquilaMc]" + ChatColor.RED
-						+ " Hat removed");
+				HatHandler.resetHat(p);
+				p.sendMessage(ChatColor.GOLD + "[AquilaMc]" + ChatColor.RED + " Hat removed");
 
 				p.getPlayer().closeInventory();
 				return;
@@ -97,14 +101,19 @@ public class EventHandlers implements Listener {
 			}
 			MyAPI.takeCoins(p, h.price);
 			MyAPI.setHat(p.getName(), h.refCode, true);
-
 		}
 		if (!h.special) {
 			p.getInventory().setHelmet(h.hat());
-			p.sendMessage("§aHat Changed to " + h.displayName);
-		} else
-			// TODO: fix this
-			p.sendMessage("Sorry, this special type of hat doesnt work");
+			HatHandler.resetHat(p);
+		} else {
+			p.getInventory().setHelmet(new ItemStack(Material.AIR, 1));
+			if (h.mat == Material.SLIME_BALL)
+				HatHandler.setSlimeHat(p);
+			else if (h.mat == Material.MAGMA_CREAM)
+				HatHandler.setMagmacubeHat(p);
+		}
+		p.sendMessage("§aHat Changed to " + h.displayName);
+
 		p.getPlayer().closeInventory();
 
 	}
@@ -123,7 +132,7 @@ public class EventHandlers implements Listener {
 
 		}
 		p.sendMessage("§aPet Changed to " + pet.displayName);
-		p.sendMessage("but not really lol");
+		spawnPet(p, pet);
 		p.getPlayer().closeInventory();
 	}
 
@@ -142,8 +151,26 @@ public class EventHandlers implements Listener {
 			p.getPlayer().closeInventory();
 			return;
 		}
-
 		p.sendMessage("§aYou own that toy");
-		
+	}
+
+	@SuppressWarnings("deprecation")
+	private static void spawnPet(Player p, Pet pet) {
+		EntityType t = null;
+		for (EntityType en : EntityType.values())
+			if (en.getTypeId() == pet.mobId) {
+				t = en;
+				break;
+			}
+		if (t == null)
+			return;
+
+		LivingEntity e = (LivingEntity) p.getWorld().spawnEntity(p.getLocation(), t);
+		e.getWorld().playEffect(p.getLocation(), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
+		e.setCustomName(p.getDisplayName() + "'s "+t.getName());
+		e.setCustomNameVisible(true);
+		if (e instanceof Creature)
+			((Creature) e).setTarget(p);
+		e.setLeashHolder(p);
 	}
 }
