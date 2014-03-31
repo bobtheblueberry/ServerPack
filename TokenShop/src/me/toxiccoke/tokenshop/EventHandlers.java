@@ -35,7 +35,6 @@ public class EventHandlers implements Listener {
 				MyAPI.giveCoins(p, 1);
 			}
 		}
-
 		if ((e.getEntity() instanceof Player)) {
 			Player player = (Player) e.getEntity();
 			if ((player.getKiller() instanceof Player)) {
@@ -102,12 +101,12 @@ public class EventHandlers implements Listener {
 			}
 			MyAPI.takeCoins(p, h.price);
 			MyAPI.setHat(p.getName(), h.refCode, true);
-
 		}
 		if (!h.special) {
 			p.getInventory().setHelmet(h.hat());
 			HatHandler.resetHat(p);
 		} else {
+			p.getInventory().setHelmet(new ItemStack(Material.AIR, 1));
 			if (h.mat == Material.SLIME_BALL)
 				HatHandler.setSlimeHat(p);
 			else if (h.mat == Material.MAGMA_CREAM)
@@ -152,9 +151,7 @@ public class EventHandlers implements Listener {
 			p.getPlayer().closeInventory();
 			return;
 		}
-
 		p.sendMessage("§aYou own that toy");
-
 	}
 
 	@SuppressWarnings("deprecation")

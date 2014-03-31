@@ -63,6 +63,10 @@ public class TokenCommand implements CommandExecutor {
 			p.openInventory(TokenShop.plugin.generateHats(p.getName()));
 			return true;
 		}
+		if (cmd.equals("petshop")) {
+			p.openInventory(TokenShop.plugin.generatePets(p.getName()));
+			return true;
+		}
 
 		return false;
 	}

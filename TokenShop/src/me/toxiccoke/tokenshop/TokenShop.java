@@ -135,6 +135,10 @@ public class TokenShop extends JavaPlugin implements Listener {
 		getCommand("coins").setExecutor(t);
 		getCommand("givecoin").setExecutor(t);
 		getCommand("hatshop").setExecutor(t);
+		getCommand("petshop").setExecutor(t);
+		
+		//hat
+		
 	}
 
 	@EventHandler
@@ -190,6 +194,9 @@ public class TokenShop extends JavaPlugin implements Listener {
 		if (itemInHand.getType() == Material.LEATHER_HELMET) {
 			e.setCancelled(true);
 			p.chat("/hatshop");
+		} else if (itemInHand.getType() == Material.BONE) {
+			e.setCancelled(true);
+			p.chat("/petshop");
 		}
 	}
 
