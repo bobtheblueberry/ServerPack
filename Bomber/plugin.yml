@@ -1,0 +1,9 @@
+name: Bomber
+main: me.toxiccoke.Bomber.Bomber
+version: 1.0
+description: This is an example description
+author: toxiccoke
+commands:
+    bteam:
+    bjoin:
+    b:
