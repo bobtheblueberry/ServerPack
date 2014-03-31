@@ -136,9 +136,6 @@ public class TokenShop extends JavaPlugin implements Listener {
 		getCommand("givecoin").setExecutor(t);
 		getCommand("hatshop").setExecutor(t);
 		getCommand("petshop").setExecutor(t);
-		
-		//hat
-		
 	}
 
 	@EventHandler

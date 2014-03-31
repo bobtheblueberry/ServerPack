@@ -32,7 +32,6 @@ public class Friendys implements CommandExecutor, Listener {
 			Player friend = Bukkit.getServer().getPlayer(s);
 			if (friend == null || !friend.isOnline())
 				continue;
-			// green[red+green] yello players name
 			friend.sendMessage(ChatColor.GREEN + "[" + ChatColor.RED + "+" + ChatColor.GREEN + "]" + ChatColor.YELLOW
 					+ p.getName());
 		}
@@ -49,7 +48,7 @@ public class Friendys implements CommandExecutor, Listener {
 			Player friend = Bukkit.getServer().getPlayer(s);
 			if (friend == null || !friend.isOnline())
 				continue;
-			// green[red+green] yello players name
+
 			friend.sendMessage(ChatColor.GREEN + "[" + ChatColor.BLUE + "-" + ChatColor.GREEN + "]" + ChatColor.YELLOW
 					+ p.getName());
 		}
