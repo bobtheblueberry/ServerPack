@@ -213,6 +213,8 @@ public class FriendAPI {
 			}
 
 			private static Value copy(Value or) {
+				if (or == null)
+					return null;
 				Value v = new Value();
 				v.bVal = or.bVal;
 				v.dVal = or.dVal;

@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Team extends JavaPlugin implements Listener{
+public class Team implements Listener{
 	
 	private static List<String> redTeam	= new ArrayList<String>();
 	private static List<String> blueTeam = new ArrayList<String>();
