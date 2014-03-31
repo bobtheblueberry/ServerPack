@@ -122,6 +122,7 @@ public class TokenShop extends JavaPlugin implements Listener {
 	public void onEnable() {
 		getServer().getPluginManager().registerEvents(new EventHandlers(), this);
 		getServer().getPluginManager().registerEvents(this, this);
+		getServer().getPluginManager().registerEvents(new HatHandler(), this);
 
 		plugin = this;
 		if (!MyAPI.init()) {
