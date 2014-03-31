@@ -35,7 +35,7 @@ public class CommandHandler implements CommandExecutor {
 				return true;
 			}
 			if (args.length == 0) {
-				p.setHealth(20);
+				p.setHealth(20.0D);
 				p.setFoodLevel(20);
 				p.sendMessage(ChatColor.GRAY + "Healed!!");
 			} else if (args.length == 1) {
@@ -70,19 +70,33 @@ public class CommandHandler implements CommandExecutor {
 				return true;
 			} else if (args.length == 1) {
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
-				Location targetPlayerlocation = targetPlayer.getLocation();
-				p.teleport(targetPlayerlocation);
-				p.sendMessage(ChatColor.GRAY + "You have teleported to " + ChatColor.GRAY
-						+ targetPlayer.getDisplayName());
+				if (targetPlayer == null) {
+					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
+					return true;
+				}
+				if (p.teleport(targetPlayer.getLocation()))
+					p.sendMessage(ChatColor.GRAY + "You have teleported to " + ChatColor.GRAY
+							+ targetPlayer.getDisplayName());
+				else
+					p.sendMessage(ChatColor.GRAY + "Teleportation failed (unknown reason)");
 				return true;
 			} else if (args.length == 2) {
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
+				if (targetPlayer == null) {
+					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
+					return true;
+				}
 				Player targetPlayer1 = p.getServer().getPlayer(args[1]);
-				Location targetPlayerlocation = targetPlayer.getLocation();
-				Location targetplayer1location = targetPlayer1.getLocation();
-				targetPlayer.teleport(targetplayer1location);
-				targetPlayer.sendMessage(ChatColor.GRAY + "You have been teleported to " + ChatColor.GRAY
-						+ p.getDisplayName());
+				if (targetPlayer1 == null) {
+					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[1]);
+					return true;
+				}
+
+				if (targetPlayer.teleport(targetPlayer1.getLocation()))
+					targetPlayer.sendMessage(ChatColor.GRAY + "You have been teleported to " + ChatColor.GRAY
+							+ targetPlayer1.getDisplayName());
+				else
+					targetPlayer.sendMessage(ChatColor.GRAY + "Teleportation failed (unknown reason)");
 				return true;
 			}
 			// warn command
@@ -241,6 +255,10 @@ public class CommandHandler implements CommandExecutor {
 				p.sendMessage(ChatColor.RED + "Please specify player u would like to poke ");
 			} else if (args.length == 1) {
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
+				if (targetPlayer == null) {
+					sender.sendMessage(ChatColor.RED + "Could not find player " + args[0] + "!");
+					return true;
+				}
 				p.sendMessage(ChatColor.GRAY + "You have poked " + ChatColor.GRAY + targetPlayer.getDisplayName());
 				targetPlayer.sendMessage(ChatColor.RED + "POKE!!!");
 				targetPlayer.sendMessage(ChatColor.GRAY + "You have been poked by " + ChatColor.GRAY
@@ -259,7 +277,8 @@ public class CommandHandler implements CommandExecutor {
 				return true;
 			}
 			if (args.length == 0) {
-				p.sendMessage(ChatColor.RED + "You did not specify a nickname!");
+				p.sendMessage(ChatColor.GOLD + "Nickname reset");
+				p.setDisplayName(p.getName());
 				return true;
 			}
 

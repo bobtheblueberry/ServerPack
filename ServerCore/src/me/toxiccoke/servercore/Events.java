@@ -44,12 +44,4 @@ public class Events implements Listener {
 	}
 
 	private final ArrayList<String> players = new ArrayList<String>();
-
-	@EventHandler
-	public void onInteract(PlayerInteractEntityEvent e) {
-		Player p = e.getPlayer();
-		Player target = (Player) e.getRightClicked();
-		target.setPassenger(p);
-		p.sendMessage(ChatColor.YELLOW + "You're riding " + target.getName());
-	}
 }
