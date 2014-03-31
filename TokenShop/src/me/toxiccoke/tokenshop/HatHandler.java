@@ -64,45 +64,67 @@ public class HatHandler implements Listener {
 				evt.setCancelled(true);
 	}
 
+	public static void setSlimeHat(Player p) {
+		if (p.getPassenger() != null && p.getPassenger().getType() == EntityType.SLIME)
+			return;
+		/* SPAWN SLIME */
+		Slime slime = (Slime) p.getWorld().spawnEntity(getLocation(p), EntityType.SLIME);
+		slime.setSize(MOB_SIZE);
+		slime.getWorld().playEffect(slime.getLocation(), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
+
+		scheduleHat(p, slime);
+	}
+
+	public static void setMagmacubeHat(Player p) {
+		if (p.getPassenger() != null && p.getPassenger().getType() == EntityType.MAGMA_CUBE)
+			return;
+		/* SPAWN MAGMACUBE */
+		MagmaCube magmacube = (MagmaCube) p.getWorld().spawnEntity(getLocation(p), EntityType.MAGMA_CUBE);
+		magmacube.setSize(MOB_SIZE);
+		magmacube.setMaxHealth(100.0D);
+		magmacube.getWorld().playEffect(getLocation(p), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
+
+		scheduleHat(p, magmacube);
+	}
+
+	public static void resetRider(Player p) {
+		if (p.getPassenger() == null)
+			return;
+		if (!(p.getPassenger() instanceof Player))
+			p.getPassenger().remove();
+		p.eject();
+	}
+
+	/**
+	 * If there is a mob on player {@link p}'s head then it is removed.
+	 * 
+	 * @param p
+	 */
+	public static void resetHat(Player p) {
+		if (p.getPassenger() == null)
+			return;
+		if (p.getPassenger() instanceof Player)
+			return;
+		p.getPassenger().remove();
+		p.eject();
+	}
+
 	@EventHandler
 	public static void onInteract(PlayerInteractEvent e) {
 		Player p = e.getPlayer();
-
 		if (p.getItemInHand() == null)
-			return; // CHECK IF ITEM IN HAND IS NOT NULL
-
+			return;
 		ItemStack itemInHand = p.getItemInHand();
-		if (itemInHand.getType().equals(Material.ROTTEN_FLESH)) {
-			if (p.getPassenger() == null)
-				return;
-			if (!(p.getPassenger() instanceof Player))
-				p.getPassenger().remove();
-			p.eject();
-		} else if (itemInHand.getType().equals(Material.MAGMA_CREAM)) {
-			if (p.getPassenger() != null && p.getPassenger().getType() == EntityType.MAGMA_CUBE)
-				return;
-			/* SPAWN MAGMACUBE */
-			MagmaCube magmacube = (MagmaCube) p.getWorld().spawnEntity(getLocation(p), EntityType.MAGMA_CUBE);
-			magmacube.setSize(MOB_SIZE);
-			magmacube.setMaxHealth(100.0D);
-			magmacube.getWorld().playEffect(getLocation(p), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
-
-			scheduleHat(p, magmacube);
-
-		} else if (itemInHand.getType().equals(Material.SLIME_BALL)) {
-			if (p.getPassenger() != null && p.getPassenger().getType() == EntityType.SLIME)
-				return;
-			/* SPAWN SLIME */
-			Slime slime = (Slime) p.getWorld().spawnEntity(getLocation(p), EntityType.SLIME);
-			slime.setSize(MOB_SIZE);
-			slime.getWorld().playEffect(slime.getLocation(), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
-
-			scheduleHat(p, slime);
-		}
+		if (itemInHand.getType().equals(Material.ROTTEN_FLESH))
+			resetRider(p);
+		else if (itemInHand.getType().equals(Material.MAGMA_CREAM))
+			setMagmacubeHat(p);
+		else if (itemInHand.getType().equals(Material.SLIME_BALL))
+			setSlimeHat(p);
 	}
 
 	private static Location getLocation(Player p) {
-		return new Location(p.getWorld(), p.getLocation().getX(), p.getLocation().getY() + 1.5, p.getLocation().getZ());
+		return p.getLocation().add(0.0D, 1.5D, 0.0D);
 	}
 
 	private static Entity checkHead(Player p) {
@@ -118,12 +140,11 @@ public class HatHandler implements Listener {
 
 	private static void scheduleHat(final Player p, final Entity e) {
 		checkHead(p);
-		// p.setPassenger(e);
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(TokenShop.plugin, new Runnable() {
 			@Override
 			public void run() {
 				p.setPassenger(e);
 			}
-		}, 2L);
+		}, 3L);
 	}
 }

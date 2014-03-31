@@ -9,13 +9,11 @@ import org.bukkit.entity.Player;
 public class TokenCommand implements CommandExecutor {
 
 	public static boolean validName(String name) {
-		return name.length() > 2 && name.length() < 17
-				&& !name.matches("(?i).*[^a-z0-9_].*");
+		return name.length() > 2 && name.length() < 17 && !name.matches("(?i).*[^a-z0-9_].*");
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command command,
-			String label, String[] args) {
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
 		if (!(sender instanceof Player)) {
 			sender.sendMessage("This command can only be run by a player.");
@@ -42,9 +40,9 @@ public class TokenCommand implements CommandExecutor {
 						p.sendMessage("Player " + name + " is not online.");
 						return true;
 					}
-					
+
 					MyAPI.giveCoins(player, a);
-					p.sendMessage("§6[§cAquilaMc§6]§c §a"+ a +"§6 coins given to §c"+player.getName());
+					p.sendMessage("§6[§cAquilaMc§6]§c §a" + a + "§6 coins given to §c" + player.getName());
 				} else {
 					MyAPI.giveCoins(p, a);
 				}
@@ -58,7 +56,11 @@ public class TokenCommand implements CommandExecutor {
 			return true;
 		}
 		if (cmd.equals("coins")) {
-			p.sendMessage("§6[§cAquilaMc§6]§c Coin balance: §a" + MyAPI.getCoinCount(p));
+			p.sendMessage("§6[§cAquilaMc§6]§6 Coin balance: §a" + MyAPI.getCoinCount(p));
+			return true;
+		}
+		if (cmd.equals("hatshop")) {
+			p.openInventory(TokenShop.plugin.generateHats(p.getName()));
 			return true;
 		}
 
