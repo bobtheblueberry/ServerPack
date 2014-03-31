@@ -23,6 +23,7 @@ import org.bukkit.entity.Slime;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -42,12 +43,10 @@ public class HatHandler implements Listener {
 	private static void loadHat(final Player p) {
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(TokenShop.plugin, new Runnable() {
 			public void run() {
-				System.out.println("loadhat");
 				Person per = FriendAPI.get(p.getName());
 				if (per == null) return;
 				Value v = per.getVal(KEY);
 				if (v == null) return;
-				System.out.println("set hat " + v.iVal);
 				if (v.equals(SLIME_HAT)) setSlimeHat(p);
 				else if (v.equals(MAGMACUBE_HAT)) setMagmacubeHat(p);
 			}
@@ -81,6 +80,19 @@ public class HatHandler implements Listener {
 	public void onEntityDamage(EntityDamageEvent evt) {
 		Entity e = evt.getEntity();
 		if (e == null) return;
+		EntityType t = e.getType();
+		if (t != EntityType.SLIME && t != EntityType.MAGMA_CUBE && t != EntityType.PLAYER) return;
+		for (Player p : Bukkit.getServer().getOnlinePlayers())
+			if (p.getPassenger() != null && p.getPassenger().getEntityId() == e.getEntityId()) evt.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onEntityDamage(EntityDamageByEntityEvent evt) {
+		// prevent hat mobs from damaging players
+		Entity e = evt.getEntity();
+		Entity hat = evt.getDamager();
+		if (e == null || hat == null) return;
+		
 		EntityType t = e.getType();
 		if (t != EntityType.SLIME && t != EntityType.MAGMA_CUBE && t != EntityType.PLAYER) return;
 		for (Player p : Bukkit.getServer().getOnlinePlayers())

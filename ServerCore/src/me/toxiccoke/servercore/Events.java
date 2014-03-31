@@ -25,16 +25,10 @@ public class Events implements Listener {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
-		Player p = e.getPlayer();
-		e.setJoinMessage(ChatColor.GRAY + "");
-<<<<<<< HEAD
-		
+		e.setJoinMessage(null);
 		Firework f = (Firework) e.getPlayer().getWorld()
 				.spawn(e.getPlayer().getLocation(), Firework.class);
-=======
-
-		Firework f = (Firework) e.getPlayer().getWorld().spawn(e.getPlayer().getLocation(), Firework.class);
->>>>>>> 1c1422caa926070a9f24d2d5bebe3427643e9d42
+		
 
 		FireworkMeta fm = f.getFireworkMeta();
 		fm.addEffect(FireworkEffect.builder().flicker(false).trail(true)
@@ -46,25 +40,7 @@ public class Events implements Listener {
 	}
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		e.setQuitMessage(" ");
+		e.setQuitMessage(null);
 	}
-<<<<<<< HEAD
-	
-    private final ArrayList<String> players = new ArrayList<String>();
-	
-           
-    	   
-       
-       @EventHandler
-       public void onInteract(PlayerInteractEntityEvent e) {
-    	   Player p = e.getPlayer();
-           Player target = (Player) e.getRightClicked();
-           target.setPassenger(p);
-           p.sendMessage(ChatColor.YELLOW + "You're riding " + target.getName());
-             }
-       }
-=======
-
-	private final ArrayList<String> players = new ArrayList<String>();
 }
->>>>>>> 1c1422caa926070a9f24d2d5bebe3427643e9d42
+
