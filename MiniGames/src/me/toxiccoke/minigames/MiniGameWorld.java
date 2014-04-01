@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import me.monowii.mwschematics.Utils;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -11,6 +13,19 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.commands.ClipboardCommands;
+import com.sk89q.worldedit.commands.SchematicCommands;
+import com.sk89q.worldedit.data.DataException;
+import com.sk89q.worldedit.schematic.MCEditSchematicFormat;
+import com.sk89q.worldedit.schematic.SchematicFormat;
 
 public abstract class MiniGameWorld {
 
@@ -47,6 +62,12 @@ public abstract class MiniGameWorld {
 	public abstract boolean join(Player p);
 
 	public abstract void save();
+
+	public void reset() {
+		if (pasteLocation == null) return;
+		if (schematic == null) return;
+		Utils.copySchematic(pasteLocation, new File(MiniGamesPlugin.plugin.getDataFolder(), schematic), true, true);
+	}
 
 	protected YamlConfiguration getSaveYML() {
 		YamlConfiguration yml = new YamlConfiguration();

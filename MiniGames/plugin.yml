@@ -8,4 +8,7 @@ commands:
         permission: minigames.sign
         description: Configures a sign for a minigame world
         usage: /<command> <Game type> <World Name>
-    
+    madmin:
+        permission: minigames.admin
+        description: Configures a minigame world
+        usage: /<command>
