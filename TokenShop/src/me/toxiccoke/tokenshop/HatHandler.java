@@ -97,7 +97,7 @@ public class HatHandler implements Listener {
 		if (!(e instanceof Player))
 			return;
 		for (Player p : Bukkit.getServer().getOnlinePlayers())
-			if (p.getPassenger() != null && p.getPassenger().getEntityId() == hat.getEntityId()) {evt.setCancelled(true);System.out.println("canceled");return;}
+			if (p.getPassenger() != null && p.getPassenger().getEntityId() == hat.getEntityId()) {evt.setCancelled(true);return;}
 	}
 
 	public static void setSlimeHat(Player p) {
