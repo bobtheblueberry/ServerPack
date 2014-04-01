@@ -1,0 +1,11 @@
+name: MiniGames
+version: 1.0
+main: me.toxiccoke.minigames.MiniGamesPlugin
+author: Serge Humphrey
+description: MiniGames plugin
+commands:
+    sign:
+        permission: minigames.sign
+        description: Configures a sign for a minigame world
+        usage: /<command> <Game type> <World Name>
+    

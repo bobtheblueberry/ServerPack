@@ -49,9 +49,9 @@ commands:
     poke:
         usage: /<command> [player]
         description: Give your friends a gay gesture
-    help:
-        usage: /<command> (page)
-        description: Shows help page
+#    help:
+#        usage: /<command> (page)
+#        description: Shows help page
     nick:
         usage: /<command> (nickname)
         description: Changes nickname
