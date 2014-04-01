@@ -59,6 +59,7 @@ public class Commands extends JavaPlugin implements Listener {
 		getCommand("party").setExecutor(p);
 		getCommand("friend").setExecutor(fwends);
 		
+		getCommand("ap").setExecutor(new AdminMenu());
 		FriendAPI.init();
 	}
 

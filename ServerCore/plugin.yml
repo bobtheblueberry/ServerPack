@@ -4,6 +4,7 @@ main: me.toxiccoke.servercore.Commands
 author: toxiccoke
 description: Server Core Commands
 commands:
+    ap:
     gm:
         description: Sets Gamemode
         aliases: [gamemode]
