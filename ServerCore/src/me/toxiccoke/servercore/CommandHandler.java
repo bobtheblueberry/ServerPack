@@ -52,10 +52,8 @@ public class CommandHandler implements CommandExecutor {
 				return true;
 			}
 			boolean fly = p.getAllowFlight();
-			if (fly)
-				p.sendMessage(ChatColor.GRAY + "Fly disabled");
-			else
-				p.sendMessage(ChatColor.GRAY + "Fly enabled");
+			if (fly) p.sendMessage(ChatColor.GRAY + "Fly disabled");
+			else p.sendMessage(ChatColor.GRAY + "Fly enabled");
 			p.setAllowFlight(!fly);
 			return true;
 			// tp command
@@ -74,11 +72,9 @@ public class CommandHandler implements CommandExecutor {
 					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
 					return true;
 				}
-				if (p.teleport(targetPlayer.getLocation()))
-					p.sendMessage(ChatColor.GRAY + "You have teleported to " + ChatColor.GRAY
-							+ targetPlayer.getDisplayName());
-				else
-					p.sendMessage(ChatColor.GRAY + "Teleportation failed (unknown reason)");
+				if (p.teleport(targetPlayer.getLocation())) p.sendMessage(ChatColor.GRAY + "You have teleported to "
+						+ ChatColor.GRAY + targetPlayer.getDisplayName());
+				else p.sendMessage(ChatColor.GRAY + "Teleportation failed (unknown reason)");
 				return true;
 			} else if (args.length == 2) {
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
@@ -92,11 +88,9 @@ public class CommandHandler implements CommandExecutor {
 					return true;
 				}
 
-				if (targetPlayer.teleport(targetPlayer1.getLocation()))
-					targetPlayer.sendMessage(ChatColor.GRAY + "You have been teleported to " + ChatColor.GRAY
-							+ targetPlayer1.getDisplayName());
-				else
-					targetPlayer.sendMessage(ChatColor.GRAY + "Teleportation failed (unknown reason)");
+				if (targetPlayer.teleport(targetPlayer1.getLocation())) targetPlayer.sendMessage(ChatColor.GRAY
+						+ "You have been teleported to " + ChatColor.GRAY + targetPlayer1.getDisplayName());
+				else targetPlayer.sendMessage(ChatColor.GRAY + "Teleportation failed (unknown reason)");
 				return true;
 			}
 			// warn command
@@ -180,9 +174,7 @@ public class CommandHandler implements CommandExecutor {
 			Commands.plugin.saveConfig();
 			p.sendMessage(ChatColor.GRAY + "Spawn set!");
 			return true;
-		}
-		// command spawn
-		if (cmd.getName().equalsIgnoreCase("spawn")) {
+		} else if (cmd.getName().equalsIgnoreCase("spawn")) {
 			if (!sender.hasPermission("sc.spawn")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
 						+ ChatColor.RED + "You dont have acsses to this command");
@@ -198,9 +190,8 @@ public class CommandHandler implements CommandExecutor {
 			double z = getConfig().getDouble("spawn.z");
 			p.teleport(new Location(w, x, y, z));
 			p.sendMessage(ChatColor.GRAY + "Welcome to the spawn!");
-
-		}// kick command
-		if (cmd.getName().equalsIgnoreCase("kick")) {
+			return true;
+		} else if (cmd.getName().equalsIgnoreCase("kick")) {
 			if (!sender.hasPermission("sc.kick")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
 						+ ChatColor.RED + "You dont have acsses to this command");
@@ -221,8 +212,7 @@ public class CommandHandler implements CommandExecutor {
 					ChatColor.GRAY + "Player " + target.getName() + " has been kicked by " + ChatColor.GRAY
 							+ sender.getName() + "!");
 			return true;
-		}// ban command
-		if (cmd.getName().equalsIgnoreCase("ban")) {
+		} else if (cmd.getName().equalsIgnoreCase("ban")) {
 			if (!sender.hasPermission("sc.ban")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
 						+ ChatColor.RED + "You dont have acsses to this command");
@@ -256,13 +246,18 @@ public class CommandHandler implements CommandExecutor {
 			} else if (args.length == 1) {
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
 				if (targetPlayer == null) {
-					sender.sendMessage(ChatColor.RED + "Could not find player " + args[0] + "!");
+					sender.sendMessage(ChatColor.RED + "Could not find player: " + ChatColor.GRAY + args[0]);
+					return true;
+				} else if (targetPlayer.getName().equals(p.getName())) {
+					sender.sendMessage(ChatColor.RED + "You have poked yourself");
+					p.damage(1000.0);
 					return true;
 				}
 				p.sendMessage(ChatColor.GRAY + "You have poked " + ChatColor.GRAY + targetPlayer.getDisplayName());
 				targetPlayer.sendMessage(ChatColor.RED + "POKE!!!");
 				targetPlayer.sendMessage(ChatColor.GRAY + "You have been poked by " + ChatColor.GRAY
 						+ p.getDisplayName());
+				return true;
 			}
 
 			if (!(sender instanceof Player)) {
@@ -292,7 +287,7 @@ public class CommandHandler implements CommandExecutor {
 			this.getConfig().set(p.getName(), nick);
 			Commands.plugin.saveConfig();
 			return true;
-		}
+		} else
 		// help command
 		if (cmd.getName().equalsIgnoreCase("help")) {
 			if (!sender.hasPermission("sc.help")) {
@@ -300,51 +295,47 @@ public class CommandHandler implements CommandExecutor {
 						+ ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
-			if (args.length == 0) {
-				p.sendMessage(ChatColor.YELLOW + "Help & Information:");
-				p.sendMessage(ChatColor.YELLOW + "WebSite: http://aquilamc.comze.com/");
-				p.sendMessage(ChatColor.YELLOW + "Commands:");
-				p.sendMessage(ChatColor.YELLOW + "/lobby - Takes you back to the lobby");
-				p.sendMessage(ChatColor.YELLOW + "/setlobby - Sets lobby spawn");
-				p.sendMessage(ChatColor.YELLOW + "/heal - Heals a specifyed player");
-				p.sendMessage(ChatColor.YELLOW + "/tp - Teleports to a player");
-				p.sendMessage(ChatColor.YELLOW + "/msg - Messages a specifyed player");
-				p.sendMessage(ChatColor.YELLOW + "/fly - Enableds flymode");
-				p.sendMessage(ChatColor.YELLOW + "/gm <0/1/2> - Sets gamemode of player");
-				p.sendMessage(ChatColor.YELLOW + "/party help - Brings up a help menu for friends system");
-				p.sendMessage(ChatColor.YELLOW + "/friend help - Brings up a help menu for party system");
-				p.sendMessage(ChatColor.YELLOW + "/warn - Warns a player on there behaviour");
-				p.sendMessage(ChatColor.YELLOW + "/kick - Kicks a player from the server");
-				p.sendMessage(ChatColor.YELLOW + "/ban - perm bans a player from the server");
-				p.sendMessage(ChatColor.YELLOW + "/day - Sets world time to day");
-				p.sendMessage(ChatColor.YELLOW + "/night - Sets world time to night");
-				p.sendMessage(ChatColor.YELLOW + "/sun - Sets world weather to sunny ");
-				p.sendMessage(ChatColor.YELLOW + "/rain - Sets world weather to rain");
-				p.sendMessage(ChatColor.YELLOW + "/nick - Sets a nicknames to a player");
-				p.sendMessage(ChatColor.YELLOW
-						+ "/poke - Poke the  specifyed player to tell the player your trying to speak to them.");
-				p.sendMessage(ChatColor.YELLOW + "/v - Vanishes u from players");
-				return true;
-
-			} else if (cmd.getName().equalsIgnoreCase("v")) {
-				if (!Commands.plugin.vanished.contains(p)) {
-					for (Player pl : Bukkit.getServer().getOnlinePlayers()) {
-						pl.hidePlayer(p);
-					}
-					Commands.plugin.vanished.add(p);
-					p.sendMessage(ChatColor.GRAY + "You have been Commands.plugin.vanished!");
-					return true;
-				} else {
-					for (Player pl : Bukkit.getServer().getOnlinePlayers()) {
-						pl.showPlayer(p);
-					}
-					Commands.plugin.vanished.remove(p);
-					p.sendMessage(ChatColor.GRAY + "You have been unCommands.plugin.vanished!");
-					return true;
-				}
-
-			}
+			p.sendMessage(ChatColor.YELLOW + "Help & Information:");
+			p.sendMessage(ChatColor.YELLOW + "WebSite: http://aquilamc.comze.com/");
+			p.sendMessage(ChatColor.YELLOW + "Commands:");
+			p.sendMessage(ChatColor.YELLOW + "/lobby - Takes you back to the lobby");
+			p.sendMessage(ChatColor.YELLOW + "/setlobby - Sets lobby spawn");
+			p.sendMessage(ChatColor.YELLOW + "/heal - Heals a specifyed player");
+			p.sendMessage(ChatColor.YELLOW + "/tp - Teleports to a player");
+			p.sendMessage(ChatColor.YELLOW + "/msg - Messages a specifyed player");
+			p.sendMessage(ChatColor.YELLOW + "/fly - Enableds flymode");
+			p.sendMessage(ChatColor.YELLOW + "/gm <0/1/2> - Sets gamemode of player");
+			p.sendMessage(ChatColor.YELLOW + "/party help - Brings up a help menu for friends system");
+			p.sendMessage(ChatColor.YELLOW + "/friend help - Brings up a help menu for party system");
+			p.sendMessage(ChatColor.YELLOW + "/warn - Warns a player on there behaviour");
+			p.sendMessage(ChatColor.YELLOW + "/kick - Kicks a player from the server");
+			p.sendMessage(ChatColor.YELLOW + "/ban - perm bans a player from the server");
+			p.sendMessage(ChatColor.YELLOW + "/day - Sets world time to day");
+			p.sendMessage(ChatColor.YELLOW + "/night - Sets world time to night");
+			p.sendMessage(ChatColor.YELLOW + "/sun - Sets world weather to sunny ");
+			p.sendMessage(ChatColor.YELLOW + "/rain - Sets world weather to rain");
+			p.sendMessage(ChatColor.YELLOW + "/nick - Sets a nicknames to a player");
+			p.sendMessage(ChatColor.YELLOW
+					+ "/poke - Poke the  specifyed player to tell the player your trying to speak to them.");
+			p.sendMessage(ChatColor.YELLOW + "/v - Vanishes u from players");
 			return true;
+		} else if (cmd.getName().equalsIgnoreCase("vanish")) {
+			if (!Commands.plugin.vanished.contains(p)) {
+				for (Player pl : Bukkit.getServer().getOnlinePlayers()) {
+					pl.hidePlayer(p);
+				}
+				Commands.plugin.vanished.add(p);
+				p.sendMessage(ChatColor.GRAY + "You have been vanished!");
+				return true;
+			} else {
+				for (Player pl : Bukkit.getServer().getOnlinePlayers()) {
+					pl.showPlayer(p);
+				}
+				Commands.plugin.vanished.remove(p);
+				p.sendMessage(ChatColor.GRAY + "You have been unvanished!");
+				return true;
+			}
+
 		}
 		return false;
 

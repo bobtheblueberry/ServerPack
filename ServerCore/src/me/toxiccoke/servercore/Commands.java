@@ -52,7 +52,7 @@ public class Commands extends JavaPlugin implements Listener {
 		getCommand("kick").setExecutor(ch);
 		//getCommand("help").setExecutor(ch);
 		getCommand("poke").setExecutor(ch);
-		getCommand("v").setExecutor(ch);
+		getCommand("vanish").setExecutor(ch);
 		getCommand("nick").setExecutor(ch);
 
 		Partys p = new Partys();

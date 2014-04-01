@@ -55,10 +55,10 @@ commands:
     nick:
         usage: /<command> (nickname)
         description: Changes nickname
-    v:
+    vanish:
         usage: /<command>
         description: Vanishes
-        aliases: [vanish]
+        aliases: [v]
     party:
         usage: /<command>
         description: Party Commands
