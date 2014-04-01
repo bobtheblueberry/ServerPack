@@ -55,7 +55,7 @@ public class TokenShop extends JavaPlugin implements Listener {
 		for (Hat h : Hat.hats)
 			if (!b.get(h.refCode))
 				hats.setItem(ind++, createItem(h.mat, 1, (short) 0, h.displayName, "§cPrice: " + h.price));
-
+		
 		hats.setItem(16,
 				createItem(Material.FIRE, 1, (short) 0, Hat.removeHatLabel, "§aClick to remove your current hat"));
 		hats.setItem(17, getCloseButton());

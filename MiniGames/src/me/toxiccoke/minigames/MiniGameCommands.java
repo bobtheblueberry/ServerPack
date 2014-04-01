@@ -1,5 +1,6 @@
 package me.toxiccoke.minigames;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -10,6 +11,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class MiniGameCommands implements CommandExecutor {
@@ -50,7 +53,8 @@ public class MiniGameCommands implements CommandExecutor {
 			return true;
 		} else if (cmd.equals("madmin")) {
 			if (args.length == 0) {
-				p.sendMessage(ChatColor.RED + "/" + label + " <list|set|tp|reset|schematic> (Game Type) (World)");
+				p.sendMessage(ChatColor.RED + "/" + label
+						+ " <list|set|setspawn|tp|reset|schematic> (Game Type) (World)");
 				return true;
 			}
 			if (args.length > 0 && args[0].startsWith("list")) {
@@ -111,10 +115,15 @@ public class MiniGameCommands implements CommandExecutor {
 					minigame.save();
 					p.sendMessage(ChatColor.BLUE + "Schematic set to " + sc);
 					return true;
+				} else if (args[0].equals("setspawn")) {
+					Location l = p.getLocation(), n;
+					minigame.spawnLocations.add(n = new Location(l.getWorld(), Math.round(l.getX()), Math.round(l
+							.getY()), Math.round(l.getZ()),l.getYaw(),l.getPitch()));
+					minigame.save();
+					p.sendMessage(ChatColor.BLUE + "Added spawn location " + getLocationString(n));
+					return true;
 				}
-				
 			}
-
 		}
 
 		return false;

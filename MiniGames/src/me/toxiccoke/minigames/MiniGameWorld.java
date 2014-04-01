@@ -2,6 +2,7 @@ package me.toxiccoke.minigames;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import me.monowii.mwschematics.Utils;
@@ -31,16 +32,16 @@ public abstract class MiniGameWorld {
 
 	protected MiniGame						game;
 	protected int							MAX_PLAYERS	= 24;
-	protected LinkedList<MiniGamePlayer>	players;
 	protected String						schematic;
 	protected Location						pasteLocation, signLocation;
 	protected boolean						broken;
 	protected String						worldName;
+	protected ArrayList<Location>			spawnLocations;
 
 	public MiniGameWorld(MiniGame game, String name) {
-		players = new LinkedList<MiniGamePlayer>();
 		this.game = game;
 		this.worldName = name;
+		spawnLocations = new ArrayList<Location>();
 	}
 
 	public String getGameName() {
@@ -86,6 +87,17 @@ public abstract class MiniGameWorld {
 			yml.set("sign.y", signLocation.getBlockY());
 			yml.set("sign.z", signLocation.getBlockZ());
 		}
+		int i = 0;
+		yml.set("spawns", spawnLocations.size());
+		for (Location l : spawnLocations) {
+			yml.set("spawn" + i + ".x", l.getBlockX());
+			yml.set("spawn" + i + ".y", l.getBlockY());
+			yml.set("spawn" + i + ".z", l.getBlockZ());
+			yml.set("spawn" + i + ".yaw", l.getYaw());
+			yml.set("spawn" + i + ".pitch", l.getPitch());
+
+			i++;
+		}
 		return yml;
 	}
 
@@ -125,6 +137,14 @@ public abstract class MiniGameWorld {
 			if (w != null) signLocation = new Location(w, yml.getInt("sign.x"), yml.getInt("sign.y"),
 					yml.getInt("sign.z"));
 			else System.err.println("Cannot find world " + w);
+		}
+		int spawns = yml.getInt("spawns");
+		if (spawns > 0) spawnLocations.clear();
+		for (int i = 0; i < spawns; i++) {
+			Location l = new Location(Bukkit.getServer().getWorld(yml.getString("world.world")), yml.getDouble("spawn" + i
+					+ ".x"), yml.getDouble("spawn" + i + ".y"), yml.getDouble("spawn" + i + ".z"), (float) yml
+					.getDouble("spawn" + i + ".yaw"), (float) yml.getDouble("spawn" + i + ".pitch"));
+			spawnLocations.add(l);
 		}
 
 		return yml;
