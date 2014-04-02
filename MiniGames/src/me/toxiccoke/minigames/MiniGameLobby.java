@@ -38,13 +38,13 @@ public class MiniGameLobby implements Runnable, Listener {
 		for (MiniGameWorld w : games) {
 			Sign s = w.getSign();
 			if (s == null) continue;
-			s.setLine(0, (w.isJoinable()) ? ChatColor.GREEN + "[Join]" : ChatColor.DARK_RED + "[Not Joinable]");
-			s.setLine(1, ChatColor.DARK_RED + w.getGameName());
-			s.setLine(
-					2,
-					ChatColor.GREEN + "" + w.getPlayerCount() + ChatColor.BLACK + "/" + ChatColor.GRAY
-							+ w.getMaxPlayers());
-			s.setLine(3, ChatColor.DARK_BLUE + w.getWorldName());
+			if (w.isFull())
+				s.setLine(0, ChatColor.BLUE + "[Full]");
+			else
+			s.setLine(0, (w.isJoinable()) ? ChatColor.GREEN + "[Join]" : ChatColor.RED + "[NotJoinable]");
+			s.setLine(1, ChatColor.DARK_GRAY + w.getGameName());
+			s.setLine(2, ChatColor.DARK_GRAY + "" + w.getPlayerCount() + "/" + w.getMaxPlayers());
+			s.setLine(3, ChatColor.DARK_GRAY + w.getWorldName());
 			s.update();
 		}
 	}
@@ -73,7 +73,8 @@ public class MiniGameLobby implements Runnable, Listener {
 			player.sendMessage(ChatColor.GOLD + "That minigame is unavailable.");
 			return;
 		}
-		if (game.join(player)) player.sendMessage(ChatColor.GOLD + "Joining " + game.getGameName());
+		if (game.join(player)) ;// player.sendMessage(ChatColor.GOLD +
+								// "Joining " + game.getGameName());
 		else player.sendMessage(ChatColor.GOLD + "Can't join " + game.getGameName());
 
 	}

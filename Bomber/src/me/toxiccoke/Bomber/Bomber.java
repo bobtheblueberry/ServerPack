@@ -75,17 +75,6 @@ public class Bomber extends JavaPlugin implements Listener {
 
 	}
 
-	@EventHandler
-	public void onPlayerMove(PlayerMoveEvent e) {
-		Player p = e.getPlayer();
-		if ((p.getGameMode() != GameMode.CREATIVE)
-				&& (p.getLocation().subtract(0, 1, 0).getBlock().getType() != Material.AIR) && (!p.isFlying())) {
-			p.setAllowFlight(true);
-			p.getWorld().playEffect(p.getLocation(), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
-
-		}
-	}
-
 	public ItemStack createItem(Material material, int amount, short shrt, String displayname, String lore) {
 		ItemStack item = new ItemStack(material, amount, (short) shrt);
 		ItemMeta meta = item.getItemMeta();

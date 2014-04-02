@@ -4,10 +4,6 @@ main: me.toxiccoke.minigames.MiniGamesPlugin
 author: Serge Humphrey
 description: MiniGames plugin
 commands:
-    sign:
-        permission: minigames.sign
-        description: Configures a sign for a minigame world
-        usage: /<command> <Game type> <World Name>
     madmin:
         permission: minigames.admin
         description: Configures a minigame world

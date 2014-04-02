@@ -14,59 +14,10 @@ public class BomberTeam implements Listener {
 		RED, BLUE
 	}
 
-	private static List<String>	redTeam		= new ArrayList<String>();
-	private static List<String>	blueTeam	= new ArrayList<String>();
+	public TeamType	team;
 
-	public static void addToTeam(TeamType type, Player player) {
-		if (isInTeam(player)) {
-			player.sendMessage(ChatColor.GRAY + "[" + ChatColor.BLUE + "BomberPVP" + ChatColor.GRAY + "]"
-					+ ChatColor.RED + " You are already in a team!");
-			return;
-		}
-		switch (type) {
-		case RED:
-			redTeam.add(player.getName());
-			break;
-		case BLUE:
-			blueTeam.add(player.getName());
-			break;
-
-		}
-		player.sendMessage(ChatColor.GRAY + "[" + ChatColor.BLUE + "BomberPVP" + ChatColor.GRAY + "]" + ChatColor.GREEN
-				+ " Added to " + type.name() + " team!");
-	}
-
-	public static boolean isInTeam(Player player) {
-		return redTeam.contains(player.getName()) || blueTeam.contains(player.getName());
-
-	}
-
-	public static void clearTeams() {
-		redTeam.clear();
-		blueTeam.clear();
-	}
-
-	public static List<String> getRedTeam() {
-		return redTeam;
-
-	}
-
-	public static List<String> getBlueTeam() {
-		return blueTeam;
-	}
-
-	public static List<String> getAllPlayerInTeams() {
-		List<String> combinedTeams = new ArrayList<String>();
-		combinedTeams.addAll(redTeam);
-		combinedTeams.addAll(blueTeam);
-		return combinedTeams;
-
-	}
-
-	public static TeamType getTeamType(Player player) {
-		if (!isInTeam(player)) return null;
-		return (redTeam.contains(player.getName()) ? TeamType.RED : TeamType.BLUE);
-
+	public BomberTeam(TeamType type) {
+		this.team = type;
 	}
 
 }

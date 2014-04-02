@@ -13,7 +13,9 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import com.sk89q.worldedit.CuboidClipboard;
 import com.sk89q.worldedit.EditSession;
@@ -30,13 +32,13 @@ import com.sk89q.worldedit.schematic.SchematicFormat;
 
 public abstract class MiniGameWorld {
 
-	protected MiniGame						game;
-	protected int							MAX_PLAYERS	= 24;
-	protected String						schematic;
-	protected Location						pasteLocation, signLocation;
-	protected boolean						broken;
-	protected String						worldName;
-	protected ArrayList<Location>			spawnLocations;
+	protected MiniGame				game;
+	protected int					MAX_PLAYERS	= 24;
+	protected String				schematic;
+	protected Location				pasteLocation, signLocation, lobbyLocation;
+	protected boolean				broken;
+	protected String				worldName;
+	protected ArrayList<Location>	spawnLocations;
 
 	public MiniGameWorld(MiniGame game, String name) {
 		this.game = game;
@@ -60,7 +62,10 @@ public abstract class MiniGameWorld {
 
 	public abstract boolean isJoinable();
 
+	public abstract boolean isFull();
+
 	public abstract boolean join(Player p);
+	public abstract LinkedList<? extends MiniGamePlayer> getPlayers();
 
 	public abstract void save();
 
@@ -97,6 +102,14 @@ public abstract class MiniGameWorld {
 			yml.set("spawn" + i + ".pitch", l.getPitch());
 
 			i++;
+		}
+		if (lobbyLocation != null) {
+			yml.set("lobby.world", lobbyLocation.getWorld().getName());
+			yml.set("lobby.x", lobbyLocation.getX());
+			yml.set("lobby.y", lobbyLocation.getY());
+			yml.set("lobby.z", lobbyLocation.getZ());
+			yml.set("lobby.yaw", lobbyLocation.getYaw());
+			yml.set("lobby.pitch", lobbyLocation.getPitch());
 		}
 		return yml;
 	}
@@ -138,12 +151,19 @@ public abstract class MiniGameWorld {
 					yml.getInt("sign.z"));
 			else System.err.println("Cannot find world " + w);
 		}
+		world = yml.getString("lobby.world");
+		if (world != null) {
+			World w = Bukkit.getServer().getWorld(world);
+			if (w != null) lobbyLocation = new Location(w, yml.getDouble("lobby.x"), yml.getDouble("lobby.y"),
+					yml.getDouble("lobby.z"), (float) yml.getDouble("lobby.yaw"), (float) yml.getDouble("lobby.pitch"));
+			else System.err.println("Cannot find world " + w);
+		}
 		int spawns = yml.getInt("spawns");
 		if (spawns > 0) spawnLocations.clear();
 		for (int i = 0; i < spawns; i++) {
-			Location l = new Location(Bukkit.getServer().getWorld(yml.getString("world.world")), yml.getDouble("spawn" + i
-					+ ".x"), yml.getDouble("spawn" + i + ".y"), yml.getDouble("spawn" + i + ".z"), (float) yml
-					.getDouble("spawn" + i + ".yaw"), (float) yml.getDouble("spawn" + i + ".pitch"));
+			Location l = new Location(Bukkit.getServer().getWorld(yml.getString("world.world")), yml.getDouble("spawn"
+					+ i + ".x"), yml.getDouble("spawn" + i + ".y"), yml.getDouble("spawn" + i + ".z"),
+					(float) yml.getDouble("spawn" + i + ".yaw"), (float) yml.getDouble("spawn" + i + ".pitch"));
 			spawnLocations.add(l);
 		}
 
@@ -157,4 +177,7 @@ public abstract class MiniGameWorld {
 		if (b.getState() instanceof Sign) return (Sign) b.getState();
 		return null;
 	}
+
+	public abstract void notifyDeath(MiniGamePlayer gp, Entity damager, DamageCause cause);
+	public abstract void notifyDeath(MiniGamePlayer gp, DamageCause cause);
 }

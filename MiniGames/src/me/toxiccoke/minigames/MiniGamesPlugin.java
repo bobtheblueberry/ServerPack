@@ -10,9 +10,10 @@ public class MiniGamesPlugin extends JavaPlugin implements Listener {
 		plugin = this;
 		MiniGameLobby l = new MiniGameLobby();
 		getServer().getPluginManager().registerEvents(l, this);
+		getServer().getPluginManager().registerEvents(new Particles(), this);
+		getServer().getPluginManager().registerEvents(new MiniGameEventHandler(), this);
 
 		MiniGameCommands c = new MiniGameCommands();
-		getCommand("sign").setExecutor(c);
 		getCommand("madmin").setExecutor(c);
 
 	}
