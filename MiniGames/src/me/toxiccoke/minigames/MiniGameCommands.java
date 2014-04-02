@@ -1,5 +1,7 @@
 package me.toxiccoke.minigames;
 
+import me.toxiccoke.tokenshop.TokenShop;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -76,7 +78,8 @@ public class MiniGameCommands implements CommandExecutor {
 				p.sendMessage(ChatColor.RED + "This game world has no paste location set");
 				return true;
 			}
-			p.teleport(minigame.pasteLocation);
+
+			TokenShop.teleportAdvanced(p, minigame.pasteLocation);
 			p.sendMessage(ChatColor.BLUE + "Teleported to paste location");
 			return true;
 		} else if (args[0].equals("reset")) {

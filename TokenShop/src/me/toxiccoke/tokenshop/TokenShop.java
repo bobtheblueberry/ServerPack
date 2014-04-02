@@ -1,9 +1,7 @@
 package me.toxiccoke.tokenshop;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 
 import me.toxiccoke.tokenshop.MyAPI.BooleanArray32;
 
@@ -25,12 +23,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
 
 public class TokenShop extends JavaPlugin implements Listener {
 	public static TokenShop	plugin		= null;
@@ -57,7 +53,7 @@ public class TokenShop extends JavaPlugin implements Listener {
 		for (Hat h : Hat.hats)
 			if (!b.get(h.refCode))
 				hats.setItem(ind++, createItem(h.mat, 1, (short) 0, h.displayName, "§cPrice: " + h.price));
-		
+
 		hats.setItem(16,
 				createItem(Material.FIRE, 1, (short) 0, Hat.removeHatLabel, "§aClick to remove your current hat"));
 		hats.setItem(17, getCloseButton());
@@ -137,21 +133,27 @@ public class TokenShop extends JavaPlugin implements Listener {
 		getCommand("petshop").setExecutor(t);
 	}
 
-	public static void teleportAdvanced(Player player, Location location) {
+	public static void teleportAdvanced(final Player player, final Location location) {
 		Entity e = player.getPassenger();
-		if (e == null) return;
+		if (e == null) { player.teleport(location);return;}
+		if (!(e instanceof Player))
+			e.remove();
 		player.setPassenger(null);
-		player.teleport(location);
-		HatHandler.loadHat(player);
-	}
-	
+		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(TokenShop.plugin, new Runnable() {
+			public void run() {
+				player.teleport(location);
+				HatHandler.loadHat(player);
+			}
+		}, 3L);
+		}
+
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		showScoreboard(player);
 	}
 
-	private static HashMap<String,Scoreboard>	scoreboard = new HashMap<String, Scoreboard>();
+	private static HashMap<String, Scoreboard>	scoreboard	= new HashMap<String, Scoreboard>();
 
 	private static Scoreboard getScoreboard(Player p) {
 		Scoreboard s = scoreboard.get(p.getName());

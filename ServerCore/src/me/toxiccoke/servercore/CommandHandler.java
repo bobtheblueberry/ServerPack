@@ -1,6 +1,7 @@
 package me.toxiccoke.servercore;
 
-import me.toxiccoke.tokenshop.TokenShop;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,11 +12,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.plugin.Plugin;
 
 public class CommandHandler implements CommandExecutor {
 	@EventHandler
@@ -76,7 +75,7 @@ public class CommandHandler implements CommandExecutor {
 					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
 					return true;
 				}
-				TokenShop.teleportAdvanced(p,targetPlayer.getLocation());
+				teleportAdvanced(p, targetPlayer.getLocation());
 				return true;
 			} else if (args.length == 2) {
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
@@ -90,8 +89,7 @@ public class CommandHandler implements CommandExecutor {
 					return true;
 				}
 
-				TokenShop.teleportAdvanced(targetPlayer.getPlayer(),targetPlayer1.getLocation());
-				return true;
+				teleportAdvanced(targetPlayer.getPlayer(), targetPlayer1.getLocation());
 			}
 			// warn command
 		} else if (cmd.getName().equalsIgnoreCase("warn")) {
@@ -188,7 +186,8 @@ public class CommandHandler implements CommandExecutor {
 			double x = getConfig().getDouble("spawn.x");
 			double y = getConfig().getDouble("spawn.y");
 			double z = getConfig().getDouble("spawn.z");
-			p.teleport(new Location(w, x, y, z));
+			Location l = new Location(w, x, y, z);
+			teleportAdvanced(p, l);
 			p.sendMessage(ChatColor.GRAY + "Welcome to the spawn!");
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("kick")) {
@@ -227,9 +226,13 @@ public class CommandHandler implements CommandExecutor {
 				sender.sendMessage(ChatColor.RED + "Could not find player " + args[0] + "!");
 				return true;
 			}
-			target.kickPlayer(ChatColor.RED + "You have been banned!");
-			target.setBanned(true);
-			Bukkit.getServer().getPluginManager().callEvent(new EnforcerEvent(target, Type.BAN));
+			String reason = "";
+			for (int i = 1; i < args.length; i++)
+				reason = reason + " " + args[0];
+
+			target.kickPlayer(ChatColor.RED + "You have been banned!\n" + reason);
+			Bukkit.getServer().getBanList(org.bukkit.BanList.Type.NAME)
+					.addBan(target.getName(), reason, null, p.getName());
 			Bukkit.getServer().broadcastMessage(
 					ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY
 							+ sender.getName() + "!");
@@ -396,5 +399,27 @@ public class CommandHandler implements CommandExecutor {
 
 	FileConfiguration getConfig() {
 		return Commands.plugin.getConfig();
+	}
+
+	private boolean teleportAdvanced(Player player, Location l) {
+		if (!_teleportAdvanced(player, l)) return player.teleport(l);
+		return true;
+	}
+
+	private boolean _teleportAdvanced(Player player, Location l) {
+
+		for (Plugin p : Bukkit.getPluginManager().getPlugins())
+			if (p.getName().equalsIgnoreCase("TokenShop")) {
+				try {
+					Method m = p.getClass().getMethod("teleportAdvanced", Player.class, Location.class);
+					m.invoke(p, player, l);
+					return true;
+				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException e) {
+					e.printStackTrace();
+					return false;
+				}
+			}
+		return false;
 	}
 }
