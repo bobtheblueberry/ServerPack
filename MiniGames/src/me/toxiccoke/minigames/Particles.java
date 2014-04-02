@@ -19,7 +19,7 @@ public class Particles implements Listener {
 				&& (p.getLocation().subtract(0, 1, 0).getBlock().getType() != Material.AIR) && (!p.isFlying())) {
 			for (MiniGameWorld w : MiniGameLobby.lobby.games)
 				for (MiniGamePlayer gp : w.getPlayers())
-					if (gp.player.getName().equals(e.getPlayer().getName()))
+					if (gp.player.equals(e.getPlayer().getName()))
 					{
 						Material m = gp.getFeetParticle();
 						if (m != null)

@@ -70,8 +70,8 @@ public class BomberGameWorld extends MiniGameWorld {
 			players.add(bgp);
 		} else bgp = getPlayer(p.getName());
 
-		// p.teleport(getSpawn(bgp.team.team));
-		p.teleport(lobbyLocation);
+		 p.teleport(getSpawn(bgp.team.team));
+		//p.teleport(lobbyLocation);
 		p.setGameMode(GameMode.ADVENTURE);
 		p.sendMessage(ChatColor.YELLOW + "Joined Bomber");
 		if (bgp.team.team == TeamType.BLUE) p.sendMessage(ChatColor.DARK_BLUE + "You are in the blue team");

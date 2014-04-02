@@ -22,7 +22,7 @@ public class MiniGameEventHandler implements Listener {
 			return;
 		for (MiniGameWorld m : MiniGameLobby.lobby.games)
 			for (MiniGamePlayer gp : m.getPlayers())
-				if (gp.player.getName().equals(player.getName())) {
+				if (gp.player.equals(player.getName())) {
 					m.notifyDeath(gp, event.getDamager(), event.getCause());
 					event.setCancelled(true);
 					return;
@@ -40,7 +40,7 @@ public class MiniGameEventHandler implements Listener {
 			return;
 		for (MiniGameWorld m : MiniGameLobby.lobby.games)
 			for (MiniGamePlayer gp : m.getPlayers())
-				if (gp.player.getName().equals(player.getName())) {
+				if (gp.player.equals(player.getName())) {
 					m.notifyDeath(gp, event.getCause());
 					event.setCancelled(true);
 					return;

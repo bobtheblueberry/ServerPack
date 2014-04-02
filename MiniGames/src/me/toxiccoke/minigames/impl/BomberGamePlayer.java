@@ -16,7 +16,7 @@ public class BomberGamePlayer extends MiniGamePlayer {
 	}
 
 	public String getName() {
-		return player.getName();
+		return player;
 	}
 
 	@Override
