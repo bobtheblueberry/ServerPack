@@ -42,7 +42,7 @@ public class HatHandler implements Listener {
 	private static final Value	SLIME_HAT		= new Value(1);
 	private static final Value	MAGMACUBE_HAT	= new Value(2);
 
-	private static void loadHat(final Player p) {
+	protected static void loadHat(final Player p) {
 		Person per = FriendAPI.get(p.getName());
 		if (per == null) return;
 		final Value v = per.getVal(KEY);

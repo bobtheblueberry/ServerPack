@@ -9,7 +9,9 @@ import me.toxiccoke.tokenshop.MyAPI.BooleanArray32;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -135,6 +137,14 @@ public class TokenShop extends JavaPlugin implements Listener {
 		getCommand("petshop").setExecutor(t);
 	}
 
+	public static void teleportAdvanced(Player player, Location location) {
+		Entity e = player.getPassenger();
+		if (e == null) return;
+		player.setPassenger(null);
+		player.teleport(location);
+		HatHandler.loadHat(player);
+	}
+	
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();

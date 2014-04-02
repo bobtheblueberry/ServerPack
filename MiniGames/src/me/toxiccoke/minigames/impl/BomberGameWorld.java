@@ -15,6 +15,7 @@ import org.bukkit.scoreboard.Team;
 import me.toxiccoke.minigames.MiniGamePlayer;
 import me.toxiccoke.minigames.MiniGameWorld;
 import me.toxiccoke.minigames.impl.BomberTeam.TeamType;
+import me.toxiccoke.tokenshop.TokenShop;
 
 public class BomberGameWorld extends MiniGameWorld {
 
@@ -116,14 +117,14 @@ public class BomberGameWorld extends MiniGameWorld {
 		}
 
 		gp.getPlayer().setHealth(((Damageable) gp.getPlayer()).getMaxHealth());
-		gp.getPlayer().teleport(getSpawn(((BomberGamePlayer) gp).team.team));
+		TokenShop.teleportAdvanced(gp.getPlayer(), getSpawn(((BomberGamePlayer) gp).team.team));
 	}
 
 	@Override
 	public void notifyDeath(MiniGamePlayer gp, DamageCause cause) {
 		gp.getPlayer().sendMessage(ChatColor.GOLD + "You died!");
 		gp.getPlayer().setHealth(((Damageable) gp.getPlayer()).getMaxHealth());
-		gp.getPlayer().teleport(getSpawn(((BomberGamePlayer) gp).team.team));
+		TokenShop.teleportAdvanced(gp.getPlayer(), getSpawn(((BomberGamePlayer) gp).team.team));
 	}
 
 }

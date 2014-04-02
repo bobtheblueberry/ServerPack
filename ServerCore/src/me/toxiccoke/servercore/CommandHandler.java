@@ -1,5 +1,7 @@
 package me.toxiccoke.servercore;
 
+import me.toxiccoke.tokenshop.TokenShop;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -74,17 +76,7 @@ public class CommandHandler implements CommandExecutor {
 					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
 					return true;
 				}
-				if (p.teleport(targetPlayer.getLocation())) p.sendMessage(ChatColor.GRAY + "You have teleported to "
-						+ ChatColor.GRAY + targetPlayer.getDisplayName());
-				else {
-					p.sendMessage(ChatColor.GRAY + "Teleportation failed (unknown reason)");
-
-					org.bukkit.event.player.PlayerTeleportEvent event = new org.bukkit.event.player.PlayerTeleportEvent(
-							p, p.getLocation(), targetPlayer.getLocation(), TeleportCause.PLUGIN);
-					Bukkit.getServer().getPluginManager().callEvent(event);
-					if (event.isCancelled()) p.sendMessage("canceled " + event.getPlayer());
-					else p.sendMessage("not canceled");
-				}
+				TokenShop.teleportAdvanced(p,targetPlayer.getLocation());
 				return true;
 			} else if (args.length == 2) {
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
@@ -97,8 +89,8 @@ public class CommandHandler implements CommandExecutor {
 					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[1]);
 					return true;
 				}
-				if (targetPlayer.teleport(targetPlayer1.getLocation())) targetPlayer.sendMessage(ChatColor.GRAY
-						+ "You have been teleported to " + ChatColor.GRAY + targetPlayer1.getDisplayName());
+
+				TokenShop.teleportAdvanced(targetPlayer.getPlayer(),targetPlayer1.getLocation());
 				return true;
 			}
 			// warn command
