@@ -104,6 +104,7 @@ public class EventHandlers implements Listener {
 		}
 		if (!h.special) {
 			p.getInventory().setHelmet(h.hat());
+			HatHandler.setNormalHat(p.getName(), h.refCode);
 			HatHandler.resetHat(p);
 		} else {
 			p.getInventory().setHelmet(new ItemStack(Material.AIR, 1));

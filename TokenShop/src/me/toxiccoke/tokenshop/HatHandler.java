@@ -43,12 +43,18 @@ public class HatHandler implements Listener {
 	private static final Value	MAGMACUBE_HAT	= new Value(2);
 
 	private static void loadHat(final Player p) {
+		Person per = FriendAPI.get(p.getName());
+		if (per == null) return;
+		final Value v = per.getVal(KEY);
+		if (v == null) return;
+		if (v.iVal < 0) {
+			Hat h = Hat.getHat(-v.iVal);
+			if (h != null)
+				p.getInventory().setHelmet(h.hat());
+			return;
+		}
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(TokenShop.plugin, new Runnable() {
 			public void run() {
-				Person per = FriendAPI.get(p.getName());
-				if (per == null) return;
-				Value v = per.getVal(KEY);
-				if (v == null) return;
 				if (v.equals(SLIME_HAT)) setSlimeHat(p);
 				else if (v.equals(MAGMACUBE_HAT)) setMagmacubeHat(p);
 			}
@@ -93,12 +99,18 @@ public class HatHandler implements Listener {
 		if (t == null || (t.getType() != EntityType.SLIME && t.getType() != EntityType.MAGMA_CUBE)) return;
 		t.remove();
 	}
-
+	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent evt) {
 		loadHat(evt.getPlayer());
 	}
 
+	public static void setNormalHat(String player, int ref) {
+		Person per = FriendAPI.getAdd(player);
+		per.setVal(KEY, new Value(-ref));
+	}
+	
+	
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent evt) {
 		Entity e = evt.getEntity();

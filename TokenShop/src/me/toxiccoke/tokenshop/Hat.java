@@ -52,4 +52,11 @@ public class Hat {
 				return h;
 		return null;
 	}
+	
+	public static Hat getHat(int ref) {
+		for (Hat h : hats)
+			if (h.refCode == ref)
+				return h;
+		return null;
+	}
 }
