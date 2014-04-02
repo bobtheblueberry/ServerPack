@@ -159,11 +159,11 @@ public class HatHandler implements Listener {
 	}
 
 	public static void resetRider(Player p) {
+		Person per = FriendAPI.get(p.getName());
+		if (per != null) per.setVal(KEY, NO_HAT);
 		if (p.getPassenger() == null) return;
 		if (!(p.getPassenger() instanceof Player)) p.getPassenger().remove();
 		p.eject();
-		Person per = FriendAPI.get(p.getName());
-		if (per != null) per.setVal(KEY, NO_HAT);
 	}
 
 	/**
