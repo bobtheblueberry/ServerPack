@@ -25,10 +25,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -52,7 +54,12 @@ public class HatHandler implements Listener {
 			}
 		}, 10L);
 	}
-
+	
+	@EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+		loadHat(event.getPlayer());
+	}
+    	 
 	// Riding players
 	@EventHandler
 	public void onInteract(PlayerInteractEntityEvent e) {
@@ -60,14 +67,30 @@ public class HatHandler implements Listener {
 		if (e.getRightClicked() == null || !(e.getRightClicked() instanceof Player)) return;
 		if (p.getVehicle() != null) return;
 		Player target = (Player) e.getRightClicked();
+		// no riding your rider
+		if (p.getPassenger() != null && p.getPassenger() instanceof Player && ((Player)p.getPassenger()).getName() == target.getName())
+		{
+			p.sendMessage(ChatColor.YELLOW + "You can't do that!");
+			return;
+		}
 		scheduleHat(target, p);
 		p.sendMessage(ChatColor.YELLOW + "You're riding " + target.getName());
+	}
+	
+	//remove mob hat
+	@EventHandler
+	public void onPlayerDeath(PlayerDeathEvent e) {
+		Player p = e.getEntity();
+		Entity passenger = p.getPassenger();
+		if (passenger == null || (passenger.getType() != EntityType.SLIME && passenger.getType() != EntityType.MAGMA_CUBE))
+			return;
+		passenger.remove();
 	}
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent evt) {
 		Entity t = evt.getPlayer().getPassenger();
-		if (t == null) return;
+		if (t == null || (t.getType() != EntityType.SLIME && t.getType() != EntityType.MAGMA_CUBE)) return;
 		t.remove();
 	}
 
