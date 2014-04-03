@@ -90,6 +90,7 @@ public class CommandHandler implements CommandExecutor {
 				}
 
 				teleportAdvanced(targetPlayer.getPlayer(), targetPlayer1.getLocation());
+				return true;
 			}
 			// warn command
 		} else if (cmd.getName().equalsIgnoreCase("warn")) {

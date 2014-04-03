@@ -167,4 +167,6 @@ public abstract class MiniGameWorld {
 
 	public abstract void notifyDeath(MiniGamePlayer gp, Entity damager, DamageCause cause);
 	public abstract void notifyDeath(MiniGamePlayer gp, DamageCause cause);
+
+	public abstract void notifyQuitGame(MiniGamePlayer gp);
 }
