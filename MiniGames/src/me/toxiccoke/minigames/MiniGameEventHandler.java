@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 
 public class MiniGameEventHandler implements Listener {
 
@@ -45,7 +46,6 @@ public class MiniGameEventHandler implements Listener {
 					return;
 				}
 	}
-
 	@EventHandler
 	public void onEntityQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();

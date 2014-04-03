@@ -3,6 +3,7 @@ package me.toxiccoke.minigames;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Damageable;
@@ -19,7 +20,10 @@ public abstract class MiniGamePlayer {
 		this.originalPlayer = new OriginalPlayer(p);
 		p.getInventory().setArmorContents(null);
 		p.getInventory().clear();
-		
+		p.setExhaustion(0);
+		p.setFireTicks(0);
+		p.setExp(0);
+		p.setHealth(((Damageable)p).getMaxHealth());
 	}
 
 	public abstract Material getFeetParticle();
@@ -41,6 +45,7 @@ public abstract class MiniGamePlayer {
 		float		xp;
 		ItemStack[]	inv;
 		ItemStack[]	armor;
+		GameMode gm;
 
 		public OriginalPlayer(Player p) {
 			inv = p.getInventory().getContents();
@@ -49,6 +54,7 @@ public abstract class MiniGamePlayer {
 			health = ((Damageable) p).getHealth();
 			hunger = p.getExhaustion();
 			xp = p.getExp();
+			gm = p.getGameMode();
 		}
 
 		private void restorePlayer(Player p) {
@@ -57,6 +63,7 @@ public abstract class MiniGamePlayer {
 			p.setHealth(health);
 			p.setExhaustion(hunger);
 			p.setExp(xp);
+			p.setGameMode(gm);
 			TokenShop.teleportAdvanced(p, location);
 		}
 

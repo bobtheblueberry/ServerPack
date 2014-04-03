@@ -14,6 +14,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.MiniGamePlayer;
 import me.toxiccoke.minigames.MiniGameWorld;
 import me.toxiccoke.minigames.impl.BomberTeam.TeamType;
@@ -23,6 +24,7 @@ public class BomberGameWorld extends MiniGameWorld {
 
 	private LinkedList<BomberGamePlayer>	players;
 	private BomberLobbyTimer				lobbyTimer;
+	private GameEndTimer					endTimer;
 	boolean									isStarted;
 
 	public BomberGameWorld(BomberGame g, String worldName) {
@@ -110,7 +112,7 @@ public class BomberGameWorld extends MiniGameWorld {
 		for (BomberGamePlayer p : players)
 			TokenShop.teleportAdvanced(p.getPlayer(), getSpawn(p.team.team));
 		sendPlayersMessage(ChatColor.YELLOW + "Game Started!");
-		sendPlayersMessage(ChatColor.YELLOW + "Game Ends in <infinity + 1>");
+		endTimer = new GameEndTimer(this, 1);
 		isStarted = true;
 	}
 
@@ -178,12 +180,12 @@ public class BomberGameWorld extends MiniGameWorld {
 	@Override
 	public void notifyQuitGame(MiniGamePlayer gp) {
 		removePlayer(gp);
-		checkNoPlayers();
 	}
 
 	private void removePlayer(MiniGamePlayer gp) {
 		players.remove(gp);
 		gp.restorePlayer();
+		checkNoPlayers();
 	}
 
 	private void checkNoPlayers() {
@@ -192,14 +194,39 @@ public class BomberGameWorld extends MiniGameWorld {
 	}
 
 	public void reset() {
+		players.clear();
 		if (lobbyTimer != null) lobbyTimer.cancelTimer();
+		if (endTimer != null) endTimer.cancelTimer();
 		lobbyTimer = null;
+		endTimer = null;
 		super.reset();
 	}
 
 	private void sendPlayersMessage(String msg) {
 		for (BomberGamePlayer p : players)
 			p.getPlayer().sendMessage(msg);
+	}
+
+	private void endGame() {
+		sendPlayersMessage(ChatColor.GOLD + "Game has ended!");
+		for (BomberGamePlayer plr : players) {
+			plr.getPlayer().sendMessage("You lost. Everyone loses.");
+			plr.restorePlayer();
+		}
+		reset();
+	}
+
+	@Override
+	public void endUpdate(int minutes) {
+		if (minutes > 1) sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minutes.");
+		else if (minutes > 0)sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minute.");
+		else endGame();
+	}
+	
+	public void notifyLeaveCommand(MiniGamePlayer player) {
+		Player p = player.getPlayer();
+		p.sendMessage(ChatColor.GOLD + "Leaving Bomber");
+		removePlayer(player);
 	}
 
 }

@@ -23,6 +23,10 @@ public class MiniGameCommands implements CommandExecutor {
 		}
 		Player p = (Player) sender;
 		String cmd = command.getName().toLowerCase();
+		if (cmd.equals("leave")) {
+			leave(p,args);
+			return true;
+		}
 		if (!cmd.equals("madmin")) return false;
 
 		if (args.length == 0) {
@@ -118,6 +122,7 @@ public class MiniGameCommands implements CommandExecutor {
 		return false;
 	}
 
+
 	private String getLocationString(Location l) {
 		return "World: " + l.getWorld().getName() + " X: " + l.getX() + " Y: " + l.getY() + " Z: " + l.getZ();
 	}
@@ -134,4 +139,12 @@ public class MiniGameCommands implements CommandExecutor {
 		return null;
 	}
 
+	private void leave(Player p, String[] args) {
+		for (MiniGameWorld m : MiniGameLobby.lobby.games)
+			for (MiniGamePlayer gp : m.getPlayers())
+				if(gp.player.equals(p.getName())) {
+					m.notifyLeaveCommand(gp);
+					return;
+				}
+	}
 }

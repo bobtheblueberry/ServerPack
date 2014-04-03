@@ -9,3 +9,4 @@ commands:
         permission: minigames.admin
         description: Configures a minigame world
         usage: /<command>
+    leave:

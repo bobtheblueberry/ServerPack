@@ -169,4 +169,8 @@ public abstract class MiniGameWorld {
 	public abstract void notifyDeath(MiniGamePlayer gp, DamageCause cause);
 
 	public abstract void notifyQuitGame(MiniGamePlayer gp);
+
+	public abstract void endUpdate(int minutesLeft);
+
+	public abstract void notifyLeaveCommand(MiniGamePlayer gp);
 }
