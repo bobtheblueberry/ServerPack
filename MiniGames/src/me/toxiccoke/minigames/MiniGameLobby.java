@@ -26,21 +26,32 @@ public class MiniGameLobby implements Runnable, Listener {
 
 		games.add(new BomberGameWorld("Amazon"));
 		// 20 ticks per second
-		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, this, 0L, 2L);
+		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, this, 0L, 20L);
 	}
 
 	public void updateSigns() {
 		for (MiniGameWorld w : games) {
 			Sign s = w.getSign();
 			if (s == null) continue;
-			if (w.isFull())
-				s.setLine(0, ChatColor.BLUE + "[Full]");
-			else
-			s.setLine(0, (w.isJoinable()) ? ChatColor.GREEN + "[Join]" : ChatColor.RED + "[NotJoinable]");
-			s.setLine(1, ChatColor.DARK_GRAY + w.getGameName());
-			s.setLine(2, ChatColor.DARK_GRAY + "" + w.getPlayerCount() + "/" + w.getMaxPlayers());
-			s.setLine(3, ChatColor.DARK_GRAY + w.getWorldName());
+			String[] old = w.getSignText();
+			String[] newText = new String[4];
+			if (w.isFull()) newText[0] = ChatColor.BLUE + "[Full]";
+			else newText[0] = (w.isJoinable()) ? ChatColor.GREEN + "[Join]" : ChatColor.RED + "[NotJoinable]";
+			newText[1] = ChatColor.DARK_GRAY + w.getGameName();
+			newText[2] = ChatColor.DARK_GRAY + "" + w.getPlayerCount() + "/" + w.getMaxPlayers();
+			newText[3] = ChatColor.DARK_GRAY + w.getWorldName();
+
+			boolean changed = false || old == null;
+			if (old != null) for (int i = 0; i < 4; i++)
+				if (!newText[i].equals(old[i])) {
+					changed = true;
+					break;
+				}
+			if (!changed) return; 
+			for (int i = 0; i < 4; i++)
+				s.setLine(i, newText[i]);
 			s.update();
+			w.setSignText(newText);
 		}
 	}
 

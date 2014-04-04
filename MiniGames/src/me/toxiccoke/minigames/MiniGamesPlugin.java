@@ -17,5 +17,13 @@ public class MiniGamesPlugin extends JavaPlugin implements Listener {
 		getCommand("madmin").setExecutor(c);
 		getCommand("leave").setExecutor(c);
 	}
+	
+	public void onDisable() {
+		for (MiniGameWorld m : MiniGameLobby.lobby.games)
+			for (MiniGamePlayer gp : m.getPlayers())
+					m.notifyQuitGame(gp);
+				
+	
+	}
 
 }

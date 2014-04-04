@@ -2,6 +2,7 @@ package me.toxiccoke.minigames.impl;
 
 import java.util.LinkedList;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.MiniGamePlayer;
 import me.toxiccoke.minigames.MiniGameWorld;
+import me.toxiccoke.minigames.MiniGamesPlugin;
 import me.toxiccoke.minigames.impl.BomberTeam.TeamType;
 import me.toxiccoke.tokenshop.TokenShop;
 
@@ -71,46 +73,58 @@ public class BomberGameWorld extends MiniGameWorld {
 			}
 
 		BomberGamePlayer bgp;
+		boolean joined = false;
 		if (!isInGame) {
 			if (players.size() >= MAX_PLAYERS) return false;
 			BomberTeam t = getTeam();
 			bgp = new BomberGamePlayer(p, t);
 			players.add(bgp);
-			initPlayer(p);
-			// lobby timer
-			if (players.size() == 2 && lobbyTimer == null) {
-				lobbyTimer = new BomberLobbyTimer(this);
-			} else if (players.size() == MAX_PLAYERS) {
-				lobbyTimer.countdown = 2;
-				startGame();
-			}
+			initPlayer(p, t.team);
+			joined = true;
 		} else bgp = getPlayer(p.getName());
 
 		if (!isStarted) TokenShop.teleportAdvanced(p, lobbyLocation);
 		else TokenShop.teleportAdvanced(p, getSpawn(getPlayer(p.getName()).team.team));
-		p.setGameMode(GameMode.ADVENTURE);
 		p.sendMessage(ChatColor.YELLOW + "Joined Bomber! World: " + ChatColor.GREEN + worldName);
 		if (bgp.team.team == TeamType.BLUE) p.sendMessage(ChatColor.DARK_BLUE + "You are in the blue team");
 		else p.sendMessage(ChatColor.DARK_RED + "You are in the red team");
+		if (joined) {
+			// lobby timer
+			if (players.size() == 2 && lobbyTimer == null) {
+				lobbyTimer = new BomberLobbyTimer(this);
+			} else if (players.size() == MAX_PLAYERS) {
+				lobbyTimer.countdown = 10;
+				startGame();
+			}
+		}
 		return true;
 	}
 
 	@SuppressWarnings("deprecation")
-	private void initPlayer(Player p) {
+	private void initPlayer(final Player p, TeamType t) {
 		Inventory i = p.getInventory();
 		ItemStack[] s = new ItemStack[] { new ItemStack(Material.DIAMOND_SWORD, 1), new ItemStack(Material.BOW, 1),
 				new ItemStack(Material.ARROW, 25), new ItemStack(Material.APPLE, 12) };
 		i.addItem(s);
+		p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (t == TeamType.BLUE) ? (short) 11 : (short) 14));
 		p.updateInventory();
-
 		p.setHealth(((Damageable) p).getMaxHealth());
+		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
+			
+			@Override
+			public void run() {
+				p.setGameMode(GameMode.ADVENTURE);
+			}
+		},10);
 	}
 
 	private void startGame() {
 		if (isStarted) return;
 
-		for (BomberGamePlayer p : players)
+		for (BomberGamePlayer p : players) {
+			p.getPlayer().setFoodLevel(20);
 			TokenShop.teleportAdvanced(p.getPlayer(), getSpawn(p.team.team));
+		}
 		sendPlayersMessage(ChatColor.YELLOW + "Game Started!");
 		endTimer = new GameEndTimer(this, 1);
 		isStarted = true;
@@ -155,7 +169,7 @@ public class BomberGameWorld extends MiniGameWorld {
 			enemy = dmg.getName();
 		}
 
-		p.setHealth(((Damageable) p).getMaxHealth());
+		undeath(p);
 		TokenShop.teleportAdvanced(p, getSpawn(((BomberGamePlayer) gp).team.team));
 		sendPlayersMessage(ChatColor.ITALIC + "" + ChatColor.GRAY + p.getName() + " was killed by " + enemy);
 	}
@@ -164,17 +178,28 @@ public class BomberGameWorld extends MiniGameWorld {
 	public void notifyDeath(MiniGamePlayer gp, DamageCause cause) {
 		Player p = gp.getPlayer();
 		p.sendMessage(ChatColor.GOLD + "You died mysteriously!");
-		p.setHealth(((Damageable) gp.getPlayer()).getMaxHealth());
+		undeath(p);
 		TokenShop.teleportAdvanced(p, getSpawn(((BomberGamePlayer) gp).team.team));
 		sendPlayersMessage(ChatColor.ITALIC + "" + ChatColor.GRAY + p.getName() + " died.");
 	}
 
+	private void undeath(Player p) {
+		p.setHealth(((Damageable) p.getPlayer()).getMaxHealth());
+		p.setFoodLevel(20);
+	}
+
 	public void lobbyUpdate(int secondsLeft) {
+		setPlayerXp(secondsLeft);
 		if (secondsLeft <= 0) {
 			startGame();
-		} else {
+		} else if (secondsLeft % 10 == 0) {
 			sendPlayersMessage(ChatColor.YELLOW + "Game starting in " + secondsLeft + " seconds...");
 		}
+	}
+
+	private void setPlayerXp(int levels) {
+		for (MiniGamePlayer p : players)
+			p.getPlayer().setLevel(levels);
 	}
 
 	@Override
@@ -220,14 +245,19 @@ public class BomberGameWorld extends MiniGameWorld {
 	@Override
 	public void endUpdate(int minutes) {
 		if (minutes > 1) sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minutes.");
-		else if (minutes > 0)sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minute.");
+		else if (minutes > 0) sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minute.");
 		else endGame();
 	}
-	
+
 	public void notifyLeaveCommand(MiniGamePlayer player) {
 		Player p = player.getPlayer();
 		p.sendMessage(ChatColor.GOLD + "Leaving Bomber");
 		removePlayer(player);
+	}
+
+	@Override
+	public boolean allowDamage(MiniGamePlayer gp) {
+		return isStarted;
 	}
 
 }

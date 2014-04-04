@@ -164,6 +164,15 @@ public abstract class MiniGameWorld {
 		if (b.getState() instanceof Sign) return (Sign) b.getState();
 		return null;
 	}
+	
+	String[] signText = null;
+	protected String[] getSignText()
+	{
+		return signText;
+	}
+	protected void setSignText(String[] text) {
+		signText = text;
+	}
 
 	public abstract void notifyDeath(MiniGamePlayer gp, Entity damager, DamageCause cause);
 	public abstract void notifyDeath(MiniGamePlayer gp, DamageCause cause);
@@ -173,4 +182,6 @@ public abstract class MiniGameWorld {
 	public abstract void endUpdate(int minutesLeft);
 
 	public abstract void notifyLeaveCommand(MiniGamePlayer gp);
+
+	public abstract boolean allowDamage(MiniGamePlayer gp);
 }

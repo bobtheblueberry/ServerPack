@@ -21,8 +21,10 @@ public abstract class MiniGamePlayer {
 		p.getInventory().setArmorContents(null);
 		p.getInventory().clear();
 		p.setExhaustion(0);
+		p.setFoodLevel(20);
 		p.setFireTicks(0);
 		p.setExp(0);
+		p.setLevel(0);
 		p.setHealth(((Damageable)p).getMaxHealth());
 	}
 
@@ -41,7 +43,8 @@ public abstract class MiniGamePlayer {
 	class OriginalPlayer {
 		Location	location;
 		double		health;
-		float		hunger;
+		int		hunger;
+		int xpLevel;
 		float		xp;
 		ItemStack[]	inv;
 		ItemStack[]	armor;
@@ -52,8 +55,9 @@ public abstract class MiniGamePlayer {
 			armor = p.getInventory().getArmorContents();
 			location = p.getLocation();
 			health = ((Damageable) p).getHealth();
-			hunger = p.getExhaustion();
+			hunger = p.getFoodLevel();
 			xp = p.getExp();
+			xpLevel = p.getLevel();
 			gm = p.getGameMode();
 		}
 
@@ -61,8 +65,9 @@ public abstract class MiniGamePlayer {
 			p.getInventory().setContents(inv);
 			p.getInventory().setArmorContents(armor);
 			p.setHealth(health);
-			p.setExhaustion(hunger);
+			p.setFoodLevel(hunger);
 			p.setExp(xp);
+			p.setLevel(xpLevel);
 			p.setGameMode(gm);
 			TokenShop.teleportAdvanced(p, location);
 		}

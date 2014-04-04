@@ -31,7 +31,7 @@ public class MiniGameCommands implements CommandExecutor {
 
 		if (args.length == 0) {
 			p.sendMessage(ChatColor.RED + "/" + label
-					+ " <sign|list|set|setspawn|setlobby|tp|reset|schematic> (Game Type) (World)");
+					+ " <setsign|list|setpaste|setspawn|setlobby|tp|reset|schematic> (Game Type) (World)");
 			return true;
 		}
 		if (args.length > 0 && args[0].startsWith("list")) {
@@ -56,7 +56,7 @@ public class MiniGameCommands implements CommandExecutor {
 			p.sendMessage(ChatColor.RED + "Cannot find that minigame world. Do /madmin list to show minigame worlds.");
 			return true;
 		}
-		if (args[0].equals("sign")) {
+		if (args[0].equals("setsign")) {
 			Block b = getTargetBlock(p, 5);
 			if (b == null || !(b.getState() instanceof Sign)) {
 				p.sendMessage(ChatColor.RED + "You are not looking at a sign");
@@ -64,9 +64,10 @@ public class MiniGameCommands implements CommandExecutor {
 			}
 			minigame.signLocation = b.getLocation();
 			minigame.save();
+			minigame.setSignText(null);//trigger reset
 			p.sendMessage(ChatColor.BLUE + "Sign Changed");
 			return true;
-		} else if (args[0].equals("set")) {
+		} else if (args[0].equals("setpaste")) {
 			Location l = p.getLocation();
 			minigame.pasteLocation = new Location(l.getWorld(), Math.round(l.getX()), Math.round(l.getY()),
 					Math.round(l.getZ()));
