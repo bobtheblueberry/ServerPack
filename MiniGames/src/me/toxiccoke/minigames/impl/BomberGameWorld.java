@@ -241,15 +241,11 @@ public class BomberGameWorld extends MiniGameWorld {
 		removePlayer(gp);
 	}
 
-	private void removePlayer(MiniGamePlayer gp, boolean check) {
+	private void removePlayer(MiniGamePlayer gp) {
 		players.remove(gp);
 		gp.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		gp.restorePlayer();
-		if (check) checkNoPlayers();
-	}
-
-	private void removePlayer(MiniGamePlayer gp) {
-		removePlayer(gp, true);
+		checkNoPlayers();
 	}
 
 	private void checkNoPlayers() {
@@ -277,7 +273,8 @@ public class BomberGameWorld extends MiniGameWorld {
 		sendPlayersMessage(ChatColor.GOLD + "Game has ended!");
 		for (BomberGamePlayer plr : players) {
 			plr.getPlayer().sendMessage("You lost. Everyone loses.");
-			removePlayer(plr, false);
+			plr.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+			plr.restorePlayer();
 		}
 		reset();
 	}
