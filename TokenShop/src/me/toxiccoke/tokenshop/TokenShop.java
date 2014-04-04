@@ -165,7 +165,9 @@ public class TokenShop extends JavaPlugin implements Listener {
 		return s;
 	}
 
+	static boolean showScoreboard = false;
 	public static void showScoreboard(Player player) {
+		if (!showScoreboard) return;
 		Scoreboard board = getScoreboard(player);
 		Objective objective = board.getObjective("money");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);

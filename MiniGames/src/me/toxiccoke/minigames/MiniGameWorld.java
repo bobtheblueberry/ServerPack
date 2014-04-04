@@ -19,7 +19,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 public abstract class MiniGameWorld {
 
-	protected MiniGame				game;
+	protected String				gameName;
 	protected int					MAX_PLAYERS	= 24;
 	protected String				schematic;
 	protected Location				pasteLocation, signLocation, lobbyLocation;
@@ -27,14 +27,14 @@ public abstract class MiniGameWorld {
 	protected String				worldName;
 	protected ArrayList<Location>	spawnLocations;
 
-	public MiniGameWorld(MiniGame game, String name) {
-		this.game = game;
-		this.worldName = name;
+	public MiniGameWorld(String gameName, String worldName) {
+		this.gameName = gameName;
+		this.worldName = worldName;
 		spawnLocations = new ArrayList<Location>();
 	}
 
 	public String getGameName() {
-		return game.getName();
+		return gameName;
 	}
 
 	public String getWorldName() {

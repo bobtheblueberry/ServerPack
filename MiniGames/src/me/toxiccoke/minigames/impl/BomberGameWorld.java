@@ -27,8 +27,8 @@ public class BomberGameWorld extends MiniGameWorld {
 	private GameEndTimer					endTimer;
 	boolean									isStarted;
 
-	public BomberGameWorld(BomberGame g, String worldName) {
-		super(g, worldName);
+	public BomberGameWorld(String worldName) {
+		super("Bomber", worldName);
 		load();
 		players = new LinkedList<BomberGamePlayer>();
 		MAX_PLAYERS = 8;
@@ -194,6 +194,7 @@ public class BomberGameWorld extends MiniGameWorld {
 	}
 
 	public void reset() {
+		isStarted = false;
 		players.clear();
 		if (lobbyTimer != null) lobbyTimer.cancelTimer();
 		if (endTimer != null) endTimer.cancelTimer();
