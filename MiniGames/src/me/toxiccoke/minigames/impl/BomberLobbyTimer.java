@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 public class BomberLobbyTimer implements Runnable {
 
 	BomberGameWorld	world;
-	int				countdown	= 40;
+	int				countdown	= 5;
 	boolean canceled;
 	public BomberLobbyTimer(BomberGameWorld w) {
 		this.world = w;

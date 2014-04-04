@@ -2,11 +2,18 @@ package me.toxiccoke.minigames.impl;
 
 import java.util.LinkedList;
 
+import me.toxiccoke.minigames.GameEndTimer;
+import me.toxiccoke.minigames.MiniGamePlayer;
+import me.toxiccoke.minigames.MiniGameWorld;
+import me.toxiccoke.minigames.impl.BomberTeam.TeamType;
+import me.toxiccoke.tokenshop.TokenShop;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -14,26 +21,57 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-
-import me.toxiccoke.minigames.GameEndTimer;
-import me.toxiccoke.minigames.MiniGamePlayer;
-import me.toxiccoke.minigames.MiniGameWorld;
-import me.toxiccoke.minigames.MiniGamesPlugin;
-import me.toxiccoke.minigames.impl.BomberTeam.TeamType;
-import me.toxiccoke.tokenshop.TokenShop;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Team;
 
 public class BomberGameWorld extends MiniGameWorld {
 
-	private LinkedList<BomberGamePlayer>	players;
+	protected LinkedList<BomberGamePlayer>	players;
 	private BomberLobbyTimer				lobbyTimer;
 	private GameEndTimer					endTimer;
 	boolean									isStarted;
+	private BomberTeam						red, blue;
+	private Team							redTeam, blueTeam;
+	private OfflinePlayer					redScore, blueScore;
+	private Objective						objective;
+	private Scoreboard						board;
 
 	public BomberGameWorld(String worldName) {
 		super("Bomber", worldName);
 		load();
 		players = new LinkedList<BomberGamePlayer>();
 		MAX_PLAYERS = 8;
+		red = new BomberTeam(this, TeamType.RED);
+		blue = new BomberTeam(this, TeamType.BLUE);
+		initScoreboard();
+	}
+
+	private void initScoreboard() {
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		board = manager.getNewScoreboard();
+		redTeam = board.registerNewTeam("Red");
+		redTeam.setDisplayName(ChatColor.DARK_RED + "Red");
+		redTeam.setCanSeeFriendlyInvisibles(true);
+		redTeam.setAllowFriendlyFire(false);
+		blueTeam = board.registerNewTeam("Blue");
+		blueTeam.setDisplayName(ChatColor.DARK_BLUE + "Blue");
+		blueTeam.setCanSeeFriendlyInvisibles(true);
+		blueTeam.setAllowFriendlyFire(false);
+		objective = board.registerNewObjective("score", "trigger");
+		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+		objective.setDisplayName(ChatColor.GREEN + "Score");
+		// Get a fake offline player
+		blueScore = Bukkit.getOfflinePlayer(ChatColor.BLUE + "Blue Kills:");
+		redScore = Bukkit.getOfflinePlayer(ChatColor.RED + "Red Kills:");
+		updateScore();
+	}
+
+	private void updateScore() {
+		objective.getScore(redScore).setScore(red.getScore());
+		objective.getScore(blueScore).setScore(blue.getScore());
 	}
 
 	private void load() {
@@ -109,20 +147,16 @@ public class BomberGameWorld extends MiniGameWorld {
 		p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (t == TeamType.BLUE) ? (short) 11 : (short) 14));
 		p.updateInventory();
 		p.setHealth(((Damageable) p).getMaxHealth());
-		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
-			
-			@Override
-			public void run() {
-				p.setGameMode(GameMode.ADVENTURE);
-			}
-		},10);
+		p.setGameMode(GameMode.ADVENTURE);
 	}
 
 	private void startGame() {
 		if (isStarted) return;
 
 		for (BomberGamePlayer p : players) {
-			p.getPlayer().setFoodLevel(20);
+			Player pl = p.getPlayer();
+			pl.setScoreboard(board);
+			pl.setFoodLevel(20);
 			TokenShop.teleportAdvanced(p.getPlayer(), getSpawn(p.team.team));
 		}
 		sendPlayersMessage(ChatColor.YELLOW + "Game Started!");
@@ -146,15 +180,10 @@ public class BomberGameWorld extends MiniGameWorld {
 		for (BomberGamePlayer p : players)
 			if (p.team.team == TeamType.BLUE) bluCount++;
 			else redCount++;
-		if (redCount == bluCount) return new BomberTeam((Math.random() * 2) < 1 ? TeamType.BLUE : TeamType.RED);
+		if (redCount == bluCount) return (Math.random() * 2) < 1 ? red : blue;
 
-		if (redCount > bluCount) return new BomberTeam(TeamType.BLUE);
-		else return new BomberTeam(TeamType.RED);
-	}
-
-	@Override
-	public LinkedList<? extends MiniGamePlayer> getPlayers() {
-		return players;
+		if (redCount > bluCount) return blue;
+		else return red;
 	}
 
 	@Override
@@ -166,7 +195,12 @@ public class BomberGameWorld extends MiniGameWorld {
 			Player dmg = (Player) damager;
 			p.sendMessage(ChatColor.GOLD + "Killed by " + dmg.getDisplayName());
 			dmg.sendMessage(ChatColor.GOLD + "You scored 1 point for killing " + p.getDisplayName());
+			// Steal some of their health
+			double newHealth = ((Damageable) dmg).getHealth() + (((Damageable) p).getHealth() / 2);
+			dmg.setHealth((newHealth > 20) ? 20 : newHealth);
 			enemy = dmg.getName();
+			getPlayer(enemy).addScore(1);
+			updateScore();
 		}
 
 		undeath(p);
@@ -207,10 +241,15 @@ public class BomberGameWorld extends MiniGameWorld {
 		removePlayer(gp);
 	}
 
-	private void removePlayer(MiniGamePlayer gp) {
+	private void removePlayer(MiniGamePlayer gp, boolean check) {
 		players.remove(gp);
+		gp.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		gp.restorePlayer();
-		checkNoPlayers();
+		if (check) checkNoPlayers();
+	}
+
+	private void removePlayer(MiniGamePlayer gp) {
+		removePlayer(gp, true);
 	}
 
 	private void checkNoPlayers() {
@@ -219,6 +258,7 @@ public class BomberGameWorld extends MiniGameWorld {
 	}
 
 	public void reset() {
+		updateScore();
 		isStarted = false;
 		players.clear();
 		if (lobbyTimer != null) lobbyTimer.cancelTimer();
@@ -237,7 +277,7 @@ public class BomberGameWorld extends MiniGameWorld {
 		sendPlayersMessage(ChatColor.GOLD + "Game has ended!");
 		for (BomberGamePlayer plr : players) {
 			plr.getPlayer().sendMessage("You lost. Everyone loses.");
-			plr.restorePlayer();
+			removePlayer(plr, false);
 		}
 		reset();
 	}
@@ -258,6 +298,11 @@ public class BomberGameWorld extends MiniGameWorld {
 	@Override
 	public boolean allowDamage(MiniGamePlayer gp) {
 		return isStarted;
+	}
+
+	@Override
+	public LinkedList<? extends MiniGamePlayer> getPlayers() {
+		return players;
 	}
 
 }

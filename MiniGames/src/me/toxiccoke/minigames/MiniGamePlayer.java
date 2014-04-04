@@ -9,11 +9,13 @@ import org.bukkit.Material;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 
 public abstract class MiniGamePlayer {
 
 	protected String	player;
 	OriginalPlayer		originalPlayer;
+	protected int		score;
 
 	public MiniGamePlayer(Player p) {
 		this.player = p.getName();
@@ -25,7 +27,23 @@ public abstract class MiniGamePlayer {
 		p.setFireTicks(0);
 		p.setExp(0);
 		p.setLevel(0);
-		p.setHealth(((Damageable)p).getMaxHealth());
+		p.setHealth(((Damageable) p).getMaxHealth());
+		// remove potions
+		for (PotionEffectType t : PotionEffectType.values())
+			if (t != null && p.hasPotionEffect(t))
+				p.removePotionEffect(t);
+	}
+
+	public int getScore() {
+		return score;
+	}
+
+	public void setScore(int score) {
+		this.score = score;
+	}
+
+	public void addScore(int add) {
+		this.score += add;
 	}
 
 	public abstract Material getFeetParticle();
@@ -43,12 +61,12 @@ public abstract class MiniGamePlayer {
 	class OriginalPlayer {
 		Location	location;
 		double		health;
-		int		hunger;
-		int xpLevel;
+		int			hunger;
+		int			xpLevel;
 		float		xp;
 		ItemStack[]	inv;
 		ItemStack[]	armor;
-		GameMode gm;
+		GameMode	gm;
 
 		public OriginalPlayer(Player p) {
 			inv = p.getInventory().getContents();
