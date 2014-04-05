@@ -1,7 +1,5 @@
 package me.toxiccoke.tokenshop;
 
-import java.util.ArrayList;
-
 import me.toxiccoke.servercore.FriendAPI;
 import me.toxiccoke.servercore.FriendAPI.Person;
 import me.toxiccoke.servercore.FriendAPI.Person.Value;
@@ -11,16 +9,11 @@ import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.MagmaCube;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Slime;
-import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -32,7 +25,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class HatHandler implements Listener {
 
@@ -69,6 +61,7 @@ public class HatHandler implements Listener {
 	// Riding players
 	@EventHandler
 	public void onInteract(PlayerInteractEntityEvent e) {
+		if (e.isCancelled()) return;
 		Player p = e.getPlayer();
 		if (e.getRightClicked() == null || !(e.getRightClicked() instanceof Player)) return;
 		if (p.getVehicle() != null) return;

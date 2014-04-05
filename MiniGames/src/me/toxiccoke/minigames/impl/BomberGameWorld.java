@@ -10,6 +10,7 @@ import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,9 +19,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -117,12 +121,17 @@ public class BomberGameWorld extends MiniGameWorld {
 			BomberTeam t = getTeam();
 			bgp = new BomberGamePlayer(p, t);
 			players.add(bgp);
-			initPlayer(p, t.team);
+			initPlayer(bgp, t.team);
 			joined = true;
 		} else bgp = getPlayer(p.getName());
 
 		if (!isStarted) TokenShop.teleportAdvanced(p, lobbyLocation);
-		else TokenShop.teleportAdvanced(p, getSpawn(getPlayer(p.getName()).team.team));
+		else {
+			p.setScoreboard(board);
+			p.setFoodLevel(20);
+			TokenShop.teleportAdvanced(p, getSpawn(getPlayer(p.getName()).team.team));
+		}
+
 		p.sendMessage(ChatColor.YELLOW + "Joined Bomber! World: " + ChatColor.GREEN + worldName);
 		if (bgp.team.team == TeamType.BLUE) p.sendMessage(ChatColor.DARK_BLUE + "You are in the blue team");
 		else p.sendMessage(ChatColor.DARK_RED + "You are in the red team");
@@ -139,15 +148,24 @@ public class BomberGameWorld extends MiniGameWorld {
 	}
 
 	@SuppressWarnings("deprecation")
-	private void initPlayer(final Player p, TeamType t) {
+	private void initPlayer(BomberGamePlayer plr, TeamType t) {
+		Player p = plr.getPlayer();
 		Inventory i = p.getInventory();
-		ItemStack[] s = new ItemStack[] { new ItemStack(Material.DIAMOND_SWORD, 1), new ItemStack(Material.BOW, 1),
-				new ItemStack(Material.ARROW, 25), new ItemStack(Material.APPLE, 12) };
+		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.BOW, 1),
+				new ItemStack(Material.ARROW, 25), new ItemStack(Material.APPLE, 5) };
 		i.addItem(s);
-		p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (t == TeamType.BLUE) ? (short) 11 : (short) 14));
+		updateArmor(p, t);
 		p.updateInventory();
 		p.setHealth(((Damageable) p).getMaxHealth());
 		p.setGameMode(GameMode.ADVENTURE);
+		if (plr.team.team == TeamType.BLUE) blueTeam.addPlayer(p);
+		else redTeam.addPlayer(p);
+
+	}
+
+	private void updateArmor(Player p, TeamType t) {
+		ItemStack[] is = getColoredArmor((t == TeamType.BLUE) ? 0 : 255, 0, (t == TeamType.BLUE) ? 255 : 0);
+		p.getInventory().setArmorContents(is);
 	}
 
 	private void startGame() {
@@ -160,7 +178,7 @@ public class BomberGameWorld extends MiniGameWorld {
 			TokenShop.teleportAdvanced(p.getPlayer(), getSpawn(p.team.team));
 		}
 		sendPlayersMessage(ChatColor.YELLOW + "Game Started!");
-		endTimer = new GameEndTimer(this, 1);
+		endTimer = new GameEndTimer(this, 4);
 		isStarted = true;
 	}
 
@@ -244,13 +262,46 @@ public class BomberGameWorld extends MiniGameWorld {
 	private void removePlayer(MiniGamePlayer gp) {
 		players.remove(gp);
 		gp.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+		removePlayerFromScoreboard((BomberGamePlayer) gp);
 		gp.restorePlayer();
 		checkNoPlayers();
 	}
 
 	private void checkNoPlayers() {
-		if (players.size() > 0) return;
-		reset();
+		if (players.size() > 1) {
+			balanceTeams();
+		}
+		if (players.size() < 1) reset();
+	}
+
+	private void balanceTeams() {
+		int redCount = 0, bluCount = 0;
+		for (BomberGamePlayer p : players)
+			if (p.team.team == TeamType.BLUE) bluCount++;
+			else redCount++;
+		if (Math.abs(redCount - bluCount) > 1) {
+			BomberGamePlayer plr = getRandomPlayer(TeamType.RED);
+			if (plr == null) return;
+			Player p = plr.getPlayer();
+			if (redCount > bluCount) {
+				plr.team = blue;
+				p.sendMessage(ChatColor.GOLD + "You were switched to the blue team to balance the teams.");
+			} else {
+				plr.team = red;
+				plr.getPlayer().sendMessage(ChatColor.GOLD + "You were switched to the red team to balance the teams.");
+			}
+			updateArmor(p, plr.team.team);
+			TokenShop.teleportAdvanced(p, getSpawn(plr.team.team));
+			balanceTeams();
+		}
+	}
+
+	private BomberGamePlayer getRandomPlayer(TeamType t) {
+		LinkedList<BomberGamePlayer> temp = new LinkedList<BomberGamePlayer>();
+		for (BomberGamePlayer p : players)
+			if (p.team.team == t) temp.add(p);
+		if (temp.size() == 0) return null;
+		return temp.get((int) (Math.random() * temp.size()));
 	}
 
 	public void reset() {
@@ -271,11 +322,26 @@ public class BomberGameWorld extends MiniGameWorld {
 
 	private void endGame() {
 		sendPlayersMessage(ChatColor.GOLD + "Game has ended!");
-		for (BomberGamePlayer plr : players) {
-			plr.getPlayer().sendMessage("You lost. Everyone loses.");
-			plr.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-			plr.restorePlayer();
+		String bluMsg, redMsg;
+		int bs = blue.getScore(), rs = red.getScore();
+		if (bs == rs) bluMsg = redMsg = "Scores tied at " + rs + " points.";
+		else if (bs > rs) {
+			bluMsg = "You won the game by " + (bs - rs) + " points!";
+			redMsg = "You lost the game by " + (bs - rs) + " points!";
+		} else {
+			redMsg = "You won the game by " + (rs - bs) + " points!";
+			bluMsg = "You lost the game by " + (rs - bs) + " points!";
 		}
+		for (BomberGamePlayer plr : players) {
+			Player p = plr.getPlayer();
+			if (plr.team.team == TeamType.RED) p.sendMessage(ChatColor.GOLD + redMsg);
+			else p.sendMessage(ChatColor.GOLD + bluMsg);
+			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+			plr.restorePlayer();
+			removePlayerFromScoreboard(plr);
+		}
+		players.clear();
+		updateScore();
 		reset();
 	}
 
@@ -302,4 +368,46 @@ public class BomberGameWorld extends MiniGameWorld {
 		return players;
 	}
 
+	private void removePlayerFromScoreboard(BomberGamePlayer plr) {
+		if (plr.team.team == TeamType.BLUE) {
+			blueTeam.removePlayer(Bukkit.getOfflinePlayer(plr.getName()));
+		} else {
+			redTeam.removePlayer(Bukkit.getOfflinePlayer(plr.getName()));
+		}
+	}
+
+	private ItemStack[] getColoredArmor(int r, int g, int b) {
+		ItemStack[] is = new ItemStack[4];
+
+		is[0] = new ItemStack(Material.LEATHER_BOOTS, 1);
+		LeatherArmorMeta lam = (LeatherArmorMeta) is[0].getItemMeta();
+		lam.setColor(Color.fromRGB(r, g, b));
+		is[0].setItemMeta(lam);
+		is[1] = new ItemStack(Material.LEATHER_LEGGINGS, 1);
+		lam = (LeatherArmorMeta) is[1].getItemMeta();
+		lam.setColor(Color.fromRGB(r, g, b));
+		is[1].setItemMeta(lam);
+		is[2] = new ItemStack(Material.LEATHER_CHESTPLATE, 1);
+		lam = (LeatherArmorMeta) is[2].getItemMeta();
+		lam.setColor(Color.fromRGB(r, g, b));
+		is[2].setItemMeta(lam);
+		is[3] = new ItemStack(Material.LEATHER_HELMET, 1);
+		lam = (LeatherArmorMeta) is[3].getItemMeta();
+		lam.setColor(Color.fromRGB(r, g, b));
+		is[3].setItemMeta(lam);
+		return is;
+	}
+
+	@Override
+	public boolean canPlaceBlock(MiniGamePlayer p, BlockPlaceEvent event) {
+		return isStarted && event.getBlock().getLocation().getY() < heightLimit;
+	}
+
+	@Override
+	public boolean canBreakBlock(MiniGamePlayer p, BlockBreakEvent event) {
+		Material m = event.getBlock().getType();
+		if (m == Material.LEAVES || m == Material.LEAVES_2 || m == Material.GLOWSTONE || m == Material.STONE
+				|| m == Material.STAINED_GLASS) return false;
+		return isStarted && event.getBlock().getLocation().getY() < heightLimit;
+	}
 }

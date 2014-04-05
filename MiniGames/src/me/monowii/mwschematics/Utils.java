@@ -37,7 +37,7 @@ public class Utils {
 		}
 	}
 
-	public static boolean copySchematic(Location loc, File schematicFile, boolean copyAir, boolean removeEntities) {
+	public static boolean copySchematic(Location loc, File schematicFile, boolean dontcopyAir, boolean removeEntities) {
 		Vector origin = new Vector(loc.getX(), loc.getY(), loc.getZ());
 		World w = loc.getWorld();
 		EditSession es = new EditSession(new BukkitWorld(w), -1);
@@ -49,7 +49,7 @@ public class Utils {
 		}
 		try {
 			CuboidClipboard clipboard = schematic.load(schematicFile);
-			clipboard.paste(es, origin, copyAir);
+			clipboard.paste(es, origin, dontcopyAir);
 
 			if (removeEntities) {
 				final Location p1 = new Location(w, origin.getX() + clipboard.getOffset().getX(), origin.getY()

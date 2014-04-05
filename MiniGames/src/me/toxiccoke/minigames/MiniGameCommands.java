@@ -31,7 +31,7 @@ public class MiniGameCommands implements CommandExecutor {
 
 		if (args.length == 0) {
 			p.sendMessage(ChatColor.RED + "/" + label
-					+ " <setsign|list|setpaste|setspawn|setlobby|tp|reset|schematic> (Game Type) (World)");
+					+ " <setsign|list|setpaste|setspawn|setlobby|tp|reset|schematic|setheightlimit> (Game Type) (World)");
 			return true;
 		}
 		if (args.length > 0 && args[0].startsWith("list")) {
@@ -91,7 +91,7 @@ public class MiniGameCommands implements CommandExecutor {
 			minigame.reset();
 			p.sendMessage(ChatColor.BLUE + "Minigame reset");
 			return true;
-		} else if (args[0].startsWith("sc")) {
+		} else if (args[0].equals("schematic")) {
 			if (args.length < 4) {
 				p.sendMessage(ChatColor.RED + "Specify a schematic name");
 				return true;
@@ -116,6 +116,14 @@ public class MiniGameCommands implements CommandExecutor {
 					Math.round(l.getZ()), l.getYaw(), l.getPitch());
 			minigame.save();
 			p.sendMessage(ChatColor.BLUE + "Set lobby location " + getLocationString(minigame.lobbyLocation));
+			return true;
+
+		} else if (args[0].equals("setheightlimit")) {
+			Location l = p.getLocation();
+			int limit = l.getBlockY();
+			minigame.heightLimit = limit;
+			minigame.save();
+			p.sendMessage(ChatColor.BLUE + "Set height limit " + limit);
 			return true;
 
 		}

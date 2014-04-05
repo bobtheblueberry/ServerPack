@@ -15,6 +15,8 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 public abstract class MiniGameWorld {
@@ -26,11 +28,16 @@ public abstract class MiniGameWorld {
 	protected boolean				broken;
 	protected String				worldName;
 	protected ArrayList<Location>	spawnLocations;
+	protected int					heightLimit	= 1000;
 
 	public MiniGameWorld(String gameName, String worldName) {
 		this.gameName = gameName;
 		this.worldName = worldName;
 		spawnLocations = new ArrayList<Location>();
+	}
+
+	public int getHeightLimit() {
+		return heightLimit;
 	}
 
 	public String getGameName() {
@@ -52,6 +59,7 @@ public abstract class MiniGameWorld {
 	public abstract boolean isFull();
 
 	public abstract boolean join(Player p);
+
 	public abstract LinkedList<? extends MiniGamePlayer> getPlayers();
 
 	public abstract void save();
@@ -59,14 +67,18 @@ public abstract class MiniGameWorld {
 	public void reset() {
 		if (pasteLocation == null) return;
 		if (schematic == null) return;
-		Utils.copySchematic(pasteLocation, new File(MiniGamesPlugin.plugin.getDataFolder(), schematic), true, true);
+		Utils.copySchematic(pasteLocation, new File(MiniGamesPlugin.plugin.getDataFolder(), schematic), false, true);
 	}
+	
+	public abstract boolean canPlaceBlock(MiniGamePlayer p, BlockPlaceEvent event);
+	public abstract boolean canBreakBlock(MiniGamePlayer p, BlockBreakEvent event);
 
 	protected YamlConfiguration getSaveYML() {
 		YamlConfiguration yml = new YamlConfiguration();
 		yml.set("MiniGameName", getGameName());
 		yml.set("world.name", getWorldName());
 		yml.set("world.schematic", schematic);
+		yml.set("world.heightlimit", heightLimit);
 		if (pasteLocation != null) {
 			yml.set("world.world", pasteLocation.getWorld().getName());
 			yml.set("world.x", pasteLocation.getBlockX());
@@ -121,6 +133,7 @@ public abstract class MiniGameWorld {
 																// anything
 		worldName = yml.getString("world.name");
 		schematic = yml.getString("world.schematic");
+		if (yml.contains("world.heightlimit")) heightLimit = yml.getInt("world.heightlimit");
 		String world = yml.getString("world.world");
 		if (world != null) {
 			World w = Bukkit.getServer().getWorld(world);
@@ -164,17 +177,19 @@ public abstract class MiniGameWorld {
 		if (b.getState() instanceof Sign) return (Sign) b.getState();
 		return null;
 	}
-	
-	String[] signText = null;
-	protected String[] getSignText()
-	{
+
+	String[]	signText	= null;
+
+	protected String[] getSignText() {
 		return signText;
 	}
+
 	protected void setSignText(String[] text) {
 		signText = text;
 	}
 
 	public abstract void notifyDeath(MiniGamePlayer gp, Entity damager, DamageCause cause);
+
 	public abstract void notifyDeath(MiniGamePlayer gp, DamageCause cause);
 
 	public abstract void notifyQuitGame(MiniGamePlayer gp);
