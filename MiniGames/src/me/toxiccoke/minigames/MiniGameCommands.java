@@ -24,14 +24,18 @@ public class MiniGameCommands implements CommandExecutor {
 		Player p = (Player) sender;
 		String cmd = command.getName().toLowerCase();
 		if (cmd.equals("leave")) {
-			leave(p,args);
+			leave(p, args);
 			return true;
 		}
-		if (!cmd.equals("madmin")) return false;
+		if (!cmd.equals("madmin"))
+			return false;
 
 		if (args.length == 0) {
-			p.sendMessage(ChatColor.RED + "/" + label
-					+ " <setsign|list|setpaste|setspawn|setlobby|tp|reset|schematic|setheightlimit> (Game Type) (World)");
+			p.sendMessage(ChatColor.RED
+					+ "/"
+					+ label
+					+ " <setsign|list|setpaste|setspawn|setlobby|tp|reset|schematic|"
+					+ "setheightlimit|bounds1|bounds2|maxplayers|minplayers|setleaderboard> (Game Type) (World)");
 			return true;
 		}
 		if (args.length > 0 && args[0].startsWith("list")) {
@@ -64,7 +68,7 @@ public class MiniGameCommands implements CommandExecutor {
 			}
 			minigame.signLocation = b.getLocation();
 			minigame.save();
-			minigame.setSignText(null);//trigger reset
+			minigame.setSignText(null);// trigger reset
 			p.sendMessage(ChatColor.BLUE + "Sign Changed");
 			return true;
 		} else if (args[0].equals("setpaste")) {
@@ -126,11 +130,54 @@ public class MiniGameCommands implements CommandExecutor {
 			p.sendMessage(ChatColor.BLUE + "Set height limit " + limit);
 			return true;
 
+		} else if (args[0].equals("bounds1")) {
+			Location l = p.getLocation();
+			minigame.bounds1 = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l
+					.getBlockZ());
+			minigame.save();
+			p.sendMessage(ChatColor.BLUE + "Set bounds1 to " + getLocationString(minigame.bounds1));
+			return true;
+		} else if (args[0].equals("bounds2")) {
+			Location l = p.getLocation();
+			minigame.bounds2 = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l
+					.getBlockZ());
+			minigame.save();
+			p.sendMessage(ChatColor.BLUE + "Set bounds2 to " + getLocationString(minigame.bounds2));
+			return true;
+		} else if (args[0].equals("setleaderboard")) {
+			Location l = p.getLocation();
+			minigame.leaderboard = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l
+					.getBlockZ());
+			minigame.save();
+			p.sendMessage(ChatColor.BLUE + "Set leaderboard to " + getLocationString(minigame.leaderboard));
+			minigame.updateLeaderboard();
+			return true;
+		}  else if (args[0].equals("minplayers") || args[0].equals("maxplayers")) {
+			if (args.length < 4) {
+				p.sendMessage(ChatColor.RED + "Specify a number");
+				return true;
+			}
+			int i;
+			try {
+				i = Integer.parseInt(args[3]);
+			} catch (NumberFormatException exc) {
+				p.sendMessage(ChatColor.RED + args[3] + " is not a number");
+				return true;
+			}
+			boolean min = args[0].equals("minplayers");
+			if (min) {
+				minigame.minplayers = i;
+				p.sendMessage(ChatColor.BLUE + "Set minplayers to " + i);
+			} else {
+				minigame.maxplayers = i;
+				p.sendMessage(ChatColor.BLUE + "Set maxplayers to " + i);
+			}
+			minigame.save();
+			return true;
 		}
 
 		return false;
 	}
-
 
 	private String getLocationString(Location l) {
 		return "World: " + l.getWorld().getName() + " X: " + l.getX() + " Y: " + l.getY() + " Z: " + l.getZ();
@@ -142,7 +189,8 @@ public class MiniGameCommands implements CommandExecutor {
 
 		for (int i = 0; i <= range; i++) {
 			Block b = loc.add(dir).getBlock();
-			if (b != null && b.getType() != Material.AIR) return b;
+			if (b != null && b.getType() != Material.AIR)
+				return b;
 		}
 
 		return null;
@@ -151,7 +199,7 @@ public class MiniGameCommands implements CommandExecutor {
 	private void leave(Player p, String[] args) {
 		for (MiniGameWorld m : MiniGameLobby.lobby.games)
 			for (MiniGamePlayer gp : m.getPlayers())
-				if(gp.player.equals(p.getName())) {
+				if (gp.player.equals(p.getName())) {
 					m.notifyLeaveCommand(gp);
 					return;
 				}

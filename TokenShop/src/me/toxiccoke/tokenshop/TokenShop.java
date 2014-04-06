@@ -135,17 +135,19 @@ public class TokenShop extends JavaPlugin implements Listener {
 
 	public static void teleportAdvanced(final Player player, final Location location) {
 		Entity e = player.getPassenger();
-		if (e == null) { player.teleport(location);return;}
-		if (!(e instanceof Player))
-			e.remove();
-		player.setPassenger(null);
+		if (e == null) {
+			player.teleport(location);
+			return;
+		}
+		if (!(e instanceof Player)) e.remove();
+		player.eject();
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(TokenShop.plugin, new Runnable() {
 			public void run() {
 				player.teleport(location);
 				HatHandler.loadHat(player);
 			}
 		}, 3L);
-		}
+	}
 
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
@@ -165,7 +167,8 @@ public class TokenShop extends JavaPlugin implements Listener {
 		return s;
 	}
 
-	static boolean showScoreboard = false;
+	static boolean	showScoreboard	= false;
+
 	public static void showScoreboard(Player player) {
 		if (!showScoreboard) return;
 		Scoreboard board = getScoreboard(player);

@@ -10,10 +10,6 @@
 
 package me.toxiccoke.io;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DirectColorModel;
-import java.awt.image.WritableRaster;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,8 +19,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.zip.Deflater;
-
-import javax.imageio.ImageIO;
 
 public class StreamEncoder extends OutputStream {
 	protected int originalPos = -1;

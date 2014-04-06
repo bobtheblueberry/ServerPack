@@ -1,5 +1,7 @@
 package me.toxiccoke.minigames;
 
+import java.util.LinkedList;
+
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,11 +21,12 @@ public class MiniGamesPlugin extends JavaPlugin implements Listener {
 	}
 	
 	public void onDisable() {
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
-					m.notifyQuitGame(gp);
-				
-	
+		for (MiniGameWorld m : MiniGameLobby.lobby.games) {
+			@SuppressWarnings("unchecked")
+			LinkedList<? extends MiniGamePlayer> cloned = (LinkedList<? extends MiniGamePlayer>) m.getPlayers().clone();
+			for (MiniGamePlayer gp : cloned)
+					m.notifyQuitGame(gp);	
+		}
 	}
 
 }

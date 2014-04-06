@@ -63,7 +63,7 @@ public class CommandHandler implements CommandExecutor {
 		} else if (cmd.getName().equalsIgnoreCase("tp")) {
 			if (!sender.hasPermission("sc.tp")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+						+ ChatColor.RED + "You dont have access to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -92,6 +92,7 @@ public class CommandHandler implements CommandExecutor {
 				teleportAdvanced(targetPlayer.getPlayer(), targetPlayer1.getLocation());
 				return true;
 			}
+			return true;
 			// warn command
 		} else if (cmd.getName().equalsIgnoreCase("warn")) {
 			if (!sender.hasPermission("sc.warn")) {

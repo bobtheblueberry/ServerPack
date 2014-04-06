@@ -1,11 +1,13 @@
 package me.toxiccoke.minigames;
 
+
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -34,6 +36,10 @@ public abstract class MiniGamePlayer {
 				p.removePotionEffect(t);
 	}
 
+	public String getName() {
+		return player;
+	}
+	
 	public int getScore() {
 		return score;
 	}
@@ -67,6 +73,7 @@ public abstract class MiniGamePlayer {
 		ItemStack[]	inv;
 		ItemStack[]	armor;
 		GameMode	gm;
+		String tabName;
 
 		public OriginalPlayer(Player p) {
 			inv = p.getInventory().getContents();
@@ -77,6 +84,7 @@ public abstract class MiniGamePlayer {
 			xp = p.getExp();
 			xpLevel = p.getLevel();
 			gm = p.getGameMode();
+			tabName = p.getPlayerListName();
 		}
 
 		private void restorePlayer(Player p) {
@@ -88,6 +96,9 @@ public abstract class MiniGamePlayer {
 			p.setLevel(xpLevel);
 			p.setGameMode(gm);
 			TokenShop.teleportAdvanced(p, location);
+			p.setPlayerListName(tabName);
+			// remove arrows
+			((CraftPlayer) p).getHandle().getDataWatcher().watch(9, (byte)0);
 		}
 
 	}

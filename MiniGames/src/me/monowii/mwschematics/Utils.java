@@ -1,8 +1,6 @@
 package me.monowii.mwschematics;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.bukkit.Chunk;
 import org.bukkit.Location;

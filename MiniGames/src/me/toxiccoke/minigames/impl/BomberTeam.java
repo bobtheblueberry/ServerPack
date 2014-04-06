@@ -16,7 +16,6 @@ public class BomberTeam implements Listener {
 	}
 
 	public TeamType	team;
-	public int		score;
 	BomberGameWorld	world;
 
 	public BomberTeam(BomberGameWorld world, TeamType type) {

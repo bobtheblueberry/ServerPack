@@ -1,20 +1,17 @@
 package me.toxiccoke.servercore;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-
-import org.bukkit.Bukkit;
 
 import me.toxiccoke.io.StreamDecoder;
 import me.toxiccoke.io.StreamEncoder;
 import me.toxiccoke.servercore.FriendAPI.Person.Value;
+
+import org.bukkit.Bukkit;
 
 public class FriendAPI {
 
