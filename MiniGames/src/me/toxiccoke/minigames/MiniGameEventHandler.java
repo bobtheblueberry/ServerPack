@@ -22,10 +22,28 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class MiniGameEventHandler implements Listener {
+
+	// Mini Game Chat
+	@EventHandler
+	public void onPlayerChat(AsyncPlayerChatEvent chat) {
+		Player sender = chat.getPlayer();
+		for (MiniGameWorld m : MiniGameLobby.lobby.games)
+			for (MiniGamePlayer gp : m.getPlayers())
+				if (gp.getName().equals(sender.getName())) {
+					chat.setCancelled(true);
+					for (MiniGamePlayer mgp : m.getPlayers())
+						mgp.getPlayer().sendMessage(
+								mgp.getTeamColor() + ChatColor.stripColor(mgp.getPlayer().getDisplayName()) + ": "
+										+ ChatColor.DARK_GRAY + chat.getMessage());
+					return;
+				}
+
+	}
 
 	@EventHandler
 	public void blockBreak(BlockBreakEvent event) {

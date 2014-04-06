@@ -4,6 +4,7 @@ package me.toxiccoke.minigames;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -39,6 +40,8 @@ public abstract class MiniGamePlayer {
 	public String getName() {
 		return player;
 	}
+	
+	public abstract ChatColor getTeamColor();
 	
 	public int getScore() {
 		return score;

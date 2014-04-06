@@ -3,6 +3,7 @@ package me.toxiccoke.minigames.impl;
 import me.toxiccoke.minigames.MiniGamePlayer;
 import me.toxiccoke.minigames.impl.BomberTeam.TeamType;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -22,4 +23,10 @@ public class BomberGamePlayer extends MiniGamePlayer {
 		else
 			return Material.REDSTONE_WIRE;
 	}
-}
+	
+	public ChatColor getTeamColor() {
+		if (team.team == TeamType.RED)
+			return ChatColor.RED;
+		return ChatColor.BLUE;
+	}
+ }
