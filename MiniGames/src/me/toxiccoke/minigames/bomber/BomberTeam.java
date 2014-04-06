@@ -1,4 +1,4 @@
-package me.toxiccoke.minigames.impl;
+package me.toxiccoke.minigames.bomber;
 
 import org.bukkit.event.Listener;
 

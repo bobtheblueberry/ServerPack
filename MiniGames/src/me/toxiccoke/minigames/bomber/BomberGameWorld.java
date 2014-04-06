@@ -1,4 +1,4 @@
-package me.toxiccoke.minigames.impl;
+package me.toxiccoke.minigames.bomber;
 
 import java.awt.Rectangle;
 import java.util.LinkedList;
@@ -7,7 +7,7 @@ import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.MiniGamePlayer;
 import me.toxiccoke.minigames.MiniGameWorld;
 import me.toxiccoke.minigames.SkullUtils;
-import me.toxiccoke.minigames.impl.BomberTeam.TeamType;
+import me.toxiccoke.minigames.bomber.BomberTeam.TeamType;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;

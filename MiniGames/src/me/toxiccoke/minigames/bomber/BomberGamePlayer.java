@@ -1,7 +1,7 @@
-package me.toxiccoke.minigames.impl;
+package me.toxiccoke.minigames.bomber;
 
 import me.toxiccoke.minigames.MiniGamePlayer;
-import me.toxiccoke.minigames.impl.BomberTeam.TeamType;
+import me.toxiccoke.minigames.bomber.BomberTeam.TeamType;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

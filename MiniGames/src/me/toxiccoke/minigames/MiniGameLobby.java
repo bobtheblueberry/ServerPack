@@ -2,7 +2,7 @@ package me.toxiccoke.minigames;
 
 import java.util.ArrayList;
 
-import me.toxiccoke.minigames.impl.BomberGameWorld;
+import me.toxiccoke.minigames.bomber.BomberGameWorld;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
