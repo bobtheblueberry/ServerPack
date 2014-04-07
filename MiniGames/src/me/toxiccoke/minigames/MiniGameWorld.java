@@ -1,6 +1,5 @@
 package me.toxiccoke.minigames;
 
-import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 public abstract class MiniGameWorld {
 
@@ -79,7 +79,11 @@ public abstract class MiniGameWorld {
 
 	public abstract boolean canBreakBlock(MiniGamePlayer p, BlockBreakEvent event);
 
-	public abstract boolean canExplodeBlock(Block b);
+	public abstract boolean canExplodeBlock(Block b, Entity e);
+
+	public abstract boolean canPlayerHunger(MiniGamePlayer player);
+
+	public void onPlayerInteract(MiniGamePlayer p, PlayerInteractEvent e) {}
 
 	public void projectileHit(MiniGamePlayer p, ProjectileHitEvent event) {}
 
@@ -226,6 +230,7 @@ public abstract class MiniGameWorld {
 		Block b = Bukkit.getServer().getWorld(signLocation.getWorld().getName()).getBlockAt(signLocation);
 		if (b == null)
 			return null;
+		
 		if (b.getState() instanceof Sign)
 			return (Sign) b.getState();
 		return null;
@@ -255,23 +260,24 @@ public abstract class MiniGameWorld {
 
 	public abstract boolean allowDamage(MiniGamePlayer gp);
 
-	public Rectangle getBounds() {
+	public Bounds getBounds() {
 		if (bounds1 == null || bounds2 == null)
 			return null;
 		int x1 = Math.min(bounds1.getBlockX(), bounds2.getBlockX());
 		int x2 = Math.max(bounds1.getBlockX(), bounds2.getBlockX());
 		int z1 = Math.min(bounds1.getBlockZ(), bounds2.getBlockZ());
 		int z2 = Math.max(bounds1.getBlockZ(), bounds2.getBlockZ());
-		return new Rectangle(x1, z1, x2 - x1, z2 - z1);
+		return new Bounds(x1, x2, z1, z2);
 	}
 
-	public Rectangle getExcessBounds() {
+	public Bounds getExcessBounds() {
 		if (bounds1 == null || bounds2 == null)
 			return null;
 		int x1 = Math.min(bounds1.getBlockX(), bounds2.getBlockX());
 		int x2 = Math.max(bounds1.getBlockX(), bounds2.getBlockX());
 		int z1 = Math.min(bounds1.getBlockZ(), bounds2.getBlockZ());
 		int z2 = Math.max(bounds1.getBlockZ(), bounds2.getBlockZ());
-		return new Rectangle(x1 - 1, z1 - 1, x2 + 1 - x1, z2 + 1 - z1);
+		return new Bounds(x1 - 1, x2 + 1, z1 - 1, z2 + 1);
 	}
+
 }

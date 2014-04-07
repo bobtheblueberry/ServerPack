@@ -1,9 +1,9 @@
 package me.toxiccoke.minigames;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Damageable;
@@ -18,13 +18,17 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.projectiles.ProjectileSource;
 
 public class MiniGameEventHandler implements Listener {
 
@@ -38,11 +42,44 @@ public class MiniGameEventHandler implements Listener {
 					chat.setCancelled(true);
 					for (MiniGamePlayer mgp : m.getPlayers())
 						mgp.getPlayer().sendMessage(
-								mgp.getTeamColor() + ChatColor.stripColor(mgp.getPlayer().getDisplayName()) + ": "
-										+ ChatColor.DARK_GRAY + chat.getMessage());
+								gp.getTeamColor() + ChatColor.stripColor(gp.getPlayer().getDisplayName()) + ": "
+										+ ChatColor.GRAY + chat.getMessage());
 					return;
 				}
 
+	}
+
+	// disable commands
+	@EventHandler
+	public void onPreEvent(PlayerCommandPreprocessEvent event) {
+		String cmd = event.getMessage().toLowerCase();
+		if (cmd.length() < 2)
+			return;
+		if (cmd.startsWith("tell", 1) || cmd.startsWith("msg", 1) || cmd.startsWith("leave", 1)
+				|| cmd.startsWith("r", 1) || cmd.startsWith("m", 1) || cmd.startsWith("reply", 1)
+				|| cmd.startsWith("say", 1))
+			return;
+		Player sender = event.getPlayer();
+		for (MiniGameWorld m : MiniGameLobby.lobby.games)
+			for (MiniGamePlayer gp : m.getPlayers())
+				if (gp.getName().equals(sender.getName())) {
+					sender.sendMessage(ChatColor.GOLD + "Do /leave to leave the game");
+					event.setCancelled(true);
+					return;
+				}
+	}
+
+	// no hunger
+	@EventHandler
+	public void onFoodLevelChange(FoodLevelChangeEvent event) 
+	{
+		for (MiniGameWorld m : MiniGameLobby.lobby.games)
+			for (MiniGamePlayer gp : m.getPlayers())
+				if (gp.player.equals(event.getEntity().getName())) {
+					if (!m.canPlayerHunger(gp))
+						event.setCancelled(true);
+					return;
+				}
 	}
 
 	@EventHandler
@@ -91,21 +128,36 @@ public class MiniGameEventHandler implements Listener {
 	public void onExplode(EntityExplodeEvent event) {
 		for (MiniGameWorld m : MiniGameLobby.lobby.games) {
 
-			Rectangle bounds = m.getExcessBounds();
+			Bounds bounds = m.getExcessBounds();
 			if (bounds == null)
 				continue;
 			ArrayList<Block> blocks = new ArrayList<Block>();
 
-			if (bounds.contains(event.getLocation().getX(), event.getLocation().getZ()))
+			if (bounds.contains(event.getLocation().getBlockX(), event.getLocation().getBlockZ()))
 				for (Block b : event.blockList()) {
 					event.setYield(1);
-					if (!m.canExplodeBlock(b))
+					if (!m.canExplodeBlock(b, event.getEntity()))
 						blocks.add(b);
 				}
+			else if (m.worldName.equalsIgnoreCase("amazon"))
+				System.out.println(getLocationString(event.getLocation()) + " not in " + bounds);
 			for (Block b : blocks)
 				event.blockList().remove(b);
 
 		}
+	}private String getLocationString(Location l) {
+		return " X: " + l.getBlockX() + " Y: " + l.getBlockY() + " Z: " + l.getBlockZ();
+	}
+
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		Player p = event.getPlayer();
+		for (MiniGameWorld m : MiniGameLobby.lobby.games)
+			for (MiniGamePlayer gp : m.getPlayers())
+				if (gp.player.equals(p.getName())) {
+					m.onPlayerInteract(gp, event);
+					return;
+				}
 	}
 
 	// Disable Riding players
@@ -141,11 +193,20 @@ public class MiniGameEventHandler implements Listener {
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		Entity victim = event.getEntity();
 		Entity attacker = event.getDamager();
-		if (attacker instanceof Player || attacker instanceof Arrow) {
-			Player at;
-			if (attacker instanceof Player)
-				at = ((Player) attacker);
-			else at = (Player) ((Arrow) attacker).getShooter();
+		boolean other = false;
+		if (!(attacker instanceof Player) && !(attacker instanceof Projectile))
+			other = true;
+		Player at = null;
+		if (attacker instanceof Player)
+			at = ((Player) attacker);
+		else if (!other) {
+			ProjectileSource ps =((Projectile) attacker).getShooter(); 
+			if (ps instanceof Player)
+				at = (Player) ps;
+			else
+				other = true;
+		}
+		if (!other)
 			main: for (MiniGameWorld m : MiniGameLobby.lobby.games)
 				for (MiniGamePlayer gp : m.getPlayers())
 					if (gp.player.equals(at.getName())) {
@@ -157,24 +218,25 @@ public class MiniGameEventHandler implements Listener {
 							break main;
 						}
 					}
-		}
-		if (!(victim instanceof Player) && !(attacker instanceof Player))
+		if (!(victim instanceof Player))
 			return;
-		if (victim instanceof Player && ((Damageable) victim).getHealth() - event.getDamage() < 1)
+
+		Player v = (Player) victim;
+		if (((Damageable) victim).getHealth() - event.getDamage() <= 0)
 			for (MiniGameWorld m : MiniGameLobby.lobby.games)
 				for (MiniGamePlayer gp : m.getPlayers())
-					if (gp.player.equals(((Player) victim).getName())) {
+					if (gp.player.equals(v.getName())) {
 						// Respawn player instead of having them die
 						m.notifyDeath(gp, event.getDamager(), event.getCause());
 						event.setCancelled(true);
 						return;
 					}
-
 	}
 
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
-		if (event.getCause() == DamageCause.ENTITY_ATTACK)
+		if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.PROJECTILE
+				|| event.getCause() == DamageCause.ENTITY_EXPLOSION)
 			return;// handled by
 					// EntityDamageByEntityEvent
 		Entity t = event.getEntity();

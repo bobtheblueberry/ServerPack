@@ -19,11 +19,10 @@ public class MiniGameLobby implements Runnable, Listener {
 	public static MiniGameLobby		lobby;
 
 	public MiniGameLobby() {
-		games = new ArrayList<MiniGameWorld>();
+		games = new ArrayList<MiniGameWorld>(2);
 		lobby = this;
 
 		games.add(new BomberGameWorld("Greenland"));
-
 		games.add(new BomberGameWorld("Amazon"));
 		// 20 ticks per second
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, this, 0L, 20L);
@@ -32,22 +31,27 @@ public class MiniGameLobby implements Runnable, Listener {
 	public void updateSigns() {
 		for (MiniGameWorld w : games) {
 			Sign s = w.getSign();
-			if (s == null) continue;
+			if (s == null)
+				continue;
 			String[] old = w.getSignText();
 			String[] newText = new String[4];
-			if (w.isFull()) newText[0] = ChatColor.BLUE + "[Full]";
+			if (w.isFull())
+				newText[0] = ChatColor.BLUE + "[Full]";
 			else newText[0] = (w.isJoinable()) ? ChatColor.GREEN + "[Join]" : ChatColor.RED + "[NotJoinable]";
 			newText[1] = ChatColor.DARK_GRAY + w.getGameName();
 			newText[2] = ChatColor.DARK_GRAY + "" + w.getPlayerCount() + "/" + w.getMaxPlayers();
 			newText[3] = ChatColor.DARK_GRAY + w.getWorldName();
 
-			boolean changed = false || old == null;
-			if (old != null) for (int i = 0; i < 4; i++)
-				if (!newText[i].equals(old[i])) {
-					changed = true;
-					break;
-				}
-			if (!changed) return; 
+			boolean changed = false;
+			if (old != null)
+				for (int i = 0; i < 4; i++)
+					if (!newText[i].equals(old[i])) {
+						changed = true;
+						break;
+					}
+
+			if (!changed && old != null)
+				continue;
 			for (int i = 0; i < 4; i++)
 				s.setLine(i, newText[i]);
 			s.update();
@@ -64,8 +68,10 @@ public class MiniGameLobby implements Runnable, Listener {
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		Player player = (Player) event.getPlayer();
 		Block b = event.getClickedBlock();
-		if (b == null || b.getState() == null) return;
-		if (!(b.getState() instanceof Sign)) return;
+		if (b == null || b.getState() == null)
+			return;
+		if (!(b.getState() instanceof Sign))
+			return;
 		Sign s = (Sign) b.getState();
 		MiniGameWorld game = null;
 		for (MiniGameWorld w : games)
@@ -73,14 +79,16 @@ public class MiniGameLobby implements Runnable, Listener {
 				game = w;
 				break;
 			}
-		if (game == null) return;
+		if (game == null)
+			return;
 		event.setCancelled(true);
 		if (!game.isJoinable()) {
 			player.sendMessage(ChatColor.GOLD + "That minigame is unavailable.");
 			return;
 		}
-		if (game.join(player)) ;// player.sendMessage(ChatColor.GOLD +
-								// "Joining " + game.getGameName());
+		if (game.join(player))
+			;
+
 		else player.sendMessage(ChatColor.GOLD + "Can't join " + game.getGameName());
 
 	}

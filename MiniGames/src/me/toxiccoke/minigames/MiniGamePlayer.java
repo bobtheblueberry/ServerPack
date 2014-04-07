@@ -60,6 +60,8 @@ public abstract class MiniGamePlayer {
 	public Player getPlayer() {
 		return Bukkit.getPlayer(player);
 	}
+	
+	public abstract void startGame();
 
 	public boolean equals(Object o) {
 		if (o == null) return false;

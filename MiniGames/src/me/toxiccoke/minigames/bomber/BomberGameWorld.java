@@ -1,8 +1,8 @@
 package me.toxiccoke.minigames.bomber;
 
-import java.awt.Rectangle;
 import java.util.LinkedList;
 
+import me.toxiccoke.minigames.Bounds;
 import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.MiniGamePlayer;
 import me.toxiccoke.minigames.MiniGameWorld;
@@ -24,12 +24,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -48,6 +53,10 @@ public class BomberGameWorld extends MiniGameWorld {
 		public Leader(String name, int score) {
 			this.name = name;
 			this.score = score;
+		}
+
+		public String toString() {
+			return "Leader(" + name + "," + score + ")";
 		}
 	}
 
@@ -99,7 +108,7 @@ public class BomberGameWorld extends MiniGameWorld {
 				plr.getPlayer().sendMessage(ChatColor.GOLD + "You were switched to the red team to balance the teams.");
 			}
 			initPlayer(plr);
-			TokenShop.teleportAdvanced(p, getSpawn(plr.team.team));
+			spawn(plr);
 			balanceTeams();
 		}
 	}
@@ -114,7 +123,7 @@ public class BomberGameWorld extends MiniGameWorld {
 		if (m == Material.LEAVES || m == Material.LEAVES_2 || m == Material.GLOWSTONE || m == Material.WOOL)
 			return false;
 		boolean bounds = true;
-		Rectangle bound = getBounds();
+		Bounds bound = getBounds();
 		if (bound != null) {
 			bounds = bound.contains(l.getBlockX(), l.getBlockZ());
 		}
@@ -122,7 +131,9 @@ public class BomberGameWorld extends MiniGameWorld {
 	}
 
 	@Override
-	public boolean canExplodeBlock(Block b) {
+	public boolean canExplodeBlock(Block b, Entity e) {
+		if (e != null && e.getType() == EntityType.FIREBALL)
+			return false;
 		return canDestroy(b.getType(), b.getLocation());
 	}
 
@@ -144,6 +155,7 @@ public class BomberGameWorld extends MiniGameWorld {
 		// Steal some of their health
 		if (stealHp) {
 			double steal = (((Damageable) victim).getHealth() / 2);
+
 			killer.sendMessage(ChatColor.RED + "+" + Math.round(steal));
 			double newHealth = ((Damageable) killer).getHealth() + steal;
 			killer.setHealth((newHealth > 20) ? 20 : newHealth);
@@ -206,7 +218,8 @@ public class BomberGameWorld extends MiniGameWorld {
 		is[2].setItemMeta(lam);
 		is[3] = new ItemStack(Material.LEATHER_HELMET, 1);
 		lam = (LeatherArmorMeta) is[3].getItemMeta();
-		lam.setColor(Color.fromRGB(r, g, b));
+		lam.setColor(Color.fromRGB((r == 0) ? (int) (Math.random() * 256) : r, (g == 0) ? (int) (Math.random() * 256)
+				: g, (b == 0) ? (int) (Math.random() * 256) : b));
 		is[3].setItemMeta(lam);
 		return is;
 	}
@@ -238,10 +251,16 @@ public class BomberGameWorld extends MiniGameWorld {
 		return temp.get((int) (Math.random() * temp.size()));
 	}
 
-	public Location getSpawn(TeamType t) {
-		if (t == TeamType.BLUE)
-			return spawnLocations.get(0);
-		return spawnLocations.get(1);
+	public void spawn(BomberGamePlayer p) {
+		if (!isStarted)
+			{TokenShop.teleportAdvanced(p.getPlayer(), lobbyLocation);
+			return;
+			}
+		Location l;
+		if (p.team.team == TeamType.BLUE)
+			l = spawnLocations.get(0);
+		else l =  spawnLocations.get(1);
+		TokenShop.teleportAdvanced(p.getPlayer(), l);
 	}
 
 	private BomberTeam getTeam() {
@@ -263,8 +282,7 @@ public class BomberGameWorld extends MiniGameWorld {
 		Player p = plr.getPlayer();
 		Inventory i = p.getInventory();
 		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.BOW, 1),
-				new ItemStack(Material.ARROW, 25), new ItemStack(Material.APPLE, 5),
-				new ItemStack(Material.IRON_INGOT, 1) };
+				new ItemStack(Material.ARROW, 25) };
 		i.addItem(s);
 		updateArmor(p, plr.team.team);
 		p.updateInventory();
@@ -283,7 +301,8 @@ public class BomberGameWorld extends MiniGameWorld {
 				name = name.substring(0, 15);
 			p.setPlayerListName(name);
 		}
-
+		if (isStarted)
+			plr.startGame();
 	}
 
 	private void initScoreboard() {
@@ -318,7 +337,7 @@ public class BomberGameWorld extends MiniGameWorld {
 
 	@Override
 	public boolean join(Player p) {
-		if (broken || lobbyLocation == null || spawnLocations.size() < 2)
+		if (broken || lobbyLocation == null || spawnLocations.size() < 2 || p == null)
 			return false;
 		boolean isInGame = false;
 		for (BomberGamePlayer bp : players)
@@ -339,14 +358,13 @@ public class BomberGameWorld extends MiniGameWorld {
 			joined = true;
 		} else bgp = getPlayer(p.getName());
 
-		if (!isStarted)
-			TokenShop.teleportAdvanced(p, lobbyLocation);
-		else {
+		if (isStarted)
+			{
 			p.setScoreboard(board);
 			p.setFoodLevel(20);
-			TokenShop.teleportAdvanced(p, getSpawn(getPlayer(p.getName()).team.team));
 		}
 
+		spawn(bgp);
 		p.sendMessage(ChatColor.YELLOW + "Joined Bomber! World: " + ChatColor.GREEN + worldName);
 		if (bgp.team.team == TeamType.BLUE)
 			p.sendMessage(ChatColor.DARK_BLUE + "You are in the blue team");
@@ -370,10 +388,10 @@ public class BomberGameWorld extends MiniGameWorld {
 			leader1 = new Leader(yml.getString("leader1.name"), yml.getInt("leader1.score"));
 		}
 		if (yml.contains("leader2.name")) {
-			leader1 = new Leader(yml.getString("leader2.name"), yml.getInt("leader2.score"));
+			leader2 = new Leader(yml.getString("leader2.name"), yml.getInt("leader2.score"));
 		}
 		if (yml.contains("leader3.name")) {
-			leader1 = new Leader(yml.getString("leader3.name"), yml.getInt("leader3.score"));
+			leader3 = new Leader(yml.getString("leader3.name"), yml.getInt("leader3.score"));
 		}
 	}
 
@@ -398,43 +416,61 @@ public class BomberGameWorld extends MiniGameWorld {
 
 			doKillPoints(dmg, p, true);
 			enemy = dmg.getName();
-		} else if (damager instanceof Arrow) {
-			Arrow dmg = (Arrow) damager;
+		} else if (damager instanceof Projectile) {
+			Projectile dmg = (Projectile) damager;
 			if (dmg.getShooter() instanceof Player) {
 				Player dmger = (Player) dmg.getShooter();
 				if (dmger.getName().equals(gp.getName())) {
 					enemy = "himself";
 				} else {
-					enemy = dmger.getName() + "'s Arrow";
+					if (dmg instanceof Arrow)
+						enemy = dmger.getName() + "'s Arrow";
+					else if (dmg instanceof Fireball)
+						enemy = dmger.getName() + "'s Fireball";
+					else enemy = dmger.getName() + "'s Projectile";
 					doKillPoints(dmger, p, false);
 				}
 			}
 		}
 
 		undeath(p);
-		TokenShop.teleportAdvanced(p, getSpawn(((BomberGamePlayer) gp).team.team));
-		sendPlayersMessage(ChatColor.ITALIC + "" + ChatColor.GRAY + p.getName() + " was killed by " + enemy);
+		spawn((BomberGamePlayer)gp);
+		sendPlayersMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + p.getName() + " was killed by " + enemy);
 	}
 
 	@Override
 	public void notifyDeath(MiniGamePlayer gp, EntityDamageEvent e) {
 		Player p = gp.getPlayer();
 		String cause = e.getCause().toString();
-		if (e.getCause() == DamageCause.BLOCK_EXPLOSION && bomber != null) {
-
-			if (!bomber.getName().equals(gp.getName())) {
-				cause = bomber.getName() + "'s explosive arrow";
-				if (bomber.team.team != ((BomberGamePlayer) gp).team.team) {
-					// no points for friendly fire
-					Player b = bomber.getPlayer();
-					b.sendMessage(ChatColor.GOLD + "You scored 1 point for killing " + p.getDisplayName());
-					doKillPoints(b, p, false);
-				}
-			} else cause = "his own explosive arrow";
+		boolean custom = false;
+		if ((e.getCause() == DamageCause.BLOCK_EXPLOSION || e.getCause() == DamageCause.PROJECTILE)) {
+			if (bomber != null) {
+				if (!bomber.getName().equals(gp.getName())) {
+					cause = bomber.getName() + "'s explosive arrow";
+					if (bomber.team.team != ((BomberGamePlayer) gp).team.team) {
+						// no points for friendly fire
+						Player b = bomber.getPlayer();
+						doKillPoints(b, p, false);
+					}
+				} else cause = "their own explosive arrow";
+			} else cause = "Herobrine's explosive arrow";
+		} else if (e.getCause() == DamageCause.FIRE || e.getCause() == DamageCause.FIRE_TICK
+				|| e.getCause() == DamageCause.LAVA) {
+			custom = true;
+			cause = " burned to death";
+		} else if (e.getCause() == DamageCause.SUICIDE) {
+			custom = true;
+			cause = " bid farewell, cruel world";
+		} else if (e.getCause() == DamageCause.FALL) {
+			custom = true;
+			cause = " fell to their death";
 		}
 		undeath(p);
-		TokenShop.teleportAdvanced(p, getSpawn(((BomberGamePlayer) gp).team.team));
-		sendPlayersMessage(ChatColor.ITALIC + "" + ChatColor.GRAY + p.getName() + " was killed by " + cause);
+		spawn((BomberGamePlayer)gp);
+		p.setFireTicks(0);
+		if (custom)
+			sendPlayersMessage(ChatColor.GRAY + p.getName() + cause);
+		else sendPlayersMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + p.getName() + " was killed by " + cause);
 	}
 
 	public void notifyLeaveCommand(MiniGamePlayer player) {
@@ -457,8 +493,8 @@ public class BomberGameWorld extends MiniGameWorld {
 		if (Math.random() * 2 < 1) {
 			if (Math.random() * 10 < 1)
 				random = 2 + (float) Math.random();
-			arrow.getWorld().createExplosion(arrow.getLocation(), random, Math.random() * 6 < 1);
 			bomber = (BomberGamePlayer) p;
+			arrow.getWorld().createExplosion(arrow.getLocation(), random, Math.random() * 6 < 1);
 		}
 		return;
 
@@ -527,16 +563,16 @@ public class BomberGameWorld extends MiniGameWorld {
 	private void startGame() {
 		if (isStarted)
 			return;
-
+		isStarted = true;
 		for (BomberGamePlayer p : players) {
 			Player pl = p.getPlayer();
 			pl.setScoreboard(board);
 			pl.setFoodLevel(20);
-			TokenShop.teleportAdvanced(p.getPlayer(), getSpawn(p.team.team));
+			p.startGame();
+			spawn(p);
 		}
 		sendPlayersMessage(ChatColor.YELLOW + "Game Started!");
 		endTimer = new GameEndTimer(this, gamelength);
-		isStarted = true;
 	}
 
 	private void undeath(Player p) {
@@ -622,5 +658,28 @@ public class BomberGameWorld extends MiniGameWorld {
 	private void updateScore() {
 		objective.getScore(redScore).setScore(red.getScore());
 		objective.getScore(blueScore).setScore(blue.getScore());
+	}
+
+	public boolean canPlayerHunger(MiniGamePlayer p) {
+		return false;
+	}
+
+	@Override
+	public void onPlayerInteract(MiniGamePlayer gp, PlayerInteractEvent event) {
+		if (!isStarted)
+			return;
+		ItemStack i = event.getItem();
+		if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)
+			return;
+		if (i == null || i.getType() != Material.IRON_SWORD)
+			return;
+		BomberGamePlayer bp = (BomberGamePlayer) gp;
+		if (!bp.canFireball())
+			return;
+		bp.fireball();
+		Player player = event.getPlayer();
+		Location loc = player.getEyeLocation().toVector().add(player.getLocation().getDirection().multiply(2))
+				.toLocation(player.getWorld(), player.getLocation().getYaw(), player.getLocation().getPitch());
+		player.getWorld().spawn(loc, Fireball.class).setShooter(player);
 	}
 }
