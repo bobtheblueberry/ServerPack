@@ -45,8 +45,6 @@ public class Commands extends JavaPlugin implements Listener {
 		getCommand("vanish").setExecutor(ch);
 		getCommand("nick").setExecutor(ch);
 
-		Partys p = new Partys();
-		getCommand("party").setExecutor(p);
 		getCommand("friend").setExecutor(fwends);
 		
 		getCommand("ap").setExecutor(new AdminMenu());

@@ -1,7 +1,6 @@
 package me.toxiccoke.tokenshop;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;

@@ -1,4 +1,4 @@
-package me.toxiccoke.servercore;
+package me.toxiccoke.minigames;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

@@ -60,10 +60,6 @@ commands:
         usage: /<command>
         description: Vanishes
         aliases: [v]
-    party:
-        usage: /<command>
-        description: Party Commands
-        aliases: [p]
     friend:
         usage: /<command>
         description: Friend Commands

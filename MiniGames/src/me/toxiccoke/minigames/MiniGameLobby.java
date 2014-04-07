@@ -86,6 +86,8 @@ public class MiniGameLobby implements Runnable, Listener {
 			player.sendMessage(ChatColor.GOLD + "That minigame is unavailable.");
 			return;
 		}
+		// Parties!!
+		
 		if (game.join(player))
 			;
 

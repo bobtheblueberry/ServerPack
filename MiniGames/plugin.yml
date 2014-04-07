@@ -10,3 +10,7 @@ commands:
         description: Configures a minigame world
         usage: /<command>
     leave:
+    party:
+        usage: /<command>
+        description: Party Commands
+        aliases: [p]
