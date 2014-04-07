@@ -1,5 +1,6 @@
 package me.toxiccoke.minigames;
 
+import me.toxiccoke.minigames.Partys.Party;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.ChatColor;
@@ -201,6 +202,17 @@ public class MiniGameCommands implements CommandExecutor {
 			for (MiniGamePlayer gp : m.getPlayers())
 				if (gp.player.equals(p.getName())) {
 					m.notifyLeaveCommand(gp);
+					// party
+					Party party = Partys.getParty(p);
+					if (party != null) {
+						for (Player f : party.getPlayers())
+							if (!f.getName().equals(p.getName()))
+								if (MiniGameLobby.lobby.isInGame(f, m))
+									f.sendMessage(p.getDisplayName() + ChatColor.DARK_GRAY + " has left the game");
+						if (!party.owner.equals(p.getName()))
+							if (MiniGameLobby.lobby.isInGame(party.getOwner(), m))
+								party.getOwner().sendMessage(p.getDisplayName() + ChatColor.DARK_GRAY + " has left " + m.getGameName());
+					}
 					return;
 				}
 	}

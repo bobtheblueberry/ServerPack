@@ -252,14 +252,14 @@ public class BomberGameWorld extends MiniGameWorld {
 	}
 
 	public void spawn(BomberGamePlayer p) {
-		if (!isStarted)
-			{TokenShop.teleportAdvanced(p.getPlayer(), lobbyLocation);
+		if (!isStarted) {
+			TokenShop.teleportAdvanced(p.getPlayer(), lobbyLocation);
 			return;
-			}
+		}
 		Location l;
 		if (p.team.team == TeamType.BLUE)
 			l = spawnLocations.get(0);
-		else l =  spawnLocations.get(1);
+		else l = spawnLocations.get(1);
 		TokenShop.teleportAdvanced(p.getPlayer(), l);
 	}
 
@@ -358,8 +358,7 @@ public class BomberGameWorld extends MiniGameWorld {
 			joined = true;
 		} else bgp = getPlayer(p.getName());
 
-		if (isStarted)
-			{
+		if (isStarted) {
 			p.setScoreboard(board);
 			p.setFoodLevel(20);
 		}
@@ -434,7 +433,7 @@ public class BomberGameWorld extends MiniGameWorld {
 		}
 
 		undeath(p);
-		spawn((BomberGamePlayer)gp);
+		spawn((BomberGamePlayer) gp);
 		sendPlayersMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + p.getName() + " was killed by " + enemy);
 	}
 
@@ -466,8 +465,7 @@ public class BomberGameWorld extends MiniGameWorld {
 			cause = " fell to their death";
 		}
 		undeath(p);
-		spawn((BomberGamePlayer)gp);
-		p.setFireTicks(0);
+		spawn((BomberGamePlayer) gp);
 		if (custom)
 			sendPlayersMessage(ChatColor.GRAY + p.getName() + cause);
 		else sendPlayersMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + p.getName() + " was killed by " + cause);
@@ -578,6 +576,7 @@ public class BomberGameWorld extends MiniGameWorld {
 	private void undeath(Player p) {
 		p.setHealth(((Damageable) p.getPlayer()).getMaxHealth());
 		p.setFoodLevel(20);
+		p.setFireTicks(0);
 	}
 
 	private void updateArmor(Player p, TeamType t) {

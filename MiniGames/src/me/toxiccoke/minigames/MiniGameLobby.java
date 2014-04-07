@@ -2,6 +2,7 @@ package me.toxiccoke.minigames;
 
 import java.util.ArrayList;
 
+import me.toxiccoke.minigames.Partys.Party;
 import me.toxiccoke.minigames.bomber.BomberGameWorld;
 
 import org.bukkit.Bukkit;
@@ -86,12 +87,48 @@ public class MiniGameLobby implements Runnable, Listener {
 			player.sendMessage(ChatColor.GOLD + "That minigame is unavailable.");
 			return;
 		}
+		if (isInGame(player)) {
+			player.sendMessage(ChatColor.GOLD + "You are in a game!");
+			return;
+		}
 		// Parties!!
-		
-		if (game.join(player))
-			;
+		if (Partys.isInParty(player)) {
+			Party p = Partys.getParty(player);
+			if (!Partys.isPartyOwner(player)) {
+				player.sendMessage(ChatColor.GOLD + "Your party owner [" + p.getOwner().getDisplayName()
+						+ ChatColor.GOLD + "] must decide what game for you to join."
+						+ " Do /party leave to leave your party.");
+				return;
+			}
+			// is there enough room?
+			if ((game.getPlayerCount() + p.players.size() + 1) > game.getMaxPlayers()) {
+				player.sendMessage("There is not enough room in this minigame for your party");
+				return;
+			}
+			game.join(p.getOwner());
+			for (Player plr : p.getPlayers())
+				if (!isInGame(plr))
+					game.join(plr);
+		} else {
+			if (game.join(player))
+				;
+			else player.sendMessage(ChatColor.GOLD + "Can't join " + game.getGameName());
+		}
 
-		else player.sendMessage(ChatColor.GOLD + "Can't join " + game.getGameName());
+	}
 
+	public boolean isInGame(Player p) {
+		for (MiniGameWorld w : games)
+			for (MiniGamePlayer gp : w.getPlayers())
+				if (p.getName().equals(gp.player))
+					return true;
+		return false;
+	}
+
+	public boolean isInGame(Player p, MiniGameWorld w) {
+		for (MiniGamePlayer gp : w.getPlayers())
+			if (p.getName().equals(gp.player))
+				return true;
+		return false;
 	}
 }

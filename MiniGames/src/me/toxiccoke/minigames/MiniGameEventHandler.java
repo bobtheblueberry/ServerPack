@@ -57,7 +57,7 @@ public class MiniGameEventHandler implements Listener {
 			return;
 		if (cmd.startsWith("tell", 1) || cmd.startsWith("msg", 1) || cmd.startsWith("leave", 1)
 				|| cmd.startsWith("r", 1) || cmd.startsWith("m", 1) || cmd.startsWith("reply", 1)
-				|| cmd.startsWith("say", 1))
+				|| cmd.startsWith("say", 1) || cmd.startsWith("party", 1) || cmd.startsWith("friend", 1))
 			return;
 		Player sender = event.getPlayer();
 		for (MiniGameWorld m : MiniGameLobby.lobby.games)
@@ -71,8 +71,7 @@ public class MiniGameEventHandler implements Listener {
 
 	// no hunger
 	@EventHandler
-	public void onFoodLevelChange(FoodLevelChangeEvent event) 
-	{
+	public void onFoodLevelChange(FoodLevelChangeEvent event) {
 		for (MiniGameWorld m : MiniGameLobby.lobby.games)
 			for (MiniGamePlayer gp : m.getPlayers())
 				if (gp.player.equals(event.getEntity().getName())) {
@@ -145,7 +144,9 @@ public class MiniGameEventHandler implements Listener {
 				event.blockList().remove(b);
 
 		}
-	}private String getLocationString(Location l) {
+	}
+
+	private String getLocationString(Location l) {
 		return " X: " + l.getBlockX() + " Y: " + l.getBlockY() + " Z: " + l.getBlockZ();
 	}
 
@@ -200,11 +201,10 @@ public class MiniGameEventHandler implements Listener {
 		if (attacker instanceof Player)
 			at = ((Player) attacker);
 		else if (!other) {
-			ProjectileSource ps =((Projectile) attacker).getShooter(); 
+			ProjectileSource ps = ((Projectile) attacker).getShooter();
 			if (ps instanceof Player)
 				at = (Player) ps;
-			else
-				other = true;
+			else other = true;
 		}
 		if (!other)
 			main: for (MiniGameWorld m : MiniGameLobby.lobby.games)

@@ -13,8 +13,8 @@ import org.bukkit.entity.Player;
 
 public class Partys implements CommandExecutor {
 
-	LinkedList<Party> parties;
-	LinkedList<PartyInvite> invites;
+	static LinkedList<Party> parties;
+	static LinkedList<PartyInvite> invites;
 
 	public Partys() {
 		parties = new LinkedList<Party>();
@@ -48,11 +48,11 @@ public class Partys implements CommandExecutor {
 			boolean owner = false;
 			boolean inParty = false;
 			for (Party part : parties)
-				if (part.owner.getName().equals(p.getName())) {
+				if (part.owner.equals(p.getName())) {
 					owner = true;
 					break;
 				} else
-					for (Player s : part.players)
+					for (Player s : part.getPlayers())
 						if (s.getName().equals(p.getName())) {
 							inParty = true;
 							break;
@@ -108,12 +108,12 @@ public class Partys implements CommandExecutor {
 			Party party = null;
 			boolean owner = false;
 			for (Party part : parties)
-				if (part.owner.getName().equals(p.getName())) {
+				if (part.owner.equals(p.getName())) {
 					party = part;
 					owner = true;
 					break;
 				} else
-					for (Player s : part.players)
+					for (Player s : part.getPlayers())
 						if (s.getName().equals(p.getName())) {
 							party = part;
 							break;
@@ -128,11 +128,11 @@ public class Partys implements CommandExecutor {
 			}
 			party.players.remove(p);
 			p.sendMessage("You have left the party");
-			for (Player friend : party.players)
+			for (Player friend : party.getPlayers())
 				if (friend.isOnline())
 					friend.sendMessage(p.getName() + " has left the party");
-			if (party.owner.isOnline())
-				party.owner.sendMessage(p.getName() + " has left the party");
+			if (party.getOwner().isOnline())
+				party.getOwner().sendMessage(p.getName() + " has left the party");
 
 			return true;
 
@@ -168,21 +168,21 @@ public class Partys implements CommandExecutor {
 				p.sendMessage("That party has been disbanded");
 				return true;
 			}
-			for (Player friend : i.party.players)
+			for (Player friend : i.party.getPlayers())
 				if (friend.isOnline())
 					friend.sendMessage(p.getName() + " has joined the party");
-			if (i.party.owner.isOnline())
-				i.party.owner.sendMessage(p.getName() + " has joined the party");
+			if (i.party.getOwner().isOnline())
+				i.party.getOwner().sendMessage(p.getName() + " has joined the party");
 			invites.remove(i);
-			i.party.players.add(p);
+			i.party.players.add(p.getName());
 			p.sendMessage("You have joined a party");
 			list(i.party, p);
 
 			return true;
 		} else if (arg1.equals("disband")) {
 			for (Party part : parties)
-				if (part.owner.getName().equals(p.getName())) {
-					for (Player member : part.players)
+				if (part.owner.equals(p.getName())) {
+					for (Player member : part.getPlayers())
 						if (member.isOnline())
 							member.sendMessage("Your party has been disbanded");
 					parties.remove(part);
@@ -198,12 +198,12 @@ public class Partys implements CommandExecutor {
 
 	private void list(Party party, Player p) {
 		StringBuilder s = new StringBuilder("Party: ");
-		if (party.owner.isOnline())
+		if (party.getOwner().isOnline())
 			s.append(ChatColor.RED);
 		else
 			s.append(ChatColor.GRAY);
-		s.append(party.owner.getName());
-		for (Player player : party.players) {
+		s.append(party.getOwner().getName());
+		for (Player player : party.getPlayers()) {
 			s.append(" ");
 			if (player.isOnline())
 				s.append(ChatColor.YELLOW);
@@ -222,23 +222,23 @@ public class Partys implements CommandExecutor {
 		return null;
 	}
 
-	private boolean isInParty(Player plr) {
+	public static boolean isInParty(Player plr) {
 		return getParty(plr) != null;
 	}
 
-	private boolean isPartyOwner(Player plr) {
+	public static boolean isPartyOwner(Player plr) {
 		for (Party part : parties)
-			if (part.owner.getName().equals(plr.getName()))
+			if (part.owner.equals(plr.getName()))
 				return true;
 		return false;
 	}
 
-	private Party getParty(Player plr) {
+	public static Party getParty(Player plr) {
 		for (Party part : parties)
-			if (part.owner.getName().equals(plr.getName()))
+			if (part.owner.equals(plr.getName()))
 				return part;
 			else
-				for (Player s : part.players)
+				for (Player s : part.getPlayers())
 					if (s.getName().equals(plr.getName()))
 						return part;
 
@@ -259,12 +259,21 @@ public class Partys implements CommandExecutor {
 	}
 
 	class Party {
-		ArrayList<Player> players;
-		Player owner;
+		ArrayList<String> players;
+		String owner;
 
 		public Party(Player owner) {
-			this.owner = owner;
-			players = new ArrayList<Player>();
+			this.owner = owner.getName();
+			players = new ArrayList<String>();
+		}
+		public Player getOwner() {
+			return Bukkit.getPlayer(owner);
+		}
+		public Player[] getPlayers() {
+			Player[] plrs = new Player[players.size()];
+			for (int i = 0; i < players.size(); i++)
+				plrs[i] = Bukkit.getPlayer(players.get(i));
+			return plrs;
 		}
 	}
 
