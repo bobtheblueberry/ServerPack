@@ -6,7 +6,7 @@ public class BomberTeam implements Listener {
 
 	public int getScore() {
 		int i = 0;
-		for (BomberGamePlayer gp : world.players)
+		for (BomberPlayer gp : world.players)
 			if (gp.team.team == team) i += gp.getScore();
 		return i;
 	}
@@ -16,9 +16,9 @@ public class BomberTeam implements Listener {
 	}
 
 	public TeamType	team;
-	BomberGameWorld	world;
+	BomberWorld	world;
 
-	public BomberTeam(BomberGameWorld world, TeamType type) {
+	public BomberTeam(BomberWorld world, TeamType type) {
 		this.team = type;
 		this.world = world;
 	}

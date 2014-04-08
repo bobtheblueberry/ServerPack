@@ -1,6 +1,6 @@
 package me.toxiccoke.minigames.bomber;
 
-import me.toxiccoke.minigames.MiniGamePlayer;
+import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 import me.toxiccoke.minigames.bomber.BomberTeam.TeamType;
 
@@ -9,12 +9,12 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-public class BomberGamePlayer extends MiniGamePlayer implements Runnable {
+public class BomberPlayer extends GamePlayer implements Runnable {
 
 	BomberTeam	team;
 	private boolean canFireball;
 
-	public BomberGamePlayer(Player p, BomberTeam t) {
+	public BomberPlayer(Player p, BomberTeam t) {
 		super(p);
 		this.team = t;
 	}

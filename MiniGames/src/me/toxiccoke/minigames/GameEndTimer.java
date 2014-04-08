@@ -5,10 +5,10 @@ import org.bukkit.Bukkit;
 public class GameEndTimer implements Runnable{
 
 	boolean canceled;
-	MiniGameWorld world;
+	GameWorld world;
 	int minutes;
 	int countdown;
-	public GameEndTimer(MiniGameWorld w, int minutes) {
+	public GameEndTimer(GameWorld w, int minutes) {
 		this.world = w;
 		this.minutes = minutes;
 		this.countdown = minutes;

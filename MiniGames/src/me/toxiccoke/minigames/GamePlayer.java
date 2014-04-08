@@ -14,13 +14,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
-public abstract class MiniGamePlayer {
+public abstract class GamePlayer {
 
 	protected String	player;
 	OriginalPlayer		originalPlayer;
 	protected int		score;
 
-	public MiniGamePlayer(Player p) {
+	public GamePlayer(Player p) {
 		this.player = p.getName();
 		this.originalPlayer = new OriginalPlayer(p);
 		p.getInventory().setArmorContents(null);
@@ -65,8 +65,8 @@ public abstract class MiniGamePlayer {
 
 	public boolean equals(Object o) {
 		if (o == null) return false;
-		if (!(o instanceof MiniGamePlayer)) return false;
-		return ((MiniGamePlayer) o).player.equals(player);
+		if (!(o instanceof GamePlayer)) return false;
+		return ((GamePlayer) o).player.equals(player);
 	}
 
 	class OriginalPlayer {

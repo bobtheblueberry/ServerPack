@@ -22,7 +22,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public abstract class MiniGameWorld {
+public abstract class GameWorld {
 
 	protected String				gameName;
 	protected String				schematic;
@@ -33,7 +33,7 @@ public abstract class MiniGameWorld {
 	protected int					heightLimit	= 1000;
 	protected int					minplayers, maxplayers;
 
-	public MiniGameWorld(String gameName, String worldName) {
+	public GameWorld(String gameName, String worldName) {
 		this.gameName = gameName;
 		this.worldName = worldName;
 		spawnLocations = new ArrayList<Location>();
@@ -63,7 +63,7 @@ public abstract class MiniGameWorld {
 
 	public abstract boolean join(Player p);
 
-	public abstract LinkedList<? extends MiniGamePlayer> getPlayers();
+	public abstract LinkedList<? extends GamePlayer> getPlayers();
 
 	public abstract void save();
 
@@ -75,17 +75,17 @@ public abstract class MiniGameWorld {
 		Utils.copySchematic(pasteLocation, new File(MiniGamesPlugin.plugin.getDataFolder(), schematic), false, true);
 	}
 
-	public abstract boolean canPlaceBlock(MiniGamePlayer p, BlockPlaceEvent event);
+	public abstract boolean canPlaceBlock(GamePlayer p, BlockPlaceEvent event);
 
-	public abstract boolean canBreakBlock(MiniGamePlayer p, BlockBreakEvent event);
+	public abstract boolean canBreakBlock(GamePlayer p, BlockBreakEvent event);
 
 	public abstract boolean canExplodeBlock(Block b, Entity e);
 
-	public abstract boolean canPlayerHunger(MiniGamePlayer player);
+	public abstract boolean canPlayerHunger(GamePlayer player);
 
-	public void onPlayerInteract(MiniGamePlayer p, PlayerInteractEvent e) {}
+	public void onPlayerInteract(GamePlayer p, PlayerInteractEvent e) {}
 
-	public void projectileHit(MiniGamePlayer p, ProjectileHitEvent event) {}
+	public void projectileHit(GamePlayer p, ProjectileHitEvent event) {}
 
 	protected YamlConfiguration getSaveYML() {
 		YamlConfiguration yml = new YamlConfiguration();
@@ -246,19 +246,19 @@ public abstract class MiniGameWorld {
 		signText = text;
 	}
 
-	public abstract void notifyDeath(MiniGamePlayer gp, Entity damager, DamageCause cause);
+	public abstract void notifyDeath(GamePlayer gp, Entity damager, DamageCause cause);
 
-	public abstract void notifyDeath(MiniGamePlayer gp, EntityDamageEvent e);
+	public abstract void notifyDeath(GamePlayer gp, EntityDamageEvent e);
 
-	public abstract void notifyQuitGame(MiniGamePlayer gp);
+	public abstract void notifyQuitGame(GamePlayer gp);
 
 	public abstract void endUpdate(int minutesLeft);
 
 	public abstract void updateLeaderboard();
 
-	public abstract void notifyLeaveCommand(MiniGamePlayer gp);
+	public abstract void notifyLeaveCommand(GamePlayer gp);
 
-	public abstract boolean allowDamage(MiniGamePlayer gp);
+	public abstract boolean allowDamage(GamePlayer gp);
 
 	public Bounds getBounds() {
 		if (bounds1 == null || bounds2 == null)

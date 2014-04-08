@@ -14,7 +14,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-public class MiniGameCommands implements CommandExecutor {
+public class GameCommands implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -42,7 +42,7 @@ public class MiniGameCommands implements CommandExecutor {
 		if (args.length > 0 && args[0].startsWith("list")) {
 			p.sendMessage(ChatColor.GRAY + "MiniGame Worlds ----->");
 			// list minigames
-			for (MiniGameWorld s : MiniGameLobby.lobby.games)
+			for (GameWorld s : GameLobby.lobby.games)
 				p.sendMessage(ChatColor.RED + "MiniGame: " + ChatColor.YELLOW + s.getGameName() + ChatColor.RED
 						+ " World: " + ChatColor.YELLOW + s.getWorldName());
 			return true;
@@ -51,8 +51,8 @@ public class MiniGameCommands implements CommandExecutor {
 			p.sendMessage(ChatColor.RED + "/" + label + " " + args[0] + " <Game Type> <World>");
 			return true;
 		}
-		MiniGameWorld minigame = null;
-		for (MiniGameWorld s : MiniGameLobby.lobby.games)
+		GameWorld minigame = null;
+		for (GameWorld s : GameLobby.lobby.games)
 			if (s.getWorldName().equalsIgnoreCase(args[2]) && s.getGameName().equalsIgnoreCase(args[1])) {
 				minigame = s;
 				break;
@@ -198,8 +198,8 @@ public class MiniGameCommands implements CommandExecutor {
 	}
 
 	private void leave(Player p, String[] args) {
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(p.getName())) {
 					m.notifyLeaveCommand(gp);
 					// party
@@ -207,10 +207,10 @@ public class MiniGameCommands implements CommandExecutor {
 					if (party != null) {
 						for (Player f : party.getPlayers())
 							if (!f.getName().equals(p.getName()))
-								if (MiniGameLobby.lobby.isInGame(f, m))
+								if (GameLobby.lobby.isInGame(f, m))
 									f.sendMessage(p.getDisplayName() + ChatColor.DARK_GRAY + " has left the game");
 						if (!party.owner.equals(p.getName()))
-							if (MiniGameLobby.lobby.isInGame(party.getOwner(), m))
+							if (GameLobby.lobby.isInGame(party.getOwner(), m))
 								party.getOwner().sendMessage(p.getDisplayName() + ChatColor.DARK_GRAY + " has left " + m.getGameName());
 					}
 					return;

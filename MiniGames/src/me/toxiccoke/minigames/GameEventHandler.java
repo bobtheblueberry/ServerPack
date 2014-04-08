@@ -30,17 +30,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
-public class MiniGameEventHandler implements Listener {
+public class GameEventHandler implements Listener {
 
 	// Mini Game Chat
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent chat) {
 		Player sender = chat.getPlayer();
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.getName().equals(sender.getName())) {
 					chat.setCancelled(true);
-					for (MiniGamePlayer mgp : m.getPlayers())
+					for (GamePlayer mgp : m.getPlayers())
 						mgp.getPlayer().sendMessage(
 								gp.getTeamColor() + ChatColor.stripColor(gp.getPlayer().getDisplayName()) + ": "
 										+ ChatColor.GRAY + chat.getMessage());
@@ -60,8 +60,8 @@ public class MiniGameEventHandler implements Listener {
 				|| cmd.startsWith("say", 1) || cmd.startsWith("party", 1) || cmd.startsWith("friend", 1))
 			return;
 		Player sender = event.getPlayer();
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.getName().equals(sender.getName())) {
 					sender.sendMessage(ChatColor.GOLD + "Do /leave to leave the game");
 					event.setCancelled(true);
@@ -72,8 +72,8 @@ public class MiniGameEventHandler implements Listener {
 	// no hunger
 	@EventHandler
 	public void onFoodLevelChange(FoodLevelChangeEvent event) {
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(event.getEntity().getName())) {
 					if (!m.canPlayerHunger(gp))
 						event.setCancelled(true);
@@ -83,8 +83,8 @@ public class MiniGameEventHandler implements Listener {
 
 	@EventHandler
 	public void blockBreak(BlockBreakEvent event) {
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(event.getPlayer().getName())) {
 					if (!m.canBreakBlock(gp, event)) {
 						event.setCancelled(true);
@@ -95,8 +95,8 @@ public class MiniGameEventHandler implements Listener {
 
 	@EventHandler
 	public void blockPlace(BlockPlaceEvent event) {
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(event.getPlayer().getName())) {
 					if (!m.canPlaceBlock(gp, event)) {
 						event.setBuild(false);
@@ -114,8 +114,8 @@ public class MiniGameEventHandler implements Listener {
 		Arrow arrow = (Arrow) proj;
 		if (arrow.getShooter() instanceof Player) {
 			Player p = (Player) arrow.getShooter();
-			for (MiniGameWorld m : MiniGameLobby.lobby.games)
-				for (MiniGamePlayer gp : m.getPlayers())
+			for (GameWorld m : GameLobby.lobby.games)
+				for (GamePlayer gp : m.getPlayers())
 					if (gp.player.equals(p.getName())) {
 						m.projectileHit(gp, event);
 						return;
@@ -125,7 +125,7 @@ public class MiniGameEventHandler implements Listener {
 
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
-		for (MiniGameWorld m : MiniGameLobby.lobby.games) {
+		for (GameWorld m : GameLobby.lobby.games) {
 
 			Bounds bounds = m.getExcessBounds();
 			if (bounds == null)
@@ -153,8 +153,8 @@ public class MiniGameEventHandler implements Listener {
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		Player p = event.getPlayer();
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(p.getName())) {
 					m.onPlayerInteract(gp, event);
 					return;
@@ -169,8 +169,8 @@ public class MiniGameEventHandler implements Listener {
 			return;
 		if (p.getVehicle() != null)
 			return;
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(event.getPlayer().getName())) {
 					event.setCancelled(true);
 					return;
@@ -182,8 +182,8 @@ public class MiniGameEventHandler implements Listener {
 		// diable removing armor
 		if ((event.getSlot() == 39 || event.getSlot() == 38 || event.getSlot() == 37 || event.getSlot() == 36)
 				&& event.getInventory().getHolder() instanceof HumanEntity)
-			for (MiniGameWorld m : MiniGameLobby.lobby.games)
-				for (MiniGamePlayer gp : m.getPlayers())
+			for (GameWorld m : GameLobby.lobby.games)
+				for (GamePlayer gp : m.getPlayers())
 					if (gp.player.equals(event.getWhoClicked().getName())) {
 						event.setCancelled(true);
 						return;
@@ -207,8 +207,8 @@ public class MiniGameEventHandler implements Listener {
 			else other = true;
 		}
 		if (!other)
-			main: for (MiniGameWorld m : MiniGameLobby.lobby.games)
-				for (MiniGamePlayer gp : m.getPlayers())
+			main: for (GameWorld m : GameLobby.lobby.games)
+				for (GamePlayer gp : m.getPlayers())
 					if (gp.player.equals(at.getName())) {
 						// Don't let the player attack if they are in the game
 						// lobby
@@ -223,8 +223,8 @@ public class MiniGameEventHandler implements Listener {
 
 		Player v = (Player) victim;
 		if (((Damageable) victim).getHealth() - event.getDamage() <= 0)
-			for (MiniGameWorld m : MiniGameLobby.lobby.games)
-				for (MiniGamePlayer gp : m.getPlayers())
+			for (GameWorld m : GameLobby.lobby.games)
+				for (GamePlayer gp : m.getPlayers())
 					if (gp.player.equals(v.getName())) {
 						// Respawn player instead of having them die
 						m.notifyDeath(gp, event.getDamager(), event.getCause());
@@ -246,8 +246,8 @@ public class MiniGameEventHandler implements Listener {
 
 		if (((Damageable) player).getHealth() - event.getDamage() > 0)
 			return;
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(player.getName())) {
 					m.notifyDeath(gp, event);
 					event.setCancelled(true);
@@ -258,8 +258,8 @@ public class MiniGameEventHandler implements Listener {
 	@EventHandler
 	public void onEntityQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
-		for (MiniGameWorld m : MiniGameLobby.lobby.games)
-			for (MiniGamePlayer gp : m.getPlayers())
+		for (GameWorld m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(player.getName())) {
 					m.notifyQuitGame(gp);
 					return;

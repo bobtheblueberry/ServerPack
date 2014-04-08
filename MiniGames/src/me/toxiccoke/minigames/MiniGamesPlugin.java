@@ -10,12 +10,12 @@ public class MiniGamesPlugin extends JavaPlugin implements Listener {
 
 	public void onEnable() {
 		plugin = this;
-		MiniGameLobby l = new MiniGameLobby();
+		GameLobby l = new GameLobby();
 		getServer().getPluginManager().registerEvents(l, this);
 		getServer().getPluginManager().registerEvents(new Particles(), this);
-		getServer().getPluginManager().registerEvents(new MiniGameEventHandler(), this);
+		getServer().getPluginManager().registerEvents(new GameEventHandler(), this);
 
-		MiniGameCommands c = new MiniGameCommands();
+		GameCommands c = new GameCommands();
 		getCommand("madmin").setExecutor(c);
 		getCommand("leave").setExecutor(c);
 		Partys p = new Partys();
@@ -23,10 +23,10 @@ public class MiniGamesPlugin extends JavaPlugin implements Listener {
 	}
 	
 	public void onDisable() {
-		for (MiniGameWorld m : MiniGameLobby.lobby.games) {
+		for (GameWorld m : GameLobby.lobby.games) {
 			@SuppressWarnings("unchecked")
-			LinkedList<? extends MiniGamePlayer> cloned = (LinkedList<? extends MiniGamePlayer>) m.getPlayers().clone();
-			for (MiniGamePlayer gp : cloned)
+			LinkedList<? extends GamePlayer> cloned = (LinkedList<? extends GamePlayer>) m.getPlayers().clone();
+			for (GamePlayer gp : cloned)
 					m.notifyQuitGame(gp);	
 		}
 	}

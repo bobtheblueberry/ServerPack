@@ -17,8 +17,8 @@ public class Particles implements Listener {
 		Player p = e.getPlayer();
 		if ((p.getGameMode() != GameMode.CREATIVE)
 				&& (p.getLocation().subtract(0, 1, 0).getBlock().getType() != Material.AIR) && (!p.isFlying())) {
-			for (MiniGameWorld w : MiniGameLobby.lobby.games)
-				for (MiniGamePlayer gp : w.getPlayers())
+			for (GameWorld w : GameLobby.lobby.games)
+				for (GamePlayer gp : w.getPlayers())
 					if (gp.player.equals(e.getPlayer().getName()))
 					{
 						Material m = gp.getFeetParticle();

@@ -3,7 +3,7 @@ package me.toxiccoke.minigames;
 import java.util.ArrayList;
 
 import me.toxiccoke.minigames.Partys.Party;
-import me.toxiccoke.minigames.bomber.BomberGameWorld;
+import me.toxiccoke.minigames.bomber.BomberWorld;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,23 +14,23 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public class MiniGameLobby implements Runnable, Listener {
+public class GameLobby implements Runnable, Listener {
 
-	public ArrayList<MiniGameWorld>	games;
-	public static MiniGameLobby		lobby;
+	public ArrayList<GameWorld>	games;
+	public static GameLobby		lobby;
 
-	public MiniGameLobby() {
-		games = new ArrayList<MiniGameWorld>(2);
+	public GameLobby() {
+		games = new ArrayList<GameWorld>(2);
 		lobby = this;
 
-		games.add(new BomberGameWorld("Greenland"));
-		games.add(new BomberGameWorld("Amazon"));
+		games.add(new BomberWorld("Greenland"));
+		games.add(new BomberWorld("Amazon"));
 		// 20 ticks per second
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, this, 0L, 20L);
 	}
 
 	public void updateSigns() {
-		for (MiniGameWorld w : games) {
+		for (GameWorld w : games) {
 			Sign s = w.getSign();
 			if (s == null)
 				continue;
@@ -74,8 +74,8 @@ public class MiniGameLobby implements Runnable, Listener {
 		if (!(b.getState() instanceof Sign))
 			return;
 		Sign s = (Sign) b.getState();
-		MiniGameWorld game = null;
-		for (MiniGameWorld w : games)
+		GameWorld game = null;
+		for (GameWorld w : games)
 			if (w.signLocation != null && w.signLocation.equals(s.getLocation())) {
 				game = w;
 				break;
@@ -118,15 +118,15 @@ public class MiniGameLobby implements Runnable, Listener {
 	}
 
 	public boolean isInGame(Player p) {
-		for (MiniGameWorld w : games)
-			for (MiniGamePlayer gp : w.getPlayers())
+		for (GameWorld w : games)
+			for (GamePlayer gp : w.getPlayers())
 				if (p.getName().equals(gp.player))
 					return true;
 		return false;
 	}
 
-	public boolean isInGame(Player p, MiniGameWorld w) {
-		for (MiniGamePlayer gp : w.getPlayers())
+	public boolean isInGame(Player p, GameWorld w) {
+		for (GamePlayer gp : w.getPlayers())
 			if (p.getName().equals(gp.player))
 				return true;
 		return false;
