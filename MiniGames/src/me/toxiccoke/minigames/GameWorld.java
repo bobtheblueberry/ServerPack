@@ -8,9 +8,12 @@ import java.util.LinkedList;
 import me.monowii.mwschematics.Utils;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
@@ -21,6 +24,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.vehicle.VehicleUpdateEvent;
 
 public abstract class GameWorld {
 
@@ -32,6 +36,21 @@ public abstract class GameWorld {
 	protected ArrayList<Location>	spawnLocations;
 	protected int					heightLimit	= 1000;
 	protected int					minplayers, maxplayers;
+	protected Leader				leader1, leader2, leader3;
+
+	protected class Leader {
+		public String	name;
+		public int		score;
+
+		public Leader(String name, int score) {
+			this.name = name;
+			this.score = score;
+		}
+
+		public String toString() {
+			return "Leader(" + name + "," + score + ")";
+		}
+	}
 
 	public GameWorld(String gameName, String worldName) {
 		this.gameName = gameName;
@@ -59,13 +78,17 @@ public abstract class GameWorld {
 
 	public abstract boolean isJoinable();
 
-	public abstract boolean isFull();
+	public boolean isFull() {
+		return getPlayerCount() >= maxplayers;
+	}
 
 	public abstract boolean join(Player p);
 
 	public abstract LinkedList<? extends GamePlayer> getPlayers();
 
 	public abstract void save();
+
+	public void vehicleUpdate(VehicleUpdateEvent e) {}
 
 	public void reset() {
 		if (pasteLocation == null)
@@ -142,7 +165,36 @@ public abstract class GameWorld {
 			yml.set("lobby.yaw", lobbyLocation.getYaw());
 			yml.set("lobby.pitch", lobbyLocation.getPitch());
 		}
+		if (leader1 != null) {
+			yml.set("leader1.name", leader1.name);
+			yml.set("leader1.score", leader1.score);
+		}
+		if (leader2 != null) {
+			yml.set("leader2.name", leader2.name);
+			yml.set("leader2.score", leader2.score);
+		}
+		if (leader3 != null) {
+			yml.set("leader3.name", leader3.name);
+			yml.set("leader3.score", leader3.score);
+		}
 		return yml;
+	}
+
+	protected void checkLeader(GamePlayer p) {
+		int score = p.getScore();
+		if (leader1 == null || score > leader1.score) {
+			leader1 = new Leader(p.getName(), score);
+			updateLeaderboard();
+			save();
+		} else if (leader2 == null || score > leader2.score) {
+			leader2 = new Leader(p.getName(), score);
+			updateLeaderboard();
+			save();
+		} else if (leader3 == null || score > leader3.score) {
+			leader3 = new Leader(p.getName(), score);
+			updateLeaderboard();
+			save();
+		}
 	}
 
 	protected void save(YamlConfiguration yml) {
@@ -173,7 +225,18 @@ public abstract class GameWorld {
 		schematic = yml.getString("world.schematic");
 		if (yml.contains("world.heightlimit"))
 			heightLimit = yml.getInt("world.heightlimit");
+		if (yml.contains("leader1.name")) {
+			leader1 = new Leader(yml.getString("leader1.name"), yml.getInt("leader1.score"));
+		}
+		if (yml.contains("leader2.name")) {
+			leader2 = new Leader(yml.getString("leader2.name"), yml.getInt("leader2.score"));
+		}
+		if (yml.contains("leader3.name")) {
+			leader3 = new Leader(yml.getString("leader3.name"), yml.getInt("leader3.score"));
+		}
 		String world = yml.getString("world.world");
+		if (world == null)
+			return yml;
 		World w = Bukkit.getServer().getWorld(world);
 		if (w != null)
 			pasteLocation = new Location(w, yml.getInt("world.x"), yml.getInt("world.y"), yml.getInt("world.z"));
@@ -230,7 +293,7 @@ public abstract class GameWorld {
 		Block b = Bukkit.getServer().getWorld(signLocation.getWorld().getName()).getBlockAt(signLocation);
 		if (b == null)
 			return null;
-		
+
 		if (b.getState() instanceof Sign)
 			return (Sign) b.getState();
 		return null;
@@ -252,9 +315,72 @@ public abstract class GameWorld {
 
 	public abstract void notifyQuitGame(GamePlayer gp);
 
-	public abstract void endUpdate(int minutesLeft);
+	public void endUpdate(int minutes) {
+		if (minutes > 1)
+			sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minutes.");
+		else if (minutes > 0)
+			sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minute.");
+		else endGame();
+	}
 
-	public abstract void updateLeaderboard();
+	public void sendPlayersMessage(String msg) {
+		for (GamePlayer p : getPlayers())
+			p.getPlayer().sendMessage(msg);
+	}
+
+	protected abstract void endGame();
+
+	@SuppressWarnings("deprecation")
+	public void updateLeaderboard() {
+		if (leaderboard == null)
+			return;
+		BlockFace f = BlockFace.SOUTH;
+		if (leader1 != null) {
+			SkullUtils.PlaceSkull(leaderboard.clone().add(0, 2, 0), leader1.name, f);
+			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(0, 1, 1));
+			s.setType(Material.WALL_SIGN);
+			s.setData((byte) 3);
+			Sign sign = (Sign) s.getState();
+			sign.setLine(0, "1st");
+			sign.setLine(1, leader1.name);
+			sign.setLine(2, leader1.score + " Kills");
+			sign.update();
+		} else {
+			SkullUtils.PlaceSkull(leaderboard.clone().add(0, 2, 0), "Herobrine", f);
+			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(0, 1, 1));
+			s.setType(Material.WALL_SIGN);
+			s.setData((byte) 3);
+			Sign sign = (Sign) s.getState();
+			sign.setLine(0, "1st");
+			sign.setLine(1, "Herobrine");
+			sign.setLine(2, "Kills: " + ChatColor.MAGIC + "9001");
+			sign.update();
+		}
+
+		if (leader2 != null) {
+			SkullUtils.PlaceSkull(leaderboard.clone().add(-1, 1, 0), leader2.name, f);
+			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(-1, 0, 1));
+			s.setType(Material.WALL_SIGN);
+			s.setData((byte) 3);
+			Sign sign = (Sign) s.getState();
+			sign.setLine(0, "2nd");
+			sign.setLine(1, leader2.name);
+			sign.setLine(2, leader2.score + " Kills");
+			sign.update();
+		} else SkullUtils.PlaceSkull(leaderboard.clone().add(-1, 1, 0), "Herobrine", f);
+
+		if (leader3 != null) {
+			SkullUtils.PlaceSkull(leaderboard.clone().add(1, 1, 0), leader3.name, f);
+			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(1, 0, 1));
+			s.setType(Material.WALL_SIGN);
+			s.setData((byte) 3);
+			Sign sign = (Sign) s.getState();
+			sign.setLine(0, "3rd");
+			sign.setLine(1, leader3.name);
+			sign.setLine(2, leader3.score + " Kills");
+			sign.update();
+		} else SkullUtils.PlaceSkull(leaderboard.clone().add(1, 1, 0), "Herobrine", f);
+	}
 
 	public abstract void notifyLeaveCommand(GamePlayer gp);
 

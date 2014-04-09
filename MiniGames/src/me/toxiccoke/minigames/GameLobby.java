@@ -3,7 +3,8 @@ package me.toxiccoke.minigames;
 import java.util.ArrayList;
 
 import me.toxiccoke.minigames.Partys.Party;
-import me.toxiccoke.minigames.bomber.BomberWorld;
+import me.toxiccoke.minigames.bomber.BomberGame;
+import me.toxiccoke.minigames.payload.PayloadGame;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -23,8 +24,9 @@ public class GameLobby implements Runnable, Listener {
 		games = new ArrayList<GameWorld>(2);
 		lobby = this;
 
-		games.add(new BomberWorld("Greenland"));
-		games.add(new BomberWorld("Amazon"));
+		games.add(new BomberGame("Greenland"));
+		games.add(new BomberGame("Amazon"));
+		games.add(new PayloadGame("Badwater"));
 		// 20 ticks per second
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, this, 0L, 20L);
 	}

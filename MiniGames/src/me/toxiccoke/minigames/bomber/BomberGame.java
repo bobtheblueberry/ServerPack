@@ -5,9 +5,10 @@ import java.util.LinkedList;
 import me.toxiccoke.minigames.Bounds;
 import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.GamePlayer;
-import me.toxiccoke.minigames.GameWorld;
-import me.toxiccoke.minigames.SkullUtils;
-import me.toxiccoke.minigames.bomber.BomberTeam.TeamType;
+import me.toxiccoke.minigames.team.TeamType;
+import me.toxiccoke.minigames.team.TwoTeamGame;
+import me.toxiccoke.minigames.team.TwoTeamPlayer;
+import me.toxiccoke.minigames.team.TwoTeamTeam;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
@@ -16,10 +17,7 @@ import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Damageable;
@@ -38,43 +36,18 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
-import org.bukkit.scoreboard.Team;
 
-public class BomberWorld extends GameWorld {
-
-	class Leader {
-		String	name;
-		int		score;
-
-		public Leader(String name, int score) {
-			this.name = name;
-			this.score = score;
-		}
-
-		public String toString() {
-			return "Leader(" + name + "," + score + ")";
-		}
-	}
+public class BomberGame extends TwoTeamGame {
 
 	protected LinkedList<BomberPlayer>	players;
-	private BomberLobbyTimer				lobbyTimer;
-	private GameEndTimer					endTimer;
-	boolean									isStarted;
-	private BomberTeam						red, blue;
-	private Team							redTeam, blueTeam;
-	private OfflinePlayer					redScore, blueScore;
-	private Objective						objective;
-	private Scoreboard						board;
+	private BomberLobbyTimer			lobbyTimer;
+	private GameEndTimer				endTimer;
+	boolean								isStarted;
+	private BomberTeam					red, blue;
 	private volatile BomberPlayer		bomber;
-	private int								gamelength	= 4;
+	private int							gamelength	= 4;
 
-	private volatile Leader					leader1, leader2, leader3;
-
-	public BomberWorld(String worldName) {
+	public BomberGame(String worldName) {
 		super("Bomber", worldName);
 		load();
 		players = new LinkedList<BomberPlayer>();
@@ -86,31 +59,6 @@ public class BomberWorld extends GameWorld {
 	@Override
 	public boolean allowDamage(GamePlayer gp) {
 		return isStarted;
-	}
-
-	private void balanceTeams() {
-		int redCount = 0, bluCount = 0;
-		for (BomberPlayer p : players)
-			if (p.team.team == TeamType.BLUE)
-				bluCount++;
-			else redCount++;
-		if (Math.abs(redCount - bluCount) > 1) {
-			BomberPlayer plr = getRandomPlayer(TeamType.RED);
-			if (plr == null)
-				return;
-			Player p = plr.getPlayer();
-			removePlayerFromScoreboard(plr);
-			if (redCount > bluCount) {
-				plr.team = blue;
-				p.sendMessage(ChatColor.GOLD + "You were switched to the blue team to balance the teams.");
-			} else {
-				plr.team = red;
-				plr.getPlayer().sendMessage(ChatColor.GOLD + "You were switched to the red team to balance the teams.");
-			}
-			initPlayer(plr);
-			spawn(plr);
-			balanceTeams();
-		}
 	}
 
 	@Override
@@ -164,7 +112,7 @@ public class BomberWorld extends GameWorld {
 		updateScore();
 	}
 
-	private void endGame() {
+	protected void endGame() {
 		sendPlayersMessage(ChatColor.GOLD + "Game has ended!");
 		String bluMsg, redMsg;
 		int bs = blue.getScore(), rs = red.getScore();
@@ -190,15 +138,6 @@ public class BomberWorld extends GameWorld {
 		players.clear();
 		updateScore();
 		reset();
-	}
-
-	@Override
-	public void endUpdate(int minutes) {
-		if (minutes > 1)
-			sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minutes.");
-		else if (minutes > 0)
-			sendPlayersMessage(ChatColor.GOLD + "Game ending in " + minutes + " minute.");
-		else endGame();
 	}
 
 	private ItemStack[] getColoredArmor(int r, int g, int b) {
@@ -241,54 +180,30 @@ public class BomberWorld extends GameWorld {
 		return players;
 	}
 
-	private BomberPlayer getRandomPlayer(TeamType t) {
-		LinkedList<BomberPlayer> temp = new LinkedList<BomberPlayer>();
-		for (BomberPlayer p : players)
-			if (p.team.team == t)
-				temp.add(p);
-		if (temp.size() == 0)
-			return null;
-		return temp.get((int) (Math.random() * temp.size()));
-	}
-
-	public void spawn(BomberPlayer p) {
+	public void spawn(TwoTeamPlayer p) {
 		if (!isStarted) {
 			TokenShop.teleportAdvanced(p.getPlayer(), lobbyLocation);
 			return;
 		}
 		Location l;
-		if (p.team.team == TeamType.BLUE)
+		if (p.getTeam().team == TeamType.BLUE)
 			l = spawnLocations.get(0);
 		else l = spawnLocations.get(1);
 		TokenShop.teleportAdvanced(p.getPlayer(), l);
 	}
 
-	private BomberTeam getTeam() {
-		int redCount = 0, bluCount = 0;
-		for (BomberPlayer p : players)
-			if (p.team.team == TeamType.BLUE)
-				bluCount++;
-			else redCount++;
-		if (redCount == bluCount)
-			return (Math.random() * 2) < 1 ? red : blue;
-
-		if (redCount > bluCount)
-			return blue;
-		else return red;
-	}
-
 	@SuppressWarnings("deprecation")
-	private void initPlayer(BomberPlayer plr) {
+	protected void initPlayer(TwoTeamPlayer plr) {
 		Player p = plr.getPlayer();
 		Inventory i = p.getInventory();
 		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.BOW, 1),
 				new ItemStack(Material.ARROW, 25) };
 		i.addItem(s);
-		updateArmor(p, plr.team.team);
+		updateArmor(p, plr.getTeam().team);
 		p.updateInventory();
 		p.setHealth(((Damageable) p).getMaxHealth());
 		p.setGameMode(GameMode.ADVENTURE);
-		if (plr.team.team == TeamType.BLUE) {
+		if (plr.getTeam().team == TeamType.BLUE) {
 			blueTeam.addPlayer(p);
 			String name = ChatColor.DARK_BLUE + p.getName();
 			if (name.length() > 16)
@@ -304,32 +219,7 @@ public class BomberWorld extends GameWorld {
 		if (isStarted)
 			plr.startGame();
 	}
-
-	private void initScoreboard() {
-		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		board = manager.getNewScoreboard();
-		redTeam = board.registerNewTeam("Red");
-		redTeam.setDisplayName(ChatColor.DARK_RED + "Red");
-		redTeam.setCanSeeFriendlyInvisibles(true);
-		redTeam.setAllowFriendlyFire(false);
-		blueTeam = board.registerNewTeam("Blue");
-		blueTeam.setDisplayName(ChatColor.DARK_BLUE + "Blue");
-		blueTeam.setCanSeeFriendlyInvisibles(true);
-		blueTeam.setAllowFriendlyFire(false);
-		objective = board.registerNewObjective("score", "trigger");
-		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		objective.setDisplayName(ChatColor.GREEN + "Score");
-		// Get a fake offline player
-		blueScore = Bukkit.getOfflinePlayer(ChatColor.BLUE + "Blue Kills:");
-		redScore = Bukkit.getOfflinePlayer(ChatColor.RED + "Red Kills:");
-		updateScore();
-	}
-
-	@Override
-	public boolean isFull() {
-		return getPlayerCount() >= maxplayers;
-	}
-
+	
 	@Override
 	public boolean isJoinable() {
 		return !broken && spawnLocations.size() == 2 && lobbyLocation != null;
@@ -351,7 +241,7 @@ public class BomberWorld extends GameWorld {
 		if (!isInGame) {
 			if (players.size() >= maxplayers)
 				return false;
-			BomberTeam t = getTeam();
+			BomberTeam t = (BomberTeam)getTeam();
 			bgp = new BomberPlayer(p, t);
 			players.add(bgp);
 			initPlayer(bgp);
@@ -381,17 +271,7 @@ public class BomberWorld extends GameWorld {
 	}
 
 	private void load() {
-		YamlConfiguration yml = super.getLoadYML();
-
-		if (yml.contains("leader1.name")) {
-			leader1 = new Leader(yml.getString("leader1.name"), yml.getInt("leader1.score"));
-		}
-		if (yml.contains("leader2.name")) {
-			leader2 = new Leader(yml.getString("leader2.name"), yml.getInt("leader2.score"));
-		}
-		if (yml.contains("leader3.name")) {
-			leader3 = new Leader(yml.getString("leader3.name"), yml.getInt("leader3.score"));
-		}
+		super.getLoadYML();
 	}
 
 	public void lobbyUpdate(int secondsLeft) {
@@ -507,14 +387,6 @@ public class BomberWorld extends GameWorld {
 		updateScore();
 	}
 
-	private void removePlayerFromScoreboard(BomberPlayer plr) {
-		if (plr.team.team == TeamType.BLUE) {
-			blueTeam.removePlayer(Bukkit.getOfflinePlayer(plr.getName()));
-		} else {
-			redTeam.removePlayer(Bukkit.getOfflinePlayer(plr.getName()));
-		}
-	}
-
 	public void reset() {
 		updateScore();
 		isStarted = false;
@@ -531,27 +403,10 @@ public class BomberWorld extends GameWorld {
 
 	public void save() {
 		YamlConfiguration yml = super.getSaveYML();
-		if (leader1 != null) {
-			yml.set("leader1.name", leader1.name);
-			yml.set("leader1.score", leader1.score);
-		}
-		if (leader2 != null) {
-			yml.set("leader2.name", leader2.name);
-			yml.set("leader2.score", leader2.score);
-		}
-		if (leader3 != null) {
-			yml.set("leader3.name", leader3.name);
-			yml.set("leader3.score", leader3.score);
-		}
-
 		// add other stuff here
 		super.save(yml);
 	}
 
-	private void sendPlayersMessage(String msg) {
-		for (BomberPlayer p : players)
-			p.getPlayer().sendMessage(msg);
-	}
 
 	private void setPlayerXp(int levels) {
 		for (GamePlayer p : players)
@@ -584,81 +439,6 @@ public class BomberWorld extends GameWorld {
 		p.getInventory().setArmorContents(is);
 	}
 
-	private void checkLeader(GamePlayer p) {
-		int score = p.getScore();
-		if (leader1 == null || score > leader1.score) {
-			leader1 = new Leader(p.getName(), score);
-			updateLeaderboard();
-			save();
-		} else if (leader2 == null || score > leader2.score) {
-			leader2 = new Leader(p.getName(), score);
-			updateLeaderboard();
-			save();
-		} else if (leader3 == null || score > leader3.score) {
-			leader3 = new Leader(p.getName(), score);
-			updateLeaderboard();
-			save();
-		}
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public void updateLeaderboard() {
-		if (leaderboard == null)
-			return;
-		BlockFace f = BlockFace.SOUTH;
-		if (leader1 != null) {
-			SkullUtils.PlaceSkull(leaderboard.clone().add(0, 2, 0), leader1.name, f);
-			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(0, 1, 1));
-			s.setType(Material.WALL_SIGN);
-			s.setData((byte) 3);
-			Sign sign = (Sign) s.getState();
-			sign.setLine(0, "1st");
-			sign.setLine(1, leader1.name);
-			sign.setLine(2, leader1.score + " Kills");
-			sign.update();
-		} else {
-			SkullUtils.PlaceSkull(leaderboard.clone().add(0, 2, 0), "Herobrine", f);
-			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(0, 1, 1));
-			s.setType(Material.WALL_SIGN);
-			s.setData((byte) 3);
-			Sign sign = (Sign) s.getState();
-			sign.setLine(0, "1st");
-			sign.setLine(1, "Herobrine");
-			sign.setLine(2, "Kills: " + ChatColor.MAGIC + "9001");
-			sign.update();
-		}
-
-		if (leader2 != null) {
-			SkullUtils.PlaceSkull(leaderboard.clone().add(-1, 1, 0), leader2.name, f);
-			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(-1, 0, 1));
-			s.setType(Material.WALL_SIGN);
-			s.setData((byte) 3);
-			Sign sign = (Sign) s.getState();
-			sign.setLine(0, "2nd");
-			sign.setLine(1, leader2.name);
-			sign.setLine(2, leader2.score + " Kills");
-			sign.update();
-		} else SkullUtils.PlaceSkull(leaderboard.clone().add(-1, 1, 0), "Herobrine", f);
-
-		if (leader3 != null) {
-			SkullUtils.PlaceSkull(leaderboard.clone().add(1, 1, 0), leader3.name, f);
-			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(1, 0, 1));
-			s.setType(Material.WALL_SIGN);
-			s.setData((byte) 3);
-			Sign sign = (Sign) s.getState();
-			sign.setLine(0, "3rd");
-			sign.setLine(1, leader3.name);
-			sign.setLine(2, leader3.score + " Kills");
-			sign.update();
-		} else SkullUtils.PlaceSkull(leaderboard.clone().add(1, 1, 0), "Herobrine", f);
-	}
-
-	private void updateScore() {
-		objective.getScore(redScore).setScore(red.getScore());
-		objective.getScore(blueScore).setScore(blue.getScore());
-	}
-
 	public boolean canPlayerHunger(GamePlayer p) {
 		return false;
 	}
@@ -680,5 +460,21 @@ public class BomberWorld extends GameWorld {
 		Location loc = player.getEyeLocation().toVector().add(player.getLocation().getDirection().multiply(2))
 				.toLocation(player.getWorld(), player.getLocation().getYaw(), player.getLocation().getPitch());
 		player.getWorld().spawn(loc, Fireball.class).setShooter(player);
+	}
+
+	@Override
+	public LinkedList<? extends TwoTeamPlayer> getTeamPlayers() {
+		return players;
+	}
+
+
+	@Override
+	protected TwoTeamTeam getRed() {
+		return red;
+	}
+
+	@Override
+	protected TwoTeamTeam getBlue() {
+		return blue;
 	}
 }

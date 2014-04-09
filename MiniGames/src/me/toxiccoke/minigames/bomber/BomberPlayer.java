@@ -1,15 +1,13 @@
 package me.toxiccoke.minigames.bomber;
 
-import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.MiniGamesPlugin;
-import me.toxiccoke.minigames.bomber.BomberTeam.TeamType;
+import me.toxiccoke.minigames.team.TwoTeamPlayer;
+import me.toxiccoke.minigames.team.TwoTeamTeam;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-public class BomberPlayer extends GamePlayer implements Runnable {
+public class BomberPlayer extends TwoTeamPlayer implements Runnable {
 
 	BomberTeam	team;
 	private boolean canFireball;
@@ -18,23 +16,8 @@ public class BomberPlayer extends GamePlayer implements Runnable {
 		super(p);
 		this.team = t;
 	}
-
-	@Override
-	public Material getFeetParticle() {
-		if (team.team == TeamType.BLUE)
-			return Material.LAPIS_BLOCK;
-		else
-			return Material.REDSTONE_WIRE;
-	}
-	
-	public ChatColor getTeamColor() {
-		if (team.team == TeamType.RED)
-			return ChatColor.RED;
-		return ChatColor.BLUE;
-	}
 	
 	public boolean canFireball() {
-		
 		return canFireball;
 	}
 	
@@ -54,5 +37,15 @@ public class BomberPlayer extends GamePlayer implements Runnable {
 	public void startGame() {
 		canFireball = true;
 		getPlayer().setLevel(1);
+	}
+
+	@Override
+	public TwoTeamTeam getTeam() {
+		return team;
+	}
+
+	@Override
+	public void setTeam(TwoTeamTeam newTeam) {
+		team = (BomberTeam)newTeam;
 	}
 }

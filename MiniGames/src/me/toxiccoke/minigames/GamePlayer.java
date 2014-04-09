@@ -61,7 +61,7 @@ public abstract class GamePlayer {
 		return Bukkit.getPlayer(player);
 	}
 	
-	public abstract void startGame();
+	public void startGame(){}
 
 	public boolean equals(Object o) {
 		if (o == null) return false;

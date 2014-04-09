@@ -1,16 +1,13 @@
-package me.toxiccoke.minigames.bomber;
+package me.toxiccoke.minigames.payload;
 
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
 import me.toxiccoke.minigames.team.TwoTeamTeam;
 
-import org.bukkit.event.Listener;
+public class PayloadTeam extends TwoTeamTeam {
+	PayloadGame	world;
 
-public class BomberTeam extends TwoTeamTeam implements Listener {
-
-	BomberGame	world;
-
-	public BomberTeam(BomberGame world, TeamType type) {
+	public PayloadTeam(PayloadGame world, TeamType type) {
 		super(type);
 		this.world = world;
 	}
