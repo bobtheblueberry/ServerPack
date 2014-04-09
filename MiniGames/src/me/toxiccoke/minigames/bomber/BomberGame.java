@@ -174,7 +174,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	}
 
 	@Override
-	public LinkedList<? extends GamePlayer> getPlayers() {
+	public LinkedList<? extends BomberPlayer> getPlayers() {
 		return players;
 	}
 
@@ -349,6 +349,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		else sendPlayersMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + p.getName() + " was killed by " + cause);
 	}
 
+	@Override
 	public void notifyLeaveCommand(GamePlayer player) {
 		Player p = player.getPlayer();
 		p.sendMessage(ChatColor.GOLD + "Leaving Bomber");
@@ -407,7 +408,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 
 	private void setPlayerXp(int levels) {
-		for (GamePlayer p : players)
+		for (BomberPlayer p : players)
 			p.getPlayer().setLevel(levels);
 	}
 
@@ -437,6 +438,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		p.getInventory().setArmorContents(is);
 	}
 
+	@Override
 	public boolean canPlayerHunger(GamePlayer p) {
 		return false;
 	}
@@ -458,11 +460,6 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		Location loc = player.getEyeLocation().toVector().add(player.getLocation().getDirection().multiply(2))
 				.toLocation(player.getWorld(), player.getLocation().getYaw(), player.getLocation().getPitch());
 		player.getWorld().spawn(loc, Fireball.class).setShooter(player);
-	}
-
-	@Override
-	public LinkedList<BomberPlayer> getTeamPlayers() {
-		return players;
 	}
 
 

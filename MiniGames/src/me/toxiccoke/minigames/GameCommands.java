@@ -42,7 +42,7 @@ public class GameCommands implements CommandExecutor {
 		if (args.length > 0 && args[0].startsWith("list")) {
 			p.sendMessage(ChatColor.GRAY + "MiniGame Worlds ----->");
 			// list minigames
-			for (GameWorld s : GameLobby.lobby.games)
+			for (GameWorld<?> s : GameLobby.lobby.games)
 				p.sendMessage(ChatColor.RED + "MiniGame: " + ChatColor.YELLOW + s.getGameName() + ChatColor.RED
 						+ " World: " + ChatColor.YELLOW + s.getWorldName());
 			return true;
@@ -51,8 +51,8 @@ public class GameCommands implements CommandExecutor {
 			p.sendMessage(ChatColor.RED + "/" + label + " " + args[0] + " <Game Type> <World>");
 			return true;
 		}
-		GameWorld minigame = null;
-		for (GameWorld s : GameLobby.lobby.games)
+		GameWorld<?> minigame = null;
+		for (GameWorld<?> s : GameLobby.lobby.games)
 			if (s.getWorldName().equalsIgnoreCase(args[2]) && s.getGameName().equalsIgnoreCase(args[1])) {
 				minigame = s;
 				break;
@@ -198,7 +198,7 @@ public class GameCommands implements CommandExecutor {
 	}
 
 	private void leave(Player p, String[] args) {
-		for (GameWorld m : GameLobby.lobby.games)
+		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
 				if (gp.player.equals(p.getName())) {
 					m.notifyLeaveCommand(gp);

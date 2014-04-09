@@ -6,7 +6,7 @@ public abstract class TwoTeamTeam<E extends TwoTeamPlayer<? extends TwoTeamTeam<
 
 	public int getScore() {
 		int i = 0;
-		for (E gp : getGame().getTeamPlayers())
+		for (E gp : getGame().getPlayers())
 			if (gp.getTeam().team == team) i += gp.getScore();
 		return i;
 	}

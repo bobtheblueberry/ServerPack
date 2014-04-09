@@ -15,7 +15,7 @@ import org.bukkit.scoreboard.Team;
 import me.toxiccoke.minigames.GameWorld;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 
-public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamTeam<E>> extends GameWorld {
+public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamTeam<E>> extends GameWorld<E> {
 
 	protected Team	redTeam, blueTeam;
 	protected OfflinePlayer	redScore, blueScore;
@@ -26,8 +26,6 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		super(gameName, worldName);
 		initScoreboard();
 	}
-
-	public abstract LinkedList<E> getTeamPlayers();
 
 	protected void initScoreboard() {
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
@@ -57,7 +55,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 
 	protected void balanceTeams() {
 		int redCount = 0, bluCount = 0;
-		for (E p : getTeamPlayers())
+		for (E p : getPlayers())
 			if (p.getTeam().team == TeamType.BLUE)
 				bluCount++;
 			else redCount++;
@@ -82,7 +80,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 
 	protected E getRandomPlayer(TeamType t) {
 		LinkedList<E> temp = new LinkedList<E>();
-		for (E p : getTeamPlayers())
+		for (E p : getPlayers())
 			if (p.getTeam().team == t)
 				temp.add(p);
 		if (temp.size() == 0)
@@ -92,7 +90,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 
 	protected T getTeam() {
 		int redCount = 0, bluCount = 0;
-		for (E p : getTeamPlayers())
+		for (E p : getPlayers())
 			if (p.getTeam().team == TeamType.BLUE)
 				bluCount++;
 			else redCount++;
@@ -117,7 +115,27 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		objective.getScore(redScore).setScore(getRed().getScore());
 		objective.getScore(blueScore).setScore(getBlue().getScore());
 	}
-	
+
+	protected void checkLeader(E p) {
+		int score = p.getScore();
+		if (leader1 == null || score > leader1.score) {
+			leader1 = new Leader(p.getName(), score);
+			updateLeaderboard();
+			save();
+		} else if (leader2 == null || score > leader2.score) {
+			if (leader1.name.equals(p.getName()))
+				return;
+			leader2 = new Leader(p.getName(), score);
+			updateLeaderboard();
+			save();
+		} else if (leader3 == null || score > leader3.score) {
+			if (leader1.name.equals(p.getName()) || leader2.name.equals(p.getName()))
+				return;
+			leader3 = new Leader(p.getName(), score);
+			updateLeaderboard();
+			save();
+		}
+	}
 	protected abstract void initPlayer(E p);
 	protected abstract void spawn(E p);
 	protected abstract T getRed();

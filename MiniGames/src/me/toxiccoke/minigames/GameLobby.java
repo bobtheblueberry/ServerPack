@@ -17,11 +17,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 public class GameLobby implements Runnable, Listener {
 
-	public ArrayList<GameWorld>	games;
+	public ArrayList<GameWorld<?>>	games;
 	public static GameLobby		lobby;
 
 	public GameLobby() {
-		games = new ArrayList<GameWorld>(2);
+		games = new ArrayList<GameWorld<?>>(3);
 		lobby = this;
 
 		games.add(new BomberGame("Greenland"));
@@ -32,7 +32,7 @@ public class GameLobby implements Runnable, Listener {
 	}
 
 	public void updateSigns() {
-		for (GameWorld w : games) {
+		for (GameWorld<?> w : games) {
 			Sign s = w.getSign();
 			if (s == null)
 				continue;
@@ -76,8 +76,8 @@ public class GameLobby implements Runnable, Listener {
 		if (!(b.getState() instanceof Sign))
 			return;
 		Sign s = (Sign) b.getState();
-		GameWorld game = null;
-		for (GameWorld w : games)
+		GameWorld<?> game = null;
+		for (GameWorld<?> w : games)
 			if (w.signLocation != null && w.signLocation.equals(s.getLocation())) {
 				game = w;
 				break;
@@ -120,14 +120,14 @@ public class GameLobby implements Runnable, Listener {
 	}
 
 	public boolean isInGame(Player p) {
-		for (GameWorld w : games)
+		for (GameWorld<?> w : games)
 			for (GamePlayer gp : w.getPlayers())
 				if (p.getName().equals(gp.player))
 					return true;
 		return false;
 	}
 
-	public boolean isInGame(Player p, GameWorld w) {
+	public boolean isInGame(Player p, GameWorld<?> w) {
 		for (GamePlayer gp : w.getPlayers())
 			if (p.getName().equals(gp.player))
 				return true;

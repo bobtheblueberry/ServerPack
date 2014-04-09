@@ -65,7 +65,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	}
 
 	@Override
-	public LinkedList<? extends GamePlayer> getPlayers() {
+	public LinkedList<PayloadPlayer> getPlayers() {
 		return players;
 	}
 
@@ -118,13 +118,17 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	}
 
 	protected void endGame() {
-		for (PayloadPlayer p : players)
+		for (PayloadPlayer p : players) {
 			p.restorePlayer();
+			removePlayerFromScoreboard(p);
+		}
+		players.clear();
 	}
 
 	@Override
 	public void notifyLeaveCommand(GamePlayer gp) {
 		players.remove(gp);
+		removePlayerFromScoreboard((PayloadPlayer)gp);
 		gp.restorePlayer();
 	}
 
@@ -210,10 +214,4 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		else
 			TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(2));
 	}
-
-	@Override
-	public LinkedList<PayloadPlayer> getTeamPlayers() {
-		return players;
-	}
-
 }

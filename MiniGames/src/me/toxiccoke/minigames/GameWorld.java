@@ -26,7 +26,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
 
-public abstract class GameWorld {
+public abstract class GameWorld<P extends GamePlayer> {
 
 	protected String				gameName;
 	protected String				schematic;
@@ -84,7 +84,7 @@ public abstract class GameWorld {
 
 	public abstract boolean join(Player p);
 
-	public abstract LinkedList<? extends GamePlayer> getPlayers();
+	public abstract LinkedList<? extends P> getPlayers();
 
 	public abstract void save();
 
@@ -178,23 +178,6 @@ public abstract class GameWorld {
 			yml.set("leader3.score", leader3.score);
 		}
 		return yml;
-	}
-
-	protected void checkLeader(GamePlayer p) {
-		int score = p.getScore();
-		if (leader1 == null || score > leader1.score) {
-			leader1 = new Leader(p.getName(), score);
-			updateLeaderboard();
-			save();
-		} else if (leader2 == null || score > leader2.score) {
-			leader2 = new Leader(p.getName(), score);
-			updateLeaderboard();
-			save();
-		} else if (leader3 == null || score > leader3.score) {
-			leader3 = new Leader(p.getName(), score);
-			updateLeaderboard();
-			save();
-		}
 	}
 
 	protected void save(YamlConfiguration yml) {
@@ -324,7 +307,7 @@ public abstract class GameWorld {
 	}
 
 	public void sendPlayersMessage(String msg) {
-		for (GamePlayer p : getPlayers())
+		for (P p : getPlayers())
 			p.getPlayer().sendMessage(msg);
 	}
 
