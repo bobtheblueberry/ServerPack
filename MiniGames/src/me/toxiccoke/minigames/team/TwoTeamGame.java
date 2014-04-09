@@ -15,7 +15,7 @@ import org.bukkit.scoreboard.Team;
 import me.toxiccoke.minigames.GameWorld;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 
-public abstract class TwoTeamGame<E extends TwoTeamPlayer, T extends TwoTeamTeam<E>> extends GameWorld {
+public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamTeam<E>> extends GameWorld {
 
 	protected Team	redTeam, blueTeam;
 	protected OfflinePlayer	redScore, blueScore;
@@ -57,7 +57,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer, T extends TwoTeamTeam
 
 	protected void balanceTeams() {
 		int redCount = 0, bluCount = 0;
-		for (TwoTeamPlayer p : getTeamPlayers())
+		for (E p : getTeamPlayers())
 			if (p.getTeam().team == TeamType.BLUE)
 				bluCount++;
 			else redCount++;
@@ -92,7 +92,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer, T extends TwoTeamTeam
 
 	protected T getTeam() {
 		int redCount = 0, bluCount = 0;
-		for (TwoTeamPlayer p : getTeamPlayers())
+		for (E p : getTeamPlayers())
 			if (p.getTeam().team == TeamType.BLUE)
 				bluCount++;
 			else redCount++;
@@ -104,7 +104,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer, T extends TwoTeamTeam
 		else return getRed();
 	}
 
-	protected void removePlayerFromScoreboard(TwoTeamPlayer plr) {
+	protected void removePlayerFromScoreboard(E plr) {
 		if (plr.getTeam().team == TeamType.BLUE) {
 			blueTeam.removePlayer(Bukkit.getOfflinePlayer(plr.getName()));
 		} else {

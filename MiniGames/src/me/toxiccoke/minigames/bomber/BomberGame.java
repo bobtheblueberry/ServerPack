@@ -7,7 +7,6 @@ import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
-import me.toxiccoke.minigames.team.TwoTeamPlayer;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;

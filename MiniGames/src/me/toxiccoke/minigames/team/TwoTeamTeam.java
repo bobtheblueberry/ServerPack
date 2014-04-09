@@ -1,6 +1,6 @@
 package me.toxiccoke.minigames.team;
 
-public abstract class TwoTeamTeam<E extends TwoTeamPlayer> {
+public abstract class TwoTeamTeam<E extends TwoTeamPlayer<? extends TwoTeamTeam<E>>> {
 
 	public TeamType	team;
 

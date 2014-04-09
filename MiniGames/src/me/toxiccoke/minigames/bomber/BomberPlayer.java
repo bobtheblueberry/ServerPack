@@ -2,12 +2,11 @@ package me.toxiccoke.minigames.bomber;
 
 import me.toxiccoke.minigames.MiniGamesPlugin;
 import me.toxiccoke.minigames.team.TwoTeamPlayer;
-import me.toxiccoke.minigames.team.TwoTeamTeam;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-public class BomberPlayer extends TwoTeamPlayer implements Runnable {
+public class BomberPlayer extends TwoTeamPlayer<BomberTeam> implements Runnable {
 
 	BomberTeam	team;
 	private boolean canFireball;
@@ -40,12 +39,12 @@ public class BomberPlayer extends TwoTeamPlayer implements Runnable {
 	}
 
 	@Override
-	public TwoTeamTeam getTeam() {
+	public BomberTeam getTeam() {
 		return team;
 	}
 
 	@Override
-	public void setTeam(TwoTeamTeam newTeam) {
+	public void setTeam(BomberTeam newTeam) {
 		team = (BomberTeam)newTeam;
 	}
 }

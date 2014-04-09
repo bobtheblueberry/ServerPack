@@ -1,11 +1,10 @@
 package me.toxiccoke.minigames.payload;
 
 import me.toxiccoke.minigames.team.TwoTeamPlayer;
-import me.toxiccoke.minigames.team.TwoTeamTeam;
 
 import org.bukkit.entity.Player;
 
-public class PayloadPlayer extends TwoTeamPlayer {
+public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 
 	PayloadTeam team;
 	
@@ -15,12 +14,12 @@ public class PayloadPlayer extends TwoTeamPlayer {
 	}
 
 	@Override
-	public TwoTeamTeam getTeam() {
+	public PayloadTeam getTeam() {
 		return team;
 	}
 
 	@Override
-	public void setTeam(TwoTeamTeam newTeam) {
-		team = (PayloadTeam)newTeam;
+	public void setTeam(PayloadTeam newTeam) {
+		team = newTeam;
 	}
 }

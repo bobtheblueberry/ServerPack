@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import me.toxiccoke.minigames.GamePlayer;
 
-public abstract class TwoTeamPlayer extends GamePlayer {
+public abstract class TwoTeamPlayer<T extends TwoTeamTeam<?>> extends GamePlayer {
 	
 	public TwoTeamPlayer(Player p) {
 		super(p);
@@ -26,6 +26,6 @@ public abstract class TwoTeamPlayer extends GamePlayer {
 		return ChatColor.BLUE;
 	}
 	
-	public abstract TwoTeamTeam getTeam();
-	public abstract void setTeam(TwoTeamTeam newTeam);
+	public abstract T getTeam();
+	public abstract void setTeam(T newTeam);
 }
