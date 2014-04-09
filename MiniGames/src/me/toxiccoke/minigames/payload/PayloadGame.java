@@ -6,8 +6,6 @@ import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
-import me.toxiccoke.minigames.team.TwoTeamPlayer;
-import me.toxiccoke.minigames.team.TwoTeamTeam;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
@@ -25,7 +23,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.util.Vector;
 
-public class PayloadGame extends TwoTeamGame {
+public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	protected LinkedList<PayloadPlayer>	players;
 	private boolean						isStarted;
@@ -60,7 +58,8 @@ public class PayloadGame extends TwoTeamGame {
 
 	@Override
 	public boolean join(Player p) {
-		players.add(new PayloadPlayer(p, red));
+		players.add(new PayloadPlayer(p,getTeam()));
+		
 		isStarted = true;
 		return true;
 	}
@@ -187,18 +186,23 @@ public class PayloadGame extends TwoTeamGame {
 	}
 
 	@Override
-	public LinkedList<? extends TwoTeamPlayer> getTeamPlayers() {
-		return players;
+	protected PayloadTeam getRed() {
+		return red;
 	}
 
 	@Override
-	protected void initPlayer(TwoTeamPlayer p) {
+	protected PayloadTeam getBlue() {
+		return blue;
+	}
+
+	@Override
+	protected void initPlayer(PayloadPlayer p) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
-	protected void spawn(TwoTeamPlayer p) {
+	protected void spawn(PayloadPlayer p) {
 		if (spawnLocations.size() < 3)
 			return;
 		if (p.getTeam().team == TeamType.BLUE)
@@ -208,13 +212,8 @@ public class PayloadGame extends TwoTeamGame {
 	}
 
 	@Override
-	protected TwoTeamTeam getRed() {
-		return red;
-	}
-
-	@Override
-	protected TwoTeamTeam getBlue() {
-		return blue;
+	public LinkedList<PayloadPlayer> getTeamPlayers() {
+		return players;
 	}
 
 }

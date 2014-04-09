@@ -15,7 +15,7 @@ import org.bukkit.scoreboard.Team;
 import me.toxiccoke.minigames.GameWorld;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 
-public abstract class TwoTeamGame extends GameWorld {
+public abstract class TwoTeamGame<E extends TwoTeamPlayer, T extends TwoTeamTeam<E>> extends GameWorld {
 
 	protected Team	redTeam, blueTeam;
 	protected OfflinePlayer	redScore, blueScore;
@@ -27,7 +27,7 @@ public abstract class TwoTeamGame extends GameWorld {
 		initScoreboard();
 	}
 
-	public abstract LinkedList<? extends TwoTeamPlayer> getTeamPlayers();
+	public abstract LinkedList<E> getTeamPlayers();
 
 	protected void initScoreboard() {
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
@@ -62,7 +62,7 @@ public abstract class TwoTeamGame extends GameWorld {
 				bluCount++;
 			else redCount++;
 		if (Math.abs(redCount - bluCount) > 1) {
-			TwoTeamPlayer plr = getRandomPlayer(TeamType.RED);
+			E plr = getRandomPlayer(TeamType.RED);
 			if (plr == null)
 				return;
 			Player p = plr.getPlayer();
@@ -80,9 +80,9 @@ public abstract class TwoTeamGame extends GameWorld {
 		}
 	}
 
-	protected TwoTeamPlayer getRandomPlayer(TeamType t) {
-		LinkedList<TwoTeamPlayer> temp = new LinkedList<TwoTeamPlayer>();
-		for (TwoTeamPlayer p : getTeamPlayers())
+	protected E getRandomPlayer(TeamType t) {
+		LinkedList<E> temp = new LinkedList<E>();
+		for (E p : getTeamPlayers())
 			if (p.getTeam().team == t)
 				temp.add(p);
 		if (temp.size() == 0)
@@ -90,7 +90,7 @@ public abstract class TwoTeamGame extends GameWorld {
 		return temp.get((int) (Math.random() * temp.size()));
 	}
 
-	protected TwoTeamTeam getTeam() {
+	protected T getTeam() {
 		int redCount = 0, bluCount = 0;
 		for (TwoTeamPlayer p : getTeamPlayers())
 			if (p.getTeam().team == TeamType.BLUE)
@@ -118,9 +118,9 @@ public abstract class TwoTeamGame extends GameWorld {
 		objective.getScore(blueScore).setScore(getBlue().getScore());
 	}
 	
-	protected abstract void initPlayer(TwoTeamPlayer p);
-	protected abstract void spawn(TwoTeamPlayer p);
-	protected abstract TwoTeamTeam getRed();
-	protected abstract TwoTeamTeam getBlue();
+	protected abstract void initPlayer(E p);
+	protected abstract void spawn(E p);
+	protected abstract T getRed();
+	protected abstract T getBlue();
 }
 

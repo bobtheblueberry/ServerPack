@@ -6,7 +6,7 @@ import me.toxiccoke.minigames.team.TwoTeamTeam;
 
 import org.bukkit.event.Listener;
 
-public class BomberTeam extends TwoTeamTeam implements Listener {
+public class BomberTeam extends TwoTeamTeam<BomberPlayer> implements Listener {
 
 	BomberGame	world;
 
@@ -16,7 +16,8 @@ public class BomberTeam extends TwoTeamTeam implements Listener {
 	}
 
 	@Override
-	public TwoTeamGame getGame() {
+	public TwoTeamGame<BomberPlayer, ? extends TwoTeamTeam<BomberPlayer>> getGame() {
 		return world;
 	}
+
 }

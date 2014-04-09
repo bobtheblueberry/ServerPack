@@ -1,12 +1,12 @@
 package me.toxiccoke.minigames.team;
 
-public abstract class TwoTeamTeam {
+public abstract class TwoTeamTeam<E extends TwoTeamPlayer> {
 
 	public TeamType	team;
 
 	public int getScore() {
 		int i = 0;
-		for (TwoTeamPlayer gp : getGame().getTeamPlayers())
+		for (E gp : getGame().getTeamPlayers())
 			if (gp.getTeam().team == team) i += gp.getScore();
 		return i;
 	}
@@ -15,6 +15,6 @@ public abstract class TwoTeamTeam {
 		this.team = type;
 	}
 	
-	public abstract TwoTeamGame getGame();
+	public abstract TwoTeamGame<E,? extends TwoTeamTeam<E>> getGame();
 	
 }

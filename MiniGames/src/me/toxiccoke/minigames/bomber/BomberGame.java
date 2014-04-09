@@ -8,7 +8,6 @@ import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
 import me.toxiccoke.minigames.team.TwoTeamPlayer;
-import me.toxiccoke.minigames.team.TwoTeamTeam;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
@@ -37,7 +36,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-public class BomberGame extends TwoTeamGame {
+public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	protected LinkedList<BomberPlayer>	players;
 	private BomberLobbyTimer			lobbyTimer;
@@ -180,7 +179,7 @@ public class BomberGame extends TwoTeamGame {
 		return players;
 	}
 
-	public void spawn(TwoTeamPlayer p) {
+	public void spawn(BomberPlayer p) {
 		if (!isStarted) {
 			TokenShop.teleportAdvanced(p.getPlayer(), lobbyLocation);
 			return;
@@ -193,7 +192,7 @@ public class BomberGame extends TwoTeamGame {
 	}
 
 	@SuppressWarnings("deprecation")
-	protected void initPlayer(TwoTeamPlayer plr) {
+	protected void initPlayer(BomberPlayer plr) {
 		Player p = plr.getPlayer();
 		Inventory i = p.getInventory();
 		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.BOW, 1),
@@ -463,18 +462,18 @@ public class BomberGame extends TwoTeamGame {
 	}
 
 	@Override
-	public LinkedList<? extends TwoTeamPlayer> getTeamPlayers() {
+	public LinkedList<BomberPlayer> getTeamPlayers() {
 		return players;
 	}
 
 
 	@Override
-	protected TwoTeamTeam getRed() {
+	protected BomberTeam getRed() {
 		return red;
 	}
 
 	@Override
-	protected TwoTeamTeam getBlue() {
+	protected BomberTeam getBlue() {
 		return blue;
 	}
 }
