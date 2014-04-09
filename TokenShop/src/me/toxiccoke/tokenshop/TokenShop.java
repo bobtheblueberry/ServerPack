@@ -134,13 +134,17 @@ public class TokenShop extends JavaPlugin implements Listener {
 	}
 
 	public static void teleportAdvanced(final Player player, final Location location) {
-		Entity e = player.getPassenger();
+		Entity e = player.getVehicle();
+		if (e != null)
+			e.eject();
+		e = player.getPassenger();
 		if (e == null) {
 			player.teleport(location);
 			return;
 		}
 		if (!(e instanceof Player)) e.remove();
 		player.eject();
+		
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(TokenShop.plugin, new Runnable() {
 			public void run() {
 				player.teleport(location);

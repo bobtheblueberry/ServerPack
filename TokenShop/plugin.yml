@@ -18,7 +18,7 @@ commands:
         description: Shops for hats, give gaben your money
         usage: /<command>
         permission: tokenshop.hatshop
-        aliases: [hat]
+        aliases: [hat,hats]
     coins:
         aliases: [coin]
         description: Displays how many coins you have
