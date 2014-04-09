@@ -327,14 +327,14 @@ public class CommandHandler implements CommandExecutor {
 		} else if (cmd.getName().equalsIgnoreCase("vanish")) {
 			if (!Commands.plugin.vanished.contains(p)) {
 				for (Player pl : Bukkit.getServer().getOnlinePlayers()) {
-					pl.hidePlayer(p);
+					p.hidePlayer(pl);
 				}
 				Commands.plugin.vanished.add(p);
 				p.sendMessage(ChatColor.GRAY + "You have been vanished!");
 				return true;
 			} else {
 				for (Player pl : Bukkit.getServer().getOnlinePlayers()) {
-					pl.showPlayer(p);
+					p.showPlayer(pl);
 				}
 				Commands.plugin.vanished.remove(p);
 				p.sendMessage(ChatColor.GRAY + "You have been unvanished!");
