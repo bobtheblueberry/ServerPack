@@ -171,6 +171,7 @@ public class CommandHandler implements CommandExecutor {
 			getConfig().set("spawn.x", p.getLocation().getX());
 			getConfig().set("spawn.y", p.getLocation().getY());
 			getConfig().set("spawn.z", p.getLocation().getZ());
+			p.getWorld().setSpawnLocation(p.getLocation().getBlockX(), p.getLocation().getBlockY(), p.getLocation().getBlockZ());
 			Commands.plugin.saveConfig();
 			p.sendMessage(ChatColor.GRAY + "Spawn set!");
 			return true;
