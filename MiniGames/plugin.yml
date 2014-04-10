@@ -3,7 +3,7 @@ version: 1.0
 main: me.toxiccoke.minigames.MiniGamesPlugin
 author: Serge Humphrey
 description: MiniGames plugin
-depends: [TokenShop]
+depends: [TokenShop, ServerCore]
 commands:
     madmin:
         permission: minigames.admin
@@ -14,3 +14,7 @@ commands:
         usage: /<command>
         description: Party Commands
         aliases: [p]
+    padmin:
+        permission: minigames.admin
+        description: Configures a Payload game world
+        usage: /<command>

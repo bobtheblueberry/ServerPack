@@ -2,9 +2,13 @@ package me.toxiccoke.minigames.team;
 
 import java.util.LinkedList;
 
+import me.toxiccoke.minigames.GameWorld;
+import me.toxiccoke.minigames.MiniGamesPlugin;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -12,9 +16,6 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
-
-import me.toxiccoke.minigames.GameWorld;
-import me.toxiccoke.minigames.MiniGamesPlugin;
 
 public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamTeam<E>> extends GameWorld<E> {
 
@@ -65,7 +66,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 			if (plr == null)
 				return;
 			Player p = plr.getPlayer();
-
+			removePlayerFromScoreboard(plr);
 			if (redCount > bluCount) {
 				plr.setTeam(getBlue());
 				p.sendMessage(ChatColor.GOLD + "You were switched to the blue team to balance the teams.");
@@ -147,11 +148,31 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		}
 	}
 
-	protected abstract void initPlayer(E p);
+	protected void initPlayer(E plr) {
+		Player p = plr.getPlayer();
+		p.setHealth(((Damageable) p).getMaxHealth());
+		if (plr.getTeam().team == TeamType.BLUE) {
+			blueTeam.addPlayer(p);
+			String name = ChatColor.DARK_BLUE + p.getName();
+			if (name.length() > 16)
+				name = name.substring(0, 15);
+			p.setPlayerListName(name);
+		} else {
+			redTeam.addPlayer(p);
+			String name = ChatColor.DARK_RED + p.getName();
+			if (name.length() > 16)
+				name = name.substring(0, 15);
+			p.setPlayerListName(name);
+		}
+		if (isStarted())
+			plr.startGame();
+	}
 
 	protected abstract void spawn(E p);
 
 	protected abstract T getRed();
 
 	protected abstract T getBlue();
+	protected abstract boolean isStarted();
+	protected abstract void updateArmor(E player);
 }

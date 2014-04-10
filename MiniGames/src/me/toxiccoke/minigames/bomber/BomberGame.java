@@ -46,7 +46,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	private volatile BomberPlayer		bomber;
 	private int							gamelength	= 4;
 
-	//spawn is blue,red,(blue,red)
+	// spawn is blue,red,(blue,red)
 	public BomberGame(String worldName) {
 		super("Bomber", worldName);
 		load();
@@ -96,6 +96,17 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		}
 		if (players.size() < 1)
 			reset();
+	}
+
+	protected void initPlayer(BomberPlayer plr) {
+		super.initPlayer(plr);
+		Player p = plr.getPlayer();
+		Inventory i = p.getInventory();
+		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.BOW, 1),
+				new ItemStack(Material.ARROW, 64) };
+		i.addItem(s);
+		updateArmor(plr);
+		p.setGameMode(GameMode.ADVENTURE);
 	}
 
 	private void doKillPoints(Player killer, Player victim, boolean stealHp) {
@@ -193,39 +204,11 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		// allow 2 spawn locations
 		if (spawnLocations.size() > 3)
 			if (Math.random() < 0.5)
-				i++;
+				i += 2;
 		l = spawnLocations.get(i);
 		TokenShop.teleportAdvanced(p.getPlayer(), l);
 	}
 
-	@SuppressWarnings("deprecation")
-	protected void initPlayer(BomberPlayer plr) {
-		Player p = plr.getPlayer();
-		Inventory i = p.getInventory();
-		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.BOW, 1),
-				new ItemStack(Material.ARROW, 64) };
-		i.addItem(s);
-		updateArmor(p, plr.getTeam().team);
-		p.updateInventory();
-		p.setHealth(((Damageable) p).getMaxHealth());
-		p.setGameMode(GameMode.ADVENTURE);
-		if (plr.getTeam().team == TeamType.BLUE) {
-			blueTeam.addPlayer(p);
-			String name = ChatColor.DARK_BLUE + p.getName();
-			if (name.length() > 16)
-				name = name.substring(0, 15);
-			p.setPlayerListName(name);
-		} else {
-			redTeam.addPlayer(p);
-			String name = ChatColor.DARK_RED + p.getName();
-			if (name.length() > 16)
-				name = name.substring(0, 15);
-			p.setPlayerListName(name);
-		}
-		if (isStarted)
-			plr.startGame();
-	}
-	
 	@Override
 	public boolean isJoinable() {
 		return spawnLocations.size() >= 2 && lobbyLocation != null;
@@ -247,7 +230,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		if (!isInGame) {
 			if (players.size() >= maxplayers)
 				return false;
-			BomberTeam t = (BomberTeam)getTeam();
+			BomberTeam t = (BomberTeam) getTeam();
 			bgp = new BomberPlayer(p, t);
 			players.add(bgp);
 			initPlayer(bgp);
@@ -414,7 +397,6 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		super.save(yml);
 	}
 
-
 	private void setPlayerXp(int levels) {
 		for (BomberPlayer p : players)
 			p.getPlayer().setLevel(levels);
@@ -437,7 +419,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	private void undeath(final Player p) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
-			
+
 			@Override
 			public void run() {
 				p.setHealth(((Damageable) p.getPlayer()).getMaxHealth());
@@ -448,9 +430,10 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		}, 4);
 	}
 
-	private void updateArmor(Player p, TeamType t) {
-		ItemStack[] is = getColoredArmor((t == TeamType.BLUE) ? 0 : 255, 0, (t == TeamType.BLUE) ? 255 : 0);
-		p.getInventory().setArmorContents(is);
+	protected void updateArmor(BomberPlayer p) {
+		ItemStack[] is = getColoredArmor((p.getTeam().team == TeamType.BLUE) ? 0 : 255, 0,
+				(p.getTeam().team == TeamType.BLUE) ? 255 : 0);
+		p.getPlayer().getInventory().setArmorContents(is);
 	}
 
 	@Override
@@ -477,7 +460,6 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		player.getWorld().spawn(loc, Fireball.class).setShooter(player);
 	}
 
-
 	@Override
 	protected BomberTeam getRed() {
 		return red;
@@ -486,5 +468,10 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	@Override
 	protected BomberTeam getBlue() {
 		return blue;
+	}
+
+	@Override
+	protected boolean isStarted() {
+		return isStarted;
 	}
 }

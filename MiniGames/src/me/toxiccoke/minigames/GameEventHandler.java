@@ -3,7 +3,6 @@ package me.toxiccoke.minigames;
 import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Damageable;
@@ -28,7 +27,6 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
 public class GameEventHandler implements Listener {
@@ -47,21 +45,6 @@ public class GameEventHandler implements Listener {
 										+ ChatColor.GRAY + chat.getMessage());
 					return;
 				}
-
-	}
-
-	@EventHandler
-	public void onVehicleUpdate(VehicleUpdateEvent event) {
-		Location vehicleLoc = event.getVehicle().getLocation().getBlock().getLocation();
-		for (GameWorld<?> w : GameLobby.lobby.games) {
-			Bounds b = w.getExcessBounds();
-			if (b == null)
-				continue;
-			if (w.getExcessBounds().contains(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ())) {
-				w.vehicleUpdate(event);
-				return;
-			}
-		}
 	}
 
 	// disable commands

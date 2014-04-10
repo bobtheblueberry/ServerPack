@@ -24,7 +24,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.vehicle.VehicleUpdateEvent;
 
 public abstract class GameWorld<P extends GamePlayer> {
 
@@ -86,8 +85,6 @@ public abstract class GameWorld<P extends GamePlayer> {
 	public abstract LinkedList<? extends P> getPlayers();
 
 	public abstract void save();
-
-	public void vehicleUpdate(VehicleUpdateEvent e) {}
 
 	public void reset() {
 		if (pasteLocation == null)
@@ -393,5 +390,4 @@ public abstract class GameWorld<P extends GamePlayer> {
 		int z2 = Math.max(bounds1.getBlockZ(), bounds2.getBlockZ());
 		return new Bounds(x1 - 1, x2 + 1, z1 - 1, z2 + 1);
 	}
-
 }
