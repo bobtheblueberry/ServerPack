@@ -31,7 +31,6 @@ public abstract class GameWorld<P extends GamePlayer> {
 	protected String				gameName;
 	protected String				schematic;
 	protected Location				pasteLocation, signLocation, lobbyLocation, bounds1, bounds2, leaderboard;
-	protected boolean				broken;
 	protected String				worldName;
 	protected ArrayList<Location>	spawnLocations;
 	protected int					heightLimit	= 1000;
@@ -95,7 +94,14 @@ public abstract class GameWorld<P extends GamePlayer> {
 			return;
 		if (schematic == null)
 			return;
-		Utils.copySchematic(pasteLocation, new File(MiniGamesPlugin.plugin.getDataFolder(), schematic), false, true);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
+
+			@Override
+			public void run() {
+				Utils.copySchematic(pasteLocation, new File(MiniGamesPlugin.plugin.getDataFolder(), schematic), false,
+						true);
+			}
+		});
 	}
 
 	public abstract boolean canPlaceBlock(GamePlayer p, BlockPlaceEvent event);
@@ -225,7 +231,6 @@ public abstract class GameWorld<P extends GamePlayer> {
 			pasteLocation = new Location(w, yml.getInt("world.x"), yml.getInt("world.y"), yml.getInt("world.z"));
 		else {
 			System.err.println("Cannot find world " + world);
-			broken = true;
 		}
 
 		if (w != null) {

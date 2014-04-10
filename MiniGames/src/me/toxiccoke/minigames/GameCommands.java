@@ -32,11 +32,7 @@ public class GameCommands implements CommandExecutor {
 			return false;
 
 		if (args.length == 0) {
-			p.sendMessage(ChatColor.RED
-					+ "/"
-					+ label
-					+ " <setsign|list|setpaste|setspawn|setlobby|tp|reset|schematic|"
-					+ "setheightlimit|bounds1|bounds2|maxplayers|minplayers|setleaderboard> (Game Type) (World)");
+			showHelpMsg(p, label);
 			return true;
 		}
 		if (args.length > 0 && args[0].startsWith("list")) {
@@ -133,27 +129,24 @@ public class GameCommands implements CommandExecutor {
 
 		} else if (args[0].equals("bounds1")) {
 			Location l = p.getLocation();
-			minigame.bounds1 = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l
-					.getBlockZ());
+			minigame.bounds1 = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
 			minigame.save();
 			p.sendMessage(ChatColor.BLUE + "Set bounds1 to " + getLocationString(minigame.bounds1));
 			return true;
 		} else if (args[0].equals("bounds2")) {
 			Location l = p.getLocation();
-			minigame.bounds2 = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l
-					.getBlockZ());
+			minigame.bounds2 = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
 			minigame.save();
 			p.sendMessage(ChatColor.BLUE + "Set bounds2 to " + getLocationString(minigame.bounds2));
 			return true;
 		} else if (args[0].equals("setleaderboard")) {
 			Location l = p.getLocation();
-			minigame.leaderboard = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l
-					.getBlockZ());
+			minigame.leaderboard = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
 			minigame.save();
 			p.sendMessage(ChatColor.BLUE + "Set leaderboard to " + getLocationString(minigame.leaderboard));
 			minigame.updateLeaderboard();
 			return true;
-		}  else if (args[0].equals("minplayers") || args[0].equals("maxplayers")) {
+		} else if (args[0].equals("minplayers") || args[0].equals("maxplayers")) {
 			if (args.length < 4) {
 				p.sendMessage(ChatColor.RED + "Specify a number");
 				return true;
@@ -176,8 +169,13 @@ public class GameCommands implements CommandExecutor {
 			minigame.save();
 			return true;
 		}
+		showHelpMsg(p, label);
+		return true;
+	}
 
-		return false;
+	private void showHelpMsg(Player p, String label) {
+		p.sendMessage(ChatColor.RED + "/" + label + " <setsign|list|setpaste|setspawn|setlobby|tp|reset|schematic|"
+				+ "setheightlimit|bounds1|bounds2|maxplayers|minplayers|setleaderboard> (Game Type) (World)");
 	}
 
 	private String getLocationString(Location l) {
@@ -211,7 +209,8 @@ public class GameCommands implements CommandExecutor {
 									f.sendMessage(p.getDisplayName() + ChatColor.DARK_GRAY + " has left the game");
 						if (!party.owner.equals(p.getName()))
 							if (GameLobby.lobby.isInGame(party.getOwner(), m))
-								party.getOwner().sendMessage(p.getDisplayName() + ChatColor.DARK_GRAY + " has left " + m.getGameName());
+								party.getOwner().sendMessage(
+										p.getDisplayName() + ChatColor.DARK_GRAY + " has left " + m.getGameName());
 					}
 					return;
 				}

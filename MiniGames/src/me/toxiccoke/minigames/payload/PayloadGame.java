@@ -2,6 +2,7 @@ package me.toxiccoke.minigames.payload;
 
 import java.util.LinkedList;
 
+import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 import me.toxiccoke.minigames.team.TeamType;
@@ -9,7 +10,9 @@ import me.toxiccoke.minigames.team.TwoTeamGame;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -21,6 +24,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
@@ -28,6 +32,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	protected LinkedList<PayloadPlayer>	players;
 	private boolean						isStarted;
 	private PayloadTeam					red, blue;
+	private GameEndTimer				endTimer;
 
 	// blu spawn 1, blu spawn 2, red spawn
 
@@ -37,7 +42,6 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		load();
 		red = new PayloadTeam(this, TeamType.RED);
 		blue = new PayloadTeam(this, TeamType.BLUE);
-		initMinecart();
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, new MinecartUpdater(this), 10, 10);
 	}
 
@@ -48,7 +52,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean isJoinable() {
-		return !broken && spawnLocations.size() == 3 && lobbyLocation != null;
+		return spawnLocations.size() > 2 && lobbyLocation != null;
 	}
 
 	@Override
@@ -58,10 +62,36 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean join(Player p) {
-		players.add(new PayloadPlayer(p,getTeam()));
-		
-		isStarted = true;
+		players.add(new PayloadPlayer(p, getTeam(), PayloadClass.PYRO));
+		if (players.size() == minplayers)
+			startGame();
+		minecart.setPassenger(p);
 		return true;
+	}
+
+	private void startGame() {
+		isStarted = true;
+		sendPlayersMessage(ChatColor.GOLD + "Everybody knows, The game has start--ed");
+		initMinecart();
+		endTimer = new GameEndTimer(this, 10);
+	}
+
+	public void reset() {
+		if (minecart != null)
+			minecart.remove();
+		if (endTimer != null)
+			endTimer.cancelTimer();
+		updateScore();
+		isStarted = false;
+		players.clear();
+		super.reset();
+	}
+
+	private void checkNoPlayers() {
+		if (players.size() > 1)
+			balanceTeams();
+		if (players.size() < 1)
+			reset();
 	}
 
 	@Override
@@ -90,45 +120,49 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean canExplodeBlock(Block b, Entity e) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean canPlayerHunger(GamePlayer player) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public void notifyDeath(GamePlayer gp, Entity damager, DamageCause cause) {
-		// TODO Auto-generated method stub
-
+		undeath(gp);
 	}
 
 	@Override
 	public void notifyDeath(GamePlayer gp, EntityDamageEvent e) {
-		// TODO Auto-generated method stub
-
+		undeath(gp);
+	}
+	
+	private void undeath(GamePlayer p) {
+		sendPlayersMessage(ChatColor.DARK_GRAY + p.getName() + " died.");
+		spawn((PayloadPlayer)p);
 	}
 
 	@Override
 	public void notifyQuitGame(GamePlayer gp) {
 		players.remove(gp);
+		checkNoPlayers();
 	}
 
+	@Override
 	protected void endGame() {
 		for (PayloadPlayer p : players) {
 			p.restorePlayer();
 			removePlayerFromScoreboard(p);
 		}
-		players.clear();
+		reset();
 	}
 
 	@Override
 	public void notifyLeaveCommand(GamePlayer gp) {
+		gp.getPlayer().sendMessage(ChatColor.GOLD + "Leaving " + worldName);
 		players.remove(gp);
-		removePlayerFromScoreboard((PayloadPlayer)gp);
+		removePlayerFromScoreboard((PayloadPlayer) gp);
 		gp.restorePlayer();
 	}
 
@@ -200,9 +234,62 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	}
 
 	@Override
-	protected void initPlayer(PayloadPlayer p) {
-		// TODO Auto-generated method stub
-		
+	protected void initPlayer(PayloadPlayer player) {
+		Player p = player.getPlayer();
+		if (player.playerClass == PayloadClass.PYRO) {
+			p.getInventory().addItem(getFlameThrower());
+		} else if (player.playerClass == PayloadClass.ENGINEER) {
+			p.getInventory().addItem(getSentryBlock());
+		} else if (player.playerClass == PayloadClass.MEDIC) {
+			p.getInventory().addItem(getMediGun());
+		} else if (player.playerClass == PayloadClass.HEAVY) {
+			p.getInventory().addItem(getMinigun());
+		} else if (player.playerClass == PayloadClass.SNIPER) {
+			p.getInventory().addItem(getSniperRifle());
+		} else if (player.playerClass == PayloadClass.SCOUT) {
+			p.getInventory().addItem(getScoutGun());
+		}
+		p.getInventory().addItem(new ItemStack(Material.COOKIE, 32));
+	}
+	private ItemStack getScoutGun() {
+		ItemStack is = new ItemStack(Material.RED_ROSE, 1,(short)2);
+		is.getItemMeta().setDisplayName(ChatColor.RED + "Scattergun");
+		is.getItemMeta().getLore().add(ChatColor.GREEN + "Lame");
+		return is;
+	}
+	private ItemStack getFlameThrower() {
+		ItemStack is = new ItemStack(Material.FIRE, 1);
+		is.getItemMeta().setDisplayName(ChatColor.RED + "Flame Thrower");
+		is.getItemMeta().getLore().add(ChatColor.GREEN + "10 Ammo per second");
+		return is;
+	}
+
+	private ItemStack getSentryBlock() {
+		ItemStack is = new ItemStack(Material.DISPENSER, 1);
+		is.getItemMeta().setDisplayName(ChatColor.RED + "Sentry Gun");
+		is.getItemMeta().getLore().add(ChatColor.GREEN + "20 Arrows per Second");
+		return is;
+	}
+
+	private ItemStack getMediGun() {
+		ItemStack is = new ItemStack(Material.FISHING_ROD, 1, Short.MAX_VALUE);
+		is.getItemMeta().setDisplayName(ChatColor.RED + "Medi-Gun");
+		is.getItemMeta().getLore().add(ChatColor.GREEN + "1/2 Heart per Second");
+		return is;
+	}
+
+	private ItemStack getMinigun() {
+		ItemStack is = new ItemStack(Material.FISHING_ROD, 1, Short.MAX_VALUE);
+		is.getItemMeta().setDisplayName(ChatColor.RED + "Sasha");
+		is.getItemMeta().getLore().add(ChatColor.GREEN + "Fires 60 Rounds per Second");
+		return is;
+	}
+
+	private ItemStack getSniperRifle() {
+		ItemStack is = new ItemStack(Material.BOW, 1, Short.MAX_VALUE);
+		is.getItemMeta().setDisplayName(ChatColor.RED + "Sniper Rifle");
+		is.getItemMeta().getLore().add(ChatColor.GREEN + "Deals 20 Damage on head shots");
+		return is;
 	}
 
 	@Override
@@ -211,7 +298,6 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			return;
 		if (p.getTeam().team == TeamType.BLUE)
 			TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(0));
-		else
-			TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(2));
+		else TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(2));
 	}
 }

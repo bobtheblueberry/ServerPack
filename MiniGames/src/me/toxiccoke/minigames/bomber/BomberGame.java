@@ -195,7 +195,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		Player p = plr.getPlayer();
 		Inventory i = p.getInventory();
 		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.BOW, 1),
-				new ItemStack(Material.ARROW, 25) };
+				new ItemStack(Material.ARROW, 64) };
 		i.addItem(s);
 		updateArmor(p, plr.getTeam().team);
 		p.updateInventory();
@@ -220,12 +220,12 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	
 	@Override
 	public boolean isJoinable() {
-		return !broken && spawnLocations.size() == 2 && lobbyLocation != null;
+		return spawnLocations.size() >= 2 && lobbyLocation != null;
 	}
 
 	@Override
 	public boolean join(Player p) {
-		if (broken || lobbyLocation == null || spawnLocations.size() < 2 || p == null)
+		if (lobbyLocation == null || spawnLocations.size() < 2 || p == null)
 			return false;
 		boolean isInGame = false;
 		for (BomberPlayer bp : players)

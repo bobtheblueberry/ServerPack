@@ -1,6 +1,15 @@
 package me.toxiccoke.minigames;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import me.toxiccoke.minigames.Partys.Party;
 import me.toxiccoke.minigames.bomber.BomberGame;
@@ -23,12 +32,50 @@ public class GameLobby implements Runnable, Listener {
 	public GameLobby() {
 		games = new ArrayList<GameWorld<?>>(3);
 		lobby = this;
-
-		games.add(new BomberGame("Greenland"));
-		games.add(new BomberGame("Amazon"));
-		games.add(new PayloadGame("Badwater"));
+		load();
 		// 20 ticks per second
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, this, 0L, 20L);
+	}
+	
+	private void load() {
+		File parent = MiniGamesPlugin.plugin.getDataFolder();
+		if (!parent.exists())
+			parent.mkdirs();
+		File data = new File(parent, "Worlds.ini");
+		if (!data.exists()) {
+			try {
+			PrintWriter p = new PrintWriter(new BufferedWriter(new FileWriter(data)));
+			p.println("Bomber Greenland");
+			p.println("Bomber Amazon");
+			p.println("Payload Badwater");
+			p.println();
+			p.close();
+			if (data.exists())
+				load();
+			} catch (IOException exc) {
+				System.err.println(exc.getMessage());
+				exc.printStackTrace();
+			}
+		} else {
+			// load data
+			try {
+				Scanner sc = new Scanner(new BufferedReader(new FileReader(data)));
+				while (sc.hasNext()) {
+					String game = sc.next();
+					if (sc.hasNext()) {
+						String world = sc.next();
+						if (game.equalsIgnoreCase("Bomber")) 
+							games.add(new BomberGame(world));
+						else if (game.equalsIgnoreCase("Payload"))
+							games.add(new PayloadGame(world));
+					}
+				}
+				sc.close();
+			} catch (FileNotFoundException exc) {
+				System.err.println(exc.getMessage());
+				exc.printStackTrace();
+			}
+		}
 	}
 
 	public void updateSigns() {

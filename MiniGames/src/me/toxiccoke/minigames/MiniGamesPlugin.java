@@ -23,7 +23,7 @@ public class MiniGamesPlugin extends JavaPlugin implements Listener {
 	}
 	
 	public void onDisable() {
-		for (GameWorld m : GameLobby.lobby.games) {
+		for (GameWorld<?> m : GameLobby.lobby.games) {
 			@SuppressWarnings("unchecked")
 			LinkedList<? extends GamePlayer> cloned = (LinkedList<? extends GamePlayer>) m.getPlayers().clone();
 			for (GamePlayer gp : cloned)

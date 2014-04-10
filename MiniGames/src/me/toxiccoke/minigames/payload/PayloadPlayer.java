@@ -7,10 +7,12 @@ import org.bukkit.entity.Player;
 public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 
 	PayloadTeam team;
+	PayloadClass playerClass;
 	
-	public PayloadPlayer(Player p, PayloadTeam t) {
+	public PayloadPlayer(Player p, PayloadTeam t, PayloadClass cl) {
 		super(p);
 		this.team = t;
+		this.playerClass = cl;
 	}
 
 	@Override
@@ -22,4 +24,5 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 	public void setTeam(PayloadTeam newTeam) {
 		team = newTeam;
 	}
+	
 }
