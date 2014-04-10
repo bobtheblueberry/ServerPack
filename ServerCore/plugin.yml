@@ -64,4 +64,7 @@ commands:
         usage: /<command>
         description: Friend Commands
         aliases: [f,friends]
+    back:
+        usage: /<command>
+        description: Teleport to previous location
 

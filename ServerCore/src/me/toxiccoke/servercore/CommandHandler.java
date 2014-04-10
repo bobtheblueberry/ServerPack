@@ -1,7 +1,15 @@
 package me.toxiccoke.servercore;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
+
+import me.toxiccoke.io.StreamDecoder;
+import me.toxiccoke.io.StreamEncoder;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,12 +25,131 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.plugin.Plugin;
 
 public class CommandHandler implements CommandExecutor {
+
+	HashMap<String, Location>	previous;
+	File						pFile;
+
+	public CommandHandler() {
+		previous = new HashMap<String, Location>();
+		File f = Commands.plugin.getDataFolder();
+		if (!f.exists())
+			f.mkdirs();
+		pFile = new File(f, "previous.dat");
+		loadBack();
+	}
+
+	private void addBack(Player p) {
+		previous.put(p.getName(), p.getLocation());
+		Bukkit.getScheduler().scheduleSyncDelayedTask(Commands.plugin, new Runnable() {
+			@Override
+			public void run() {
+				saveBack();
+			}
+		});
+	}
+
+	private void saveBack() {
+		if (previous.size() < 1)
+			return;
+		try {
+			StreamEncoder out = new StreamEncoder(pFile);
+			out.write(1);// version
+			out.write4(previous.size());
+			Iterator<Entry<String, Location>> i = previous.entrySet().iterator();
+			while (i.hasNext()) {
+				Entry<String, Location> e = i.next();
+				out.writeStr(e.getKey());
+				Location l = e.getValue();
+				out.writeStr(l.getWorld().getName());
+				out.writeD(l.getX());
+				out.writeD(l.getY());
+				out.writeD(l.getZ());
+				out.writeD(l.getYaw());
+				out.writeD(l.getPitch());
+			}
+			out.close();
+		} catch (IOException e) {
+			System.err.println("cannot save /back locations");
+			e.printStackTrace();
+		}
+	}
+
+	private void loadBack() {
+		if (!pFile.exists())
+			return;
+		try {
+			StreamDecoder in = new StreamDecoder(pFile);
+			in.read(); // version
+			int size = in.read4();
+			for (int i = 0; i < size; i++) {
+				String key = in.readStr();
+				String world = in.readStr();
+				double x = in.readD(), y = in.readD(), z = in.readD(), yaw = in.readD(), pitch = in.readD();
+				previous.put(key, new Location(Bukkit.getWorld(world), x, y, z, (float) yaw, (float) pitch));
+			}
+
+			in.close();
+		} catch (IOException e) {
+			System.err.println("cannot save /back locations");
+			e.printStackTrace();
+		}
+	}
+
 	@EventHandler
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		if (!(sender instanceof Player)) {
 			sender.sendMessage("You must be a player");
 			return true;
 		}
+		if (cmd.getName().equalsIgnoreCase("kick")) {
+			if (!sender.hasPermission("sc.kick")) {
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
+						+ ChatColor.RED + "You dont have acsses to this command");
+				return true;
+			}
+			if (args.length == 0) {
+				sender.sendMessage(ChatColor.RED + "Please specify a player!");
+				return true;
+			}
+			Player target = Bukkit.getServer().getPlayer(args[0]);
+			if (target == null) {
+				sender.sendMessage(ChatColor.RED + "Could not find player " + args[0] + "!");
+				return true;
+			}
+			target.kickPlayer(ChatColor.RED + "You have been kicked!");
+			Bukkit.getServer().getPluginManager().callEvent(new EnforcerEvent(target, Type.KICK));
+			Bukkit.getServer().broadcastMessage(
+					ChatColor.GRAY + "Player " + target.getName() + " has been kicked by " + ChatColor.GRAY
+							+ sender.getName() + "!");
+			return true;
+		} else if (cmd.getName().equalsIgnoreCase("ban")) {
+			if (!sender.hasPermission("sc.ban")) {
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
+						+ ChatColor.RED + "You dont have acsses to this command");
+				return true;
+			}
+			if (args.length == 0) {
+				sender.sendMessage(ChatColor.RED + "Please specify a player!");
+				return true;
+			}
+			Player target = Bukkit.getServer().getPlayer(args[0]);
+			if (target == null) {
+				sender.sendMessage(ChatColor.RED + "Could not find player " + args[0] + "!");
+				return true;
+			}
+			String reason = "";
+			for (int i = 1; i < args.length; i++)
+				reason = reason + " " + args[0];
+
+			target.kickPlayer(ChatColor.RED + "You have been banned!\n" + reason);
+			Bukkit.getServer().getBanList(org.bukkit.BanList.Type.NAME)
+					.addBan(target.getName(), reason, null, sender.getName());
+			Bukkit.getServer().broadcastMessage(
+					ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY
+							+ sender.getName() + "!");
+			return true;
+		}
+
 		Player p = (Player) sender;
 		World world = p.getWorld();
 		String cName = cmd.getName().toLowerCase();
@@ -30,7 +157,17 @@ public class CommandHandler implements CommandExecutor {
 		if (cName.equals("gm")) {
 			gm(p, args);
 			return true;
-			// heal command
+
+		} else if (cName.equals("back")) {
+			Location l = previous.get(p.getName());
+			if (l == null) {
+				p.sendMessage(ChatColor.GOLD + "No previous location found");
+			} else {
+				addBack(p);
+				teleportAdvanced(p, l);
+				p.sendMessage(ChatColor.GOLD + "Teleported to previous location");
+			}
+			return true;
 		} else if (cmd.getName().equalsIgnoreCase("heal")) {
 			if (!sender.hasPermission("sc.heal")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
@@ -55,7 +192,8 @@ public class CommandHandler implements CommandExecutor {
 				return true;
 			}
 			boolean fly = p.getAllowFlight();
-			if (fly) p.sendMessage(ChatColor.GRAY + "Fly disabled");
+			if (fly)
+				p.sendMessage(ChatColor.GRAY + "Fly disabled");
 			else p.sendMessage(ChatColor.GRAY + "Fly enabled");
 			p.setAllowFlight(!fly);
 			return true;
@@ -75,6 +213,7 @@ public class CommandHandler implements CommandExecutor {
 					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
 					return true;
 				}
+				addBack(p);
 				teleportAdvanced(p, targetPlayer.getLocation());
 				return true;
 			} else if (args.length == 2) {
@@ -88,8 +227,8 @@ public class CommandHandler implements CommandExecutor {
 					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[1]);
 					return true;
 				}
-
-				teleportAdvanced(targetPlayer.getPlayer(), targetPlayer1.getLocation());
+				addBack(targetPlayer);
+				teleportAdvanced(targetPlayer, targetPlayer1.getLocation());
 				return true;
 			}
 			return true;
@@ -171,7 +310,8 @@ public class CommandHandler implements CommandExecutor {
 			getConfig().set("spawn.x", p.getLocation().getX());
 			getConfig().set("spawn.y", p.getLocation().getY());
 			getConfig().set("spawn.z", p.getLocation().getZ());
-			p.getWorld().setSpawnLocation(p.getLocation().getBlockX(), p.getLocation().getBlockY(), p.getLocation().getBlockZ());
+			p.getWorld().setSpawnLocation(p.getLocation().getBlockX(), p.getLocation().getBlockY(),
+					p.getLocation().getBlockZ());
 			Commands.plugin.saveConfig();
 			p.sendMessage(ChatColor.GRAY + "Spawn set!");
 			return true;
@@ -190,57 +330,10 @@ public class CommandHandler implements CommandExecutor {
 			double y = getConfig().getDouble("spawn.y");
 			double z = getConfig().getDouble("spawn.z");
 			Location l = new Location(w, x, y, z);
+			addBack(p);
 			teleportAdvanced(p, l);
 			p.sendMessage(ChatColor.GRAY + "Welcome to the spawn!");
 			return true;
-		} else if (cmd.getName().equalsIgnoreCase("kick")) {
-			if (!sender.hasPermission("sc.kick")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
-				return true;
-			}
-			if (args.length == 0) {
-				sender.sendMessage(ChatColor.RED + "Please specify a player!");
-				return true;
-			}
-			Player target = Bukkit.getServer().getPlayer(args[0]);
-			if (target == null) {
-				sender.sendMessage(ChatColor.RED + "Could not find player " + args[0] + "!");
-				return true;
-			}
-			target.kickPlayer(ChatColor.RED + "You have been kicked!");
-			Bukkit.getServer().getPluginManager().callEvent(new EnforcerEvent(target, Type.KICK));
-			Bukkit.getServer().broadcastMessage(
-					ChatColor.GRAY + "Player " + target.getName() + " has been kicked by " + ChatColor.GRAY
-							+ sender.getName() + "!");
-			return true;
-		} else if (cmd.getName().equalsIgnoreCase("ban")) {
-			if (!sender.hasPermission("sc.ban")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
-				return true;
-			}
-			if (args.length == 0) {
-				sender.sendMessage(ChatColor.RED + "Please specify a player!");
-				return true;
-			}
-			Player target = Bukkit.getServer().getPlayer(args[0]);
-			if (target == null) {
-				sender.sendMessage(ChatColor.RED + "Could not find player " + args[0] + "!");
-				return true;
-			}
-			String reason = "";
-			for (int i = 1; i < args.length; i++)
-				reason = reason + " " + args[0];
-
-			target.kickPlayer(ChatColor.RED + "You have been banned!\n" + reason);
-			Bukkit.getServer().getBanList(org.bukkit.BanList.Type.NAME)
-					.addBan(target.getName(), reason, null, p.getName());
-			Bukkit.getServer().broadcastMessage(
-					ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY
-							+ sender.getName() + "!");
-			return true;
-			// poke command
 		} else if (cmd.getName().equalsIgnoreCase("poke")) {
 			if (!sender.hasPermission("sc.poke")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
@@ -405,7 +498,8 @@ public class CommandHandler implements CommandExecutor {
 	}
 
 	private boolean teleportAdvanced(Player player, Location l) {
-		if (!_teleportAdvanced(player, l)) return player.teleport(l);
+		if (!_teleportAdvanced(player, l))
+			return player.teleport(l);
 		return true;
 	}
 
