@@ -34,8 +34,7 @@ public class BomberPlayer extends TwoTeamPlayer<BomberTeam> implements Runnable 
 
 	@Override
 	public void startGame() {
-		canFireball = true;
-		getPlayer().setLevel(1);
+		fireball();
 	}
 
 	@Override

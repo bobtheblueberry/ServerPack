@@ -153,16 +153,10 @@ public class GameEventHandler implements Listener {
 					if (!m.canExplodeBlock(b, event.getEntity()))
 						blocks.add(b);
 				}
-			else if (m.worldName.equalsIgnoreCase("amazon"))
-				System.out.println(getLocationString(event.getLocation()) + " not in " + bounds);
 			for (Block b : blocks)
 				event.blockList().remove(b);
 
 		}
-	}
-
-	private String getLocationString(Location l) {
-		return " X: " + l.getBlockX() + " Y: " + l.getBlockY() + " Z: " + l.getBlockZ();
 	}
 
 	@EventHandler

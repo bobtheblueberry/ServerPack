@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -45,7 +46,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		blueScore = Bukkit.getOfflinePlayer(ChatColor.BLUE + "Blue Kills:");
 		redScore = Bukkit.getOfflinePlayer(ChatColor.RED + "Red Kills:");
 		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
-			
+
 			@Override
 			public void run() {
 				updateScore();
@@ -66,7 +67,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 			Player p = plr.getPlayer();
 
 			if (redCount > bluCount) {
-				plr.setTeam( getBlue());
+				plr.setTeam(getBlue());
 				p.sendMessage(ChatColor.GOLD + "You were switched to the blue team to balance the teams.");
 			} else {
 				plr.setTeam(getRed());
@@ -110,7 +111,6 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		}
 	}
 
-
 	protected void updateScore() {
 		objective.getScore(redScore).setScore(getRed().getScore());
 		objective.getScore(blueScore).setScore(getBlue().getScore());
@@ -136,9 +136,22 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 			save();
 		}
 	}
+
+	protected void fixArmor(Player p) {
+		ItemStack[] armor = p.getInventory().getArmorContents();
+		for (int i = 0; i < 4; i++)
+		{
+			ItemStack is = armor[i];
+			if (is == null) continue;
+			is.setDurability((short)0);
+		}
+	}
+
 	protected abstract void initPlayer(E p);
+
 	protected abstract void spawn(E p);
+
 	protected abstract T getRed();
+
 	protected abstract T getBlue();
 }
-

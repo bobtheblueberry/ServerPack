@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import me.toxiccoke.minigames.Bounds;
 import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.GamePlayer;
+import me.toxiccoke.minigames.MiniGamesPlugin;
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
 import me.toxiccoke.tokenshop.TokenShop;
@@ -45,6 +46,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	private volatile BomberPlayer		bomber;
 	private int							gamelength	= 4;
 
+	//spawn is blue,red,(blue,red)
 	public BomberGame(String worldName) {
 		super("Bomber", worldName);
 		load();
@@ -184,9 +186,15 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			return;
 		}
 		Location l;
+		int i;
 		if (p.getTeam().team == TeamType.BLUE)
-			l = spawnLocations.get(0);
-		else l = spawnLocations.get(1);
+			i = 0;
+		else i = 1;
+		// allow 2 spawn locations
+		if (spawnLocations.size() > 3)
+			if (Math.random() < 0.5)
+				i++;
+		l = spawnLocations.get(i);
 		TokenShop.teleportAdvanced(p.getPlayer(), l);
 	}
 
@@ -342,8 +350,8 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			custom = true;
 			cause = " fell to their death";
 		}
-		undeath(p);
 		spawn((BomberPlayer) gp);
+		undeath(p);
 		if (custom)
 			sendPlayersMessage(ChatColor.GRAY + p.getName() + cause);
 		else sendPlayersMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + p.getName() + " was killed by " + cause);
@@ -427,10 +435,17 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		endTimer = new GameEndTimer(this, gamelength);
 	}
 
-	private void undeath(Player p) {
-		p.setHealth(((Damageable) p.getPlayer()).getMaxHealth());
-		p.setFoodLevel(20);
-		p.setFireTicks(0);
+	private void undeath(final Player p) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
+			
+			@Override
+			public void run() {
+				p.setHealth(((Damageable) p.getPlayer()).getMaxHealth());
+				p.setFoodLevel(20);
+				p.setFireTicks(0);
+				fixArmor(p);
+			}
+		}, 4);
 	}
 
 	private void updateArmor(Player p, TeamType t) {
