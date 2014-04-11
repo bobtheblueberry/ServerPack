@@ -2,6 +2,7 @@ package me.toxiccoke.minigames.payload;
 
 import me.toxiccoke.minigames.Bounds;
 import me.toxiccoke.minigames.GameLobby;
+import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.GameWorld;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 
@@ -13,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
@@ -70,7 +72,7 @@ public class PayloadEventHandler implements Listener {
 		int x = event.getVehicle().getLocation().getBlockX();
 		int y = event.getVehicle().getLocation().getBlockZ();
 		for (GameWorld<?> m : GameLobby.lobby.games) {
-			if (!(m instanceof PayloadGame)) 
+			if (!(m instanceof PayloadGame))
 				continue;
 			Bounds b = m.getBounds();
 			if (b == null)
@@ -109,6 +111,7 @@ public class PayloadEventHandler implements Listener {
 			}
 		}
 	}
+
 	@EventHandler
 	public void onVehicleDestroy(VehicleDestroyEvent event) {
 		Location vehicleLoc = event.getVehicle().getLocation();
@@ -124,6 +127,7 @@ public class PayloadEventHandler implements Listener {
 			}
 		}
 	}
+
 	@EventHandler
 	public void onVehicleDamage(VehicleDamageEvent event) {
 		Location vehicleLoc = event.getVehicle().getLocation();
@@ -138,5 +142,23 @@ public class PayloadEventHandler implements Listener {
 				return;
 			}
 		}
+	}
+
+	@EventHandler
+	public void onRegainHealth(EntityRegainHealthEvent event) {
+		if (!(event.getEntity() instanceof Player))
+				return;
+		Player player = (Player) event.getEntity();
+		for (GameWorld<?> m : GameLobby.lobby.games)
+			for (GamePlayer gp : m.getPlayers()) {
+				if (!(m instanceof PayloadGame))
+					continue;
+				if (gp.getName().equals(player.getName())) {
+					if (event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED)
+						if (!((PayloadGame) m).canPlayerHealFromHunger(gp))
+							event.setCancelled(true);
+					return;
+				}
+			}
 	}
 }

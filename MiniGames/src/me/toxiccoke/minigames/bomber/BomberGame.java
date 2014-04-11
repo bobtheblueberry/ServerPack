@@ -145,6 +145,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 			plr.restorePlayer();
 			removePlayerFromScoreboard(plr);
+			plr.leaveGame();
 		}
 		players.clear();
 		updateScore();
@@ -345,11 +346,13 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		Player p = player.getPlayer();
 		p.sendMessage(ChatColor.GOLD + "Leaving Bomber");
 		removePlayer(player);
+		player.leaveGame();
 	}
 
 	@Override
 	public void notifyQuitGame(GamePlayer gp) {
 		removePlayer(gp);
+		gp.leaveGame();
 	}
 
 	@Override

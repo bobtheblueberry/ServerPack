@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import me.monowii.mwschematics.Utils;
+import me.toxiccoke.minigames.util.SkullUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

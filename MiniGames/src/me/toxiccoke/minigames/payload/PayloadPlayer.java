@@ -8,9 +8,12 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 
 	PayloadTeam team;
 	PayloadClass playerClass;
+	PayloadGame game;
+	boolean dead;
 	
-	public PayloadPlayer(Player p, PayloadTeam t, PayloadClass cl) {
+	public PayloadPlayer(PayloadGame g, Player p, PayloadTeam t, PayloadClass cl) {
 		super(p);
+		this.game = g;
 		this.team = t;
 		this.playerClass = cl;
 	}
@@ -23,6 +26,10 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 	@Override
 	public void setTeam(PayloadTeam newTeam) {
 		team = newTeam;
+	}
+
+	public void respawn() {
+		game.respawn(this);
 	}
 	
 }

@@ -22,7 +22,7 @@ public class PayloadCommand implements CommandExecutor {
 		Player p = (Player) sender;
 		// /padmin track badwater
 		if (args.length < 1) {
-			p.sendMessage(ChatColor.RED + "/" + label + " track <World>");
+			p.sendMessage(ChatColor.RED + "/" + label + " [track|addcheckpoint] <World>");
 			return true;
 		} else if (args.length < 2) {
 			p.sendMessage(ChatColor.RED + "/" + label + " " + args[0] + " <World>");
@@ -43,6 +43,12 @@ public class PayloadCommand implements CommandExecutor {
 			p.sendMessage(ChatColor.GREEN + "Click the first track in the index");
 			PayloadEventHandler.minetrackSet = p;
 			PayloadEventHandler.game = game;
+			return true;
+		} else if (args[0].equals("addcheckpoint")) {
+			game.checkpoints.add(p.getLocation().getBlock().getLocation());
+			game.checkedpoints = new boolean[game.checkpoints.size()];
+			game.save();
+			p.sendMessage(ChatColor.RED + "Waypoint added");
 			return true;
 		}
 

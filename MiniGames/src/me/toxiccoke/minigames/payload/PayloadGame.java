@@ -8,12 +8,16 @@ import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
+import me.toxiccoke.minigames.util.BarAPI;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
@@ -31,6 +35,7 @@ import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.util.Vector;
 
 public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
@@ -41,6 +46,9 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	private GameEndTimer				endTimer;
 	private Location					minecartSpawn;
 	protected Minetrackulator			trackulator;
+	protected ArrayList<Location>		checkpoints;
+	protected boolean[]					checkedpoints;
+	private String bossBarTitle = ChatColor.GREEN + "Payload Cart " +ChatColor.GRAY + "» " + ChatColor.YELLOW;
 
 	// blu spawn 1, blu spawn 2, red spawn
 
@@ -49,6 +57,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	public PayloadGame(String worldName) {
 		super("Payload", worldName);
 		players = new LinkedList<PayloadPlayer>();
+		checkpoints = new ArrayList<Location>();
 		trackulator = new Minetrackulator(this);
 		trackulator.load();
 		load();
@@ -65,7 +74,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean canBreakBlock(GamePlayer p, BlockBreakEvent event) {
-		return true;
+		return false;
 	}
 
 	@Override
@@ -75,7 +84,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean canPlaceBlock(GamePlayer p, BlockPlaceEvent event) {
-		return true;
+		return false;
 	}
 
 	@Override
@@ -126,15 +135,16 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		return players;
 	}
 
-	private int getPlayersWithinDistance(Location l, int dist) {
-		int a = 0;
+	private ArrayList<PayloadPlayer> getPlayersWithinDistance(Location l, int dist) {
+		ArrayList<PayloadPlayer> list = new ArrayList<PayloadPlayer>();
 		for (PayloadPlayer player : players) {
-			// world is not checked
+			if (player.team.team == TeamType.RED)
+				continue;
 			double distance = Minetrackulator.getDistance(player.getPlayer().getLocation(), l);
 			if (distance <= dist)
-				a++;
+				list.add(player);
 		}
-		return a;
+		return list;
 	}
 
 	@Override
@@ -146,6 +156,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	protected void initPlayer(PayloadPlayer player) {
 		super.initPlayer(player);
 		Player p = player.getPlayer();
+		p.setGameMode(GameMode.ADVENTURE);
 		if (player.playerClass == PayloadClass.PYRO) {
 			p.getInventory().addItem(
 					getItem(Material.FIRE, ChatColor.RED + "Flame Thrower", ChatColor.GREEN + "10 Ammo per second"));
@@ -185,7 +196,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean join(Player p) {
-		PayloadPlayer plr = new PayloadPlayer(p, /* getTeam() */blue, PayloadClass.PYRO);
+		PayloadPlayer plr = new PayloadPlayer(this,p, /* getTeam() */blue, PayloadClass.PYRO);
 
 		players.add(plr);
 		if (players.size() == minplayers)
@@ -199,16 +210,27 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			minecartSpawn = new Location(Bukkit.getWorld(yml.getString("minecart.world")), yml.getDouble("minecart.x"),
 					yml.getDouble("minecart.y"), yml.getDouble("minecart.z"));
 		}
+
+		int cp = yml.getInt("checkpoint.size");
+		checkedpoints = new boolean[cp];
+		World w = null;
+		for (int i = 0; i < cp; i++) {
+			if (i == 0)
+				w = Bukkit.getWorld(yml.getString("checkpoint.world"));
+			checkpoints.add(new Location(w, yml.getDouble("checkpoint." + i + ".x"), yml.getDouble("checkpoint." + i
+					+ ".y"), yml.getDouble("checkpoint." + i + ".z")));
+		}
+
 	}
 
 	@Override
 	public void notifyDeath(GamePlayer gp, Entity damager, DamageCause cause) {
-		undeath(gp);
+		death(gp);
 	}
 
 	@Override
 	public void notifyDeath(GamePlayer gp, EntityDamageEvent e) {
-		undeath(gp);
+		death(gp);
 	}
 
 	@Override
@@ -246,6 +268,15 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			yml.set("minecart.y", minecartSpawn.getY());
 			yml.set("minecart.z", minecartSpawn.getZ());
 		}
+		yml.set("checkpoint.size", checkpoints.size());
+		for (int i = 0; i < checkpoints.size(); i++) {
+			Location l = checkpoints.get(i);
+			if (i == 0)
+				yml.set("checkpoint.world", l.getWorld().getName());
+			yml.set("checkpoint." + i + ".x", l.getX());
+			yml.set("checkpoint." + i + ".y", l.getY());
+			yml.set("checkpoint." + i + ".z", l.getZ());
+		}
 		super.save(yml);
 	}
 
@@ -268,17 +299,27 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		isStarted = true;
 		sendPlayersMessage(ChatColor.GOLD + "Game Started");
 		initMinecart();
-		endTimer = new GameEndTimer(this, 10);
+		endTimer = new GameEndTimer(this, 5);
 		for (PayloadPlayer p : players) {
-			p.getPlayer().setScoreboard(board);
+			Player plr = p.getPlayer();
+			plr.setScoreboard(board);
 			initPlayer(p);
 			spawn(p);
+			BarAPI.displayText(bossBarTitle, plr, 0);
 		}
 	}
+	private int getCheckpointsDone() {
+		int i = 0;
+		for (boolean b : checkedpoints)
+			if (b) i++;
+		return i;
+	}
 
-	private void undeath(GamePlayer p) {
+	private void death(GamePlayer p) {
 		sendPlayersMessage(ChatColor.DARK_GRAY + p.getName() + " died.");
-		spawn((PayloadPlayer) p);
+
+		p.getPlayer().sendMessage(ChatColor.GOLD + "Respawning in 15 seconds.");
+		new RespawnTimer((PayloadPlayer) p, 15);
 	}
 
 	private void unPlayer(GamePlayer gp) {
@@ -287,19 +328,32 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		gp.restorePlayer();
 		checkNoPlayers();
 		updateScore();
+		BarAPI.destroy(gp.getPlayer());
+		gp.leaveGame();
 	}
 
 	private void initMinecart() {
 		if (minecartSpawn == null)
 			return;
-		minecart = (Minecart) minecartSpawn.getWorld().spawnEntity(minecartSpawn, EntityType.MINECART_MOB_SPAWNER);
+		minecart = (Minecart) minecartSpawn.getWorld().spawnEntity(minecartSpawn, EntityType.MINECART_TNT);
 		minecart.setSlowWhenEmpty(true);
+	}
+
+	private void cartTick(PayloadPlayer player) {
+		Player p = player.getPlayer();
+		BarAPI.setBarHealth(p, (int) (trackulator.getCartPosition(minecart) * 200));
+		if (p.getHealth() < 20)
+			p.setHealth(p.getHealth() + 0.1);
+		// TODO: Ammo
 	}
 
 	protected void updateCart() {
 		if (!isStarted || minecart == null)
 			return;
-		double dist = getPlayersWithinDistance(minecart.getLocation(), 3);
+		ArrayList<PayloadPlayer> list = getPlayersWithinDistance(minecart.getLocation(), 3);
+		for (PayloadPlayer p : list)
+			cartTick(p);
+		double dist = list.size();
 		Vector v;
 		if (dist > 0)
 			v = trackulator.getVector(minecart.getLocation(), dist / 10);
@@ -308,12 +362,32 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 				v = trackulator.getVector(minecart.getLocation(), minecart.getVelocity().length() * 0.5);
 			else return;
 		}
+		if (v == null)
+			return;
+
 		minecart.setVelocity(v);
+
+		// check waypoints
+		for (int i = 0; i < checkpoints.size(); i++)
+			if (!checkedpoints[i] && checkpoints.get(i).distance(minecart.getLocation()) < 1) {
+				checkedpoints[i] = true;
+				checkpoint(i);
+				break;
+			}
+	}
+
+	private void checkpoint(int ind) {
+		sendPlayersMessage(ChatColor.GREEN + "Checkpoint reached. Time has been added");
+		endTimer.cancelTimer();
+		endTimer = new GameEndTimer(this, endTimer.getCountdown() + 2);
+		String title = bossBarTitle + getCheckpointsDone();
+		for (PayloadPlayer p : players)
+			BarAPI.setBarText(p.getPlayer(), title);
 	}
 
 	public void vehicleCollision(VehicleEntityCollisionEvent event) {
 		if (event.getVehicle() != minecart)
-			 return;
+			return;
 		event.setCancelled(true);
 		event.setCollisionCancelled(true);
 		event.setPickupCancelled(true);
@@ -342,14 +416,48 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		minecart.setDerailedVelocityMod(new Vector());
 	}
 
+	public boolean canPlayerHealFromHunger(GamePlayer p) {
+		return false;
+	}
+
 	@Override
 	protected boolean isStarted() {
 		return isStarted;
 	}
 
 	@Override
-	protected void updateArmor(PayloadPlayer player) {
-		// TODO Auto-generated method stub
+	protected void updateArmor(PayloadPlayer p) {
+		ItemStack[] is = getColoredArmor((p.getTeam().team == TeamType.BLUE) ? 0 : 255, 0,
+				(p.getTeam().team == TeamType.BLUE) ? 255 : 0);
+		p.getPlayer().getInventory().setArmorContents(is);
+	}
 
+	private ItemStack[] getColoredArmor(int r, int g, int b) {
+		ItemStack[] is = new ItemStack[4];
+
+		is[0] = new ItemStack(Material.LEATHER_BOOTS, 1);
+		LeatherArmorMeta lam = (LeatherArmorMeta) is[0].getItemMeta();
+		lam.setColor(Color.fromRGB(r, g, b));
+		is[0].setItemMeta(lam);
+		is[1] = new ItemStack(Material.LEATHER_LEGGINGS, 1);
+		lam = (LeatherArmorMeta) is[1].getItemMeta();
+		lam.setColor(Color.fromRGB(r, g, b));
+		is[1].setItemMeta(lam);
+		is[2] = new ItemStack(Material.LEATHER_CHESTPLATE, 1);
+		lam = (LeatherArmorMeta) is[2].getItemMeta();
+		lam.setColor(Color.fromRGB(r, g, b));
+		is[2].setItemMeta(lam);
+		is[3] = new ItemStack(Material.LEATHER_HELMET, 1);
+		lam = (LeatherArmorMeta) is[3].getItemMeta();
+		lam.setColor(Color.fromRGB((r == 0) ? (int) (Math.random() * 256) : r, (g == 0) ? (int) (Math.random() * 256)
+				: g, (b == 0) ? (int) (Math.random() * 256) : b));
+		is[3].setItemMeta(lam);
+		return is;
+	}
+
+	public void respawn(PayloadPlayer payloadPlayer) {
+		if (!isStarted)
+			return;
+		spawn(payloadPlayer);
 	}
 }

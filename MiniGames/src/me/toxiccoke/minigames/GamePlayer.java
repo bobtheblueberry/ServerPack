@@ -1,6 +1,5 @@
 package me.toxiccoke.minigames;
 
-
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
@@ -19,6 +18,7 @@ public abstract class GamePlayer {
 	protected String	player;
 	OriginalPlayer		originalPlayer;
 	protected int		score;
+	private boolean		inGame	= true;
 
 	public GamePlayer(Player p) {
 		this.player = p.getName();
@@ -37,12 +37,20 @@ public abstract class GamePlayer {
 				p.removePotionEffect(t);
 	}
 
+	public void leaveGame() {
+		inGame = false;
+	}
+
+	public boolean isInGame() {
+		return inGame;
+	}
+
 	public String getName() {
 		return player;
 	}
-	
+
 	public abstract ChatColor getTeamColor();
-	
+
 	public int getScore() {
 		return score;
 	}
@@ -60,12 +68,14 @@ public abstract class GamePlayer {
 	public Player getPlayer() {
 		return Bukkit.getPlayer(player);
 	}
-	
-	public void startGame(){}
+
+	public void startGame() {}
 
 	public boolean equals(Object o) {
-		if (o == null) return false;
-		if (!(o instanceof GamePlayer)) return false;
+		if (o == null)
+			return false;
+		if (!(o instanceof GamePlayer))
+			return false;
 		return ((GamePlayer) o).player.equals(player);
 	}
 
@@ -78,7 +88,7 @@ public abstract class GamePlayer {
 		ItemStack[]	inv;
 		ItemStack[]	armor;
 		GameMode	gm;
-		String tabName;
+		String		tabName;
 
 		public OriginalPlayer(Player p) {
 			inv = p.getInventory().getContents();
@@ -103,7 +113,7 @@ public abstract class GamePlayer {
 			TokenShop.teleportAdvanced(p, location);
 			p.setPlayerListName(tabName);
 			// remove arrows
-			((CraftPlayer) p).getHandle().getDataWatcher().watch(9, (byte)0);
+			((CraftPlayer) p).getHandle().getDataWatcher().watch(9, (byte) 0);
 		}
 
 	}

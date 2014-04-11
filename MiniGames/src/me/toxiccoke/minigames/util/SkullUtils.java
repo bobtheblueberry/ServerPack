@@ -1,4 +1,4 @@
-package me.toxiccoke.minigames;
+package me.toxiccoke.minigames.util;
 
 import org.bukkit.Location;
 import org.bukkit.Material;

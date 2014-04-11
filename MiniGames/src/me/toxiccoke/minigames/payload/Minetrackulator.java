@@ -88,6 +88,16 @@ public class Minetrackulator {
 		return i1 == i2;
 	}
 
+	public double getCartPosition(Minecart m) {
+		double i = 0;
+		Location l = m.getLocation();
+		for (Block b : rails)
+			if (compareLocations(b.getLocation(), l.getBlock().getLocation()))
+				break;
+			else i++;
+		return (i + 1) / rails.size();
+	}
+
 	public Vector getVector(Location l, double speed) {
 		Block rail = null;
 		int i = 0;
@@ -96,11 +106,11 @@ public class Minetrackulator {
 				rail = b;
 				break;
 			} else i++;
-		if (rail == null) { return new Vector(); }
+		if (rail == null) { return null; }
 		Vector v;
 		// last rail
 		Location next;
-		if (i - 1 == rails.size()) {
+		if (i + 1 >= rails.size()) {
 			Block prev = rails.get(rails.size() - 2);
 			next = l.clone().add(rail.getX() - prev.getX(), 0, rail.getZ() - prev.getZ());
 		} else next = rails.get(i + 1).getLocation();

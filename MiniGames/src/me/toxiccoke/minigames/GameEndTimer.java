@@ -6,11 +6,9 @@ public class GameEndTimer implements Runnable{
 
 	boolean canceled;
 	GameWorld<?> world;
-	int minutes;
 	int countdown;
 	public GameEndTimer(GameWorld<?> w, int minutes) {
 		this.world = w;
-		this.minutes = minutes;
 		this.countdown = minutes;
 		schedule();
 		world.endUpdate(countdown);
@@ -29,5 +27,9 @@ public class GameEndTimer implements Runnable{
 	}
 	public void cancelTimer() {
 		canceled = true;
+	}
+	
+	public int getCountdown() {
+		return countdown;
 	}
 }
