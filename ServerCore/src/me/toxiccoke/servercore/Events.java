@@ -1,5 +1,8 @@
 package me.toxiccoke.servercore;
 
+import java.util.logging.Level;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
@@ -14,6 +17,7 @@ public class Events implements Listener {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
+		Bukkit.getLogger().log(Level.INFO, e.getPlayer().getName() + " Connected");
 		e.setJoinMessage(null);
 		Firework f = (Firework) e.getPlayer().getWorld()
 				.spawn(e.getPlayer().getLocation(), Firework.class);
@@ -30,6 +34,7 @@ public class Events implements Listener {
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		e.setQuitMessage(null);
+		Bukkit.getLogger().log(Level.INFO, e.getPlayer().getName() + " Disconnected");
 	}
 }
 
