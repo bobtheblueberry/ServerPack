@@ -125,7 +125,7 @@ public class CommandHandler implements CommandExecutor {
 		} else if (cmd.getName().equalsIgnoreCase("ban")) {
 			if (!sender.hasPermission("sc.ban")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+						+ ChatColor.RED + "You dont have access to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -347,7 +347,7 @@ public class CommandHandler implements CommandExecutor {
 				if (targetPlayer == null) {
 					sender.sendMessage(ChatColor.RED + "Could not find player: " + ChatColor.GRAY + args[0]);
 					return true;
-				} else if (targetPlayer.getName().equals(p.getName())) {
+				} else if (targetPlayer.equals(p)) {
 					sender.sendMessage(ChatColor.RED + "You have poked yourself");
 					p.damage(1000.0);
 					return true;

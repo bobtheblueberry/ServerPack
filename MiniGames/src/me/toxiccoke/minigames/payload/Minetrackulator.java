@@ -161,7 +161,7 @@ public class Minetrackulator {
 		if (d < 0) { return false; }
 		Block track = rails.get(d);
 		Location next;
-		if (d - 1 == rails.size()) {
+		if (d+1 == rails.size()) {
 			Block prev = rails.get(rails.size() - 2);
 			next = current.clone().add(track.getX() - prev.getX(), 0, track.getZ() - prev.getZ());
 		} else next = rails.get(d + 1).getLocation();

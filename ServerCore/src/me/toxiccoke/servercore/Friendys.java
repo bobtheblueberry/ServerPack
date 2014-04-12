@@ -89,7 +89,7 @@ public class Friendys implements CommandExecutor, Listener {
 				p.sendMessage(ChatColor.GOLD + "Unknown Player: " + ChatColor.GRAY + args[1]);
 				return true;
 			}
-			if (c.getName().equals(p.getName())) {
+			if (c.equals(p)) {
 				p.sendMessage(ChatColor.GOLD + "You can't add yourself as a friend");
 				return true;
 			}

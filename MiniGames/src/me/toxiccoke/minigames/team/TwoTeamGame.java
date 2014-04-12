@@ -1,5 +1,6 @@
 package me.toxiccoke.minigames.team;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import me.toxiccoke.minigames.GameWorld;
@@ -166,6 +167,19 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		}
 		if (isStarted())
 			plr.startGame();
+	}
+	
+	protected void sendTeamMessage(String message, T team) {
+		for (E player : getPlayers(team))
+			player.getPlayer().sendMessage(message);
+	}
+	
+	protected ArrayList<E> getPlayers(T team) {
+		ArrayList<E> players = new ArrayList<E>();
+		for (E player : getPlayers())
+			if (player.getTeam().equals(team))
+				players.add(player);
+		return players;
 	}
 
 	protected abstract void spawn(E p);

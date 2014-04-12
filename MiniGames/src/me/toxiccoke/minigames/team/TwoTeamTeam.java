@@ -17,4 +17,11 @@ public abstract class TwoTeamTeam<E extends TwoTeamPlayer<? extends TwoTeamTeam<
 	
 	public abstract TwoTeamGame<E,? extends TwoTeamTeam<E>> getGame();
 	
+	public boolean equals(Object o) {
+		if (o == null) return false;
+		if (!(o instanceof TwoTeamTeam))
+			return false;
+		TwoTeamTeam<?> t = (TwoTeamTeam<?>)o;
+		return t.team == this.team;
+	}
 }

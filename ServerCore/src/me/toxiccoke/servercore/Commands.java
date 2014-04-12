@@ -58,7 +58,7 @@ public class Commands extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
 		for (Player pl : vanished)
-			if (p.getName().equals(pl.getName()))
+			if (p.equals(pl))
 				e.getPlayer().hidePlayer(pl);
 
 		Object o = this.getConfig().get(p.getName());

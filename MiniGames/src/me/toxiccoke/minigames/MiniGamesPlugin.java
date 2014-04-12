@@ -2,6 +2,7 @@ package me.toxiccoke.minigames;
 
 import java.util.LinkedList;
 
+import me.toxiccoke.minigames.payload.ClassMenu;
 import me.toxiccoke.minigames.payload.PayloadCommand;
 import me.toxiccoke.minigames.payload.PayloadEventHandler;
 
@@ -18,6 +19,8 @@ public class MiniGamesPlugin extends JavaPlugin implements Listener {
 		getServer().getPluginManager().registerEvents(new Particles(), this);
 		getServer().getPluginManager().registerEvents(new GameEventHandler(), this);
 		getServer().getPluginManager().registerEvents(new PayloadEventHandler(), this);
+		getServer().getPluginManager().registerEvents(new ClassMenu(), this);
+		
 
 		GameCommands c = new GameCommands();
 		getCommand("madmin").setExecutor(c);
@@ -26,6 +29,8 @@ public class MiniGamesPlugin extends JavaPlugin implements Listener {
 		getCommand("party").setExecutor(p);
 		PayloadCommand pc = new PayloadCommand();
 		getCommand("padmin").setExecutor(pc);
+		ClassMenu m = new ClassMenu();
+		getCommand("class").setExecutor(m);
 	}
 	
 	public void onDisable() {

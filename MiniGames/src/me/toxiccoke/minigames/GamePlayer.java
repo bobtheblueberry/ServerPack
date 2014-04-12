@@ -11,7 +11,7 @@ import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionEffect;
 
 public abstract class GamePlayer {
 
@@ -32,9 +32,8 @@ public abstract class GamePlayer {
 		p.setLevel(0);
 		p.setHealth(((Damageable) p).getMaxHealth());
 		// remove potions
-		for (PotionEffectType t : PotionEffectType.values())
-			if (t != null && p.hasPotionEffect(t))
-				p.removePotionEffect(t);
+		for (PotionEffect t : p.getActivePotionEffects())
+			p.removePotionEffect(t.getType());
 	}
 
 	public void leaveGame() {
@@ -103,6 +102,9 @@ public abstract class GamePlayer {
 		}
 
 		private void restorePlayer(Player p) {
+			// remove potions
+			for (PotionEffect t : p.getActivePotionEffects())
+				p.removePotionEffect(t.getType());
 			p.getInventory().setContents(inv);
 			p.getInventory().setArmorContents(armor);
 			p.setHealth(health);

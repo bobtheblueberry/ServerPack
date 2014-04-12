@@ -1,6 +1,7 @@
 package me.toxiccoke.minigames;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -34,6 +35,12 @@ public class GameEventHandler implements Listener {
 	// Mini Game Chat
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent chat) {
+		String message = chat.getMessage();
+		if (message.startsWith("#"))
+		{// Does this for all player not just ones in minigames
+			chat.setMessage(message.substring(1));
+			return;
+		}
 		Player sender = chat.getPlayer();
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
@@ -47,15 +54,38 @@ public class GameEventHandler implements Listener {
 				}
 	}
 
+	private boolean allowCommand(String cmd) {
+		String key = "allowed-commands";
+		List<String> cmds = MiniGamesPlugin.plugin.getConfig().getStringList(key);
+		if (cmds == null || cmds.size() == 0)
+		{
+			cmds = new ArrayList<String>();
+			cmds.add("tell");
+			cmds.add("msg");
+			cmds.add("leave");
+			cmds.add("r");
+			cmds.add("m");
+			cmds.add("reply");
+			cmds.add("say");
+			cmds.add("party");
+			cmds.add("friend");
+			cmds.add("class");
+			MiniGamesPlugin.plugin.getConfig().set(key,cmds);
+			MiniGamesPlugin.plugin.saveConfig();
+		}
+		for (String s : cmds)
+			if (s.startsWith(cmd))
+				return true;
+		return false;
+	}
+	
 	// disable commands
 	@EventHandler
 	public void onPreEvent(PlayerCommandPreprocessEvent event) {
 		String cmd = event.getMessage().toLowerCase();
 		if (cmd.length() < 2)
 			return;
-		if (cmd.startsWith("tell", 1) || cmd.startsWith("msg", 1) || cmd.startsWith("leave", 1)
-				|| cmd.startsWith("r", 1) || cmd.startsWith("m", 1) || cmd.startsWith("reply", 1)
-				|| cmd.startsWith("say", 1) || cmd.startsWith("party", 1) || cmd.startsWith("friend", 1))
+		if (allowCommand(cmd.substring(1))) 
 			return;
 		Player sender = event.getPlayer();
 		for (GameWorld<?> m : GameLobby.lobby.games)
@@ -184,6 +214,7 @@ public class GameEventHandler implements Listener {
 	
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
+		if (event.isCancelled()) return;
 		Entity victim = event.getEntity();
 		Entity attacker = event.getDamager();
 		boolean other = false;
@@ -227,6 +258,7 @@ public class GameEventHandler implements Listener {
 
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
+		if (event.isCancelled()) return;
 		if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.PROJECTILE
 				|| event.getCause() == DamageCause.ENTITY_EXPLOSION)
 			return;// handled by

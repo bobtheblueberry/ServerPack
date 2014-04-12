@@ -26,11 +26,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 public class GameLobby implements Runnable, Listener {
 
-	public ArrayList<GameWorld<?>>	games;
+	public ArrayList<GameWorld<? extends GamePlayer>>	games;
 	public static GameLobby		lobby;
 
 	public GameLobby() {
-		games = new ArrayList<GameWorld<?>>(3);
+		games = new ArrayList<GameWorld<? extends GamePlayer>>(3);
 		lobby = this;
 		load();
 		// 20 ticks per second
