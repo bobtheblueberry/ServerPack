@@ -12,6 +12,7 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 	boolean dead;
 	boolean respawning;
 	boolean classChange;
+	boolean dealtDmg;
 	
 	public PayloadPlayer(PayloadGame g, Player p, PayloadTeam t, PayloadClass cl) {
 		super(p);
@@ -32,6 +33,7 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 
 	public void respawn() {
 		respawning = true;
+		dealtDmg = false;
 		game.respawn(this);
 	}
 	
