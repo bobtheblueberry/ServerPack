@@ -28,8 +28,10 @@ public class CommandHandler implements CommandExecutor {
 
 	HashMap<String, Location>	previous;
 	File						pFile;
-
+	public static CommandHandler instance;
+	
 	public CommandHandler() {
+		instance = this;
 		previous = new HashMap<String, Location>();
 		File f = Commands.plugin.getDataFolder();
 		if (!f.exists())
@@ -38,7 +40,7 @@ public class CommandHandler implements CommandExecutor {
 		loadBack();
 	}
 
-	private void addBack(Player p) {
+	public void addBack(Player p) {
 		previous.put(p.getName(), p.getLocation());
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Commands.plugin, new Runnable() {
 			@Override
