@@ -38,7 +38,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
@@ -76,7 +75,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean allowDamage(GamePlayer gp) {
-		return isStarted && !((PayloadPlayer) gp).team.lost;
+		return false;// damage must be thru unconventional means
 	}
 
 	@Override
@@ -147,7 +146,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		return players;
 	}
 
-	private ArrayList<PayloadPlayer> getPlayersWithinDistance(Location l, int dist) {
+	private ArrayList<PayloadPlayer> getBluPlayersWithinDistance(Location l, double dist) {
 		ArrayList<PayloadPlayer> list = new ArrayList<PayloadPlayer>();
 		for (PayloadPlayer player : players) {
 			if (player.team.team == TeamType.RED)
@@ -185,7 +184,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean join(final Player p) {
-		PayloadPlayer plr = new PayloadPlayer(this, p, /* getTeam() */blue, PayloadClass.PYRO);
+		PayloadPlayer plr = new PayloadPlayer(this, p, (players.size() == 0) ? blue : getTeam() , PayloadClass.PYRO);
 		players.add(plr);
 		joinPlayer(plr);
 		if (!isStarted && players.size() == minplayers)
@@ -193,7 +192,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
 			@Override
 			public void run() {
-				p.openInventory(ClassMenu.getMenu(p));
+				p.openInventory(ClassMenu.getMenu());
 			}
 		}, 4);
 		return true;
@@ -389,7 +388,10 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		for (PotionEffect t : player.getActivePotionEffects())
 			player.removePotionEffect(t.getType());
 		// make them invisible
-		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1));
+		for (PayloadPlayer pp : players) {
+			if (pp == p) continue;
+			pp.getPlayer().hidePlayer(player);
+		}
 		player.setHealth(20);
 		player.setFireTicks(0);
 		sendPlayersMessage(ChatColor.DARK_GRAY + p.getName() + " died.");
@@ -422,7 +424,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		if (ticks > 0)
 			p.setFireTicks(Math.max(0, ticks - 3));
 		if (p.getHealth() < 20)
-			p.setHealth(Math.min(p.getHealth() + 0.1,20));
+			p.setHealth(Math.min(p.getHealth() + 0.1, 20));
 		// TODO: Ammo
 	}
 
@@ -431,7 +433,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			return;
 		if (setup != null && setup.count > 0)
 			return;
-		ArrayList<PayloadPlayer> list = getPlayersWithinDistance(minecart.getLocation(), 3);
+		ArrayList<PayloadPlayer> list = getBluPlayersWithinDistance(minecart.getLocation(), 3);
 		for (PayloadPlayer p : list)
 			cartTick(p);
 		int h = (int) (trackulator.getCartPosition(minecart) * 200);
@@ -543,9 +545,13 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 			@Override
 			public void run() {
+				Player p = payloadPlayer.getPlayer();
 				payloadPlayer.dead = false;
 				payloadPlayer.respawning = false;
-				payloadPlayer.getPlayer().removePotionEffect(PotionEffectType.INVISIBILITY);
+				for (PayloadPlayer pp : players) {
+					if (pp == payloadPlayer) continue;
+					pp.getPlayer().showPlayer(p);
+				}
 				if (payloadPlayer.classChange) {
 					changeClass(payloadPlayer);
 				}
@@ -570,7 +576,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		} else if (player.playerClass == PayloadClass.SCOUT) {
 			p.getInventory().addItem(getItem(Material.RED_ROSE, ChatColor.RED + "Scattergun", ChatColor.GREEN + "Lame", 2));
 		}
-
+		
+		p.getInventory().setItem(8,getItem(Material.COMMAND, ChatColor.YELLOW + "Change Class", ChatColor.GREEN + "Get Classy"));
 		player.classChange = false;
 	}
 

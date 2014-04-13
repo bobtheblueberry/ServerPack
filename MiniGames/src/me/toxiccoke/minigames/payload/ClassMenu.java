@@ -16,9 +16,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -33,14 +34,18 @@ public class ClassMenu implements CommandExecutor, Listener {
 		if (!command.getName().equalsIgnoreCase("class"))
 			return false;
 		Player p = (Player) sender;
-		p.openInventory(getMenu(p));
+		p.openInventory(getMenu());
 		return true;
 	}
 
 	@EventHandler
-	public void onInvClick(final InventoryClickEvent event) {
+	public void onInvClick(InventoryClickEvent event) {
+		if (event.getWhoClicked() == null || event.getClick() == ClickType.MIDDLE || event.getCurrentItem() == null)
+			return;
 		Inventory i = event.getInventory();
-		if (i.getName() == null || !i.getName().equals(INV_NAME))
+		final Player player = (Player) event.getWhoClicked();
+		boolean isPlayerInv = (i.getType() == InventoryType.PLAYER || i.getType() == InventoryType.CRAFTING);
+		if ((i.getName() == null || !i.getName().equals(INV_NAME)) && !isPlayerInv)
 			return;
 		PayloadPlayer p = null;
 		// Find the player
@@ -48,23 +53,34 @@ public class ClassMenu implements CommandExecutor, Listener {
 			if (!(w instanceof PayloadGame))
 				continue;
 			for (GamePlayer plr : w.getPlayers())
-				if (plr.getName().equals(event.getWhoClicked().getName())) {
+				if (plr.getName().equals(player.getName())) {
 					p = (PayloadPlayer) plr;
 					break main;
 				}
 		}
+		if (p == null)
+			return;
+		if (isPlayerInv) {
+			if (playerInvClick(event, p, player))
+				event.setCancelled(true);
+			return;
+		}
 		event.setCancelled(true);
-		if ( p == null || p.team.lost || !p.isInGame())
+		if (p.team.lost || !p.isInGame())
 			return;
 		PayloadClass cl = null;
 		Material m = event.getCurrentItem().getType();
-		if (m == Material.MINECART)
+		if (m == Material.MINECART) {
+			closeInv(player);
 			return; // cancel
-		
+		}
+
+		if (m == Material.AIR)
+			return;
 		if (m == Material.RED_ROSE)
 			cl = PayloadClass.SCOUT;
 		else if (m == Material.FIRE)
-		cl = PayloadClass.PYRO;
+			cl = PayloadClass.PYRO;
 		else if (m == Material.ANVIL)
 			cl = PayloadClass.HEAVY;
 		else if (m == Material.IRON_BLOCK)
@@ -73,24 +89,40 @@ public class ClassMenu implements CommandExecutor, Listener {
 			cl = PayloadClass.MEDIC;
 		else if (m == Material.BOW)
 			cl = PayloadClass.SNIPER;
-		if (cl == p.playerClass || cl == null)
+		if (cl == p.playerClass || cl == null) {
+			closeInv(player);
 			return;
+		}
 		p.playerClass = cl;
 		p.classChange = true;
 		if (!p.dealtDmg)
 			p.respawn();
-		else
-			p.getPlayer().sendMessage(ChatColor.GREEN + "Class will change upon respawn");
+		else p.getPlayer().sendMessage(ChatColor.GREEN + "Class will change upon respawn");
+		closeInv(player);
+	}
+
+	private void closeInv(final Player player) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
 			@Override
 			public void run() {
-				event.getWhoClicked().closeInventory();
+				player.closeInventory();
 			}
 		});
 	}
 
-	protected static Inventory getMenu(InventoryHolder holder) {
-		Inventory i = Bukkit.createInventory(holder, 36, INV_NAME);
+	/**
+	 * 
+	 * @param pp
+	 * @param p
+	 * @return true to cancel the event
+	 */
+	private boolean playerInvClick(InventoryClickEvent event, PayloadPlayer pp, Player p) {
+		int slot = event.getSlot();
+		return slot < 10;
+	}
+
+	protected static Inventory getMenu() {
+		Inventory i = Bukkit.createInventory(null, 36, INV_NAME);
 		// scout,#soldier,pyro #demo,heavy,engie medic,sniper,#spy
 		i.addItem(createItem(Material.RED_ROSE, 1, 2, ChatColor.GREEN + "Scout", "Waste 'em"));
 		i.addItem(createItem(Material.FIRE, 1, 0, ChatColor.GREEN + "Pyro", "Burn 'em up"));
@@ -98,8 +130,8 @@ public class ClassMenu implements CommandExecutor, Listener {
 		i.addItem(createItem(Material.IRON_BLOCK, 1, 0, ChatColor.GREEN + "Engineer", "Build Sentries"));
 		i.addItem(createItem(Material.GOLDEN_APPLE, 1, 0, ChatColor.GREEN + "Medic", "Heal 'em"));
 		i.addItem(createItem(Material.BOW, 1, 0, ChatColor.GREEN + "Sniper", "Snipe 'em"));
-	
-		i.addItem(createItem(Material.MINECART, 1, 0, ChatColor.RED + "Cancel", "Close this menu"));
+
+		i.setItem(35, createItem(Material.MINECART, 1, 0, ChatColor.RED + "Cancel", "Close this menu"));
 		return i;
 	}
 

@@ -11,22 +11,28 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class PayloadEventHandler implements Listener {
 
@@ -34,6 +40,34 @@ public class PayloadEventHandler implements Listener {
 	protected static PayloadGame	game;
 
 	protected static Player			barSet;
+
+	private PayloadGame getGame(int x, int y) {
+		for (GameWorld<?> m : GameLobby.lobby.games) {
+			if (!(m instanceof PayloadGame))
+				continue;
+			Bounds b = m.getBounds();
+			if (b == null)
+				continue;
+			if (b.contains(x, y))
+				return (PayloadGame) m;
+		}
+		return null;
+	}
+
+	private PayloadPlayer getPlayer(Player p) {
+		for (GameWorld<?> m : GameLobby.lobby.games) {
+			if (!(m instanceof PayloadGame))
+				continue;
+			for (GamePlayer gp : m.getPlayers())
+				if (gp.getName().equals(p.getName())) { return (PayloadPlayer) gp; }
+		}
+		return null;
+	}
+
+	private void messWithPlayer(Player p) {
+		p.sendMessage(ChatColor.BLUE + "[Rails] Weeeeeee");
+		tpPlayer(p, 0, game.trackulator);
+	}
 
 	@EventHandler
 	public void onBreak(BlockBreakEvent event) {
@@ -61,122 +95,16 @@ public class PayloadEventHandler implements Listener {
 		game = null;
 	}
 
-	private void messWithPlayer(Player p) {
-		p.sendMessage(ChatColor.BLUE + "[Rails] Weeeeeee");
-		tpPlayer(p, 0, game.trackulator);
-	}
-
-	private void tpPlayer(final Player p, final int i, final Minetrackulator t) {
-		Location l = t.rails.get(i).getLocation().clone().add(0.5, 0, 0.5);
-		l.setYaw(p.getLocation().getYaw());
-		l.setPitch(p.getLocation().getPitch());
-		p.teleport(l);
-		if (i + 1 < t.rails.size())
-			Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
-
-				@Override
-				public void run() {
-					tpPlayer(p, i + 1, t);
-				}
-			}, 1);
-		else
-
-		p.sendMessage(ChatColor.BLUE + "[Rails] Finished");
-	}
-
 	@EventHandler
-	public void onVehiclePlace(VehicleCreateEvent event) {
-		int x = event.getVehicle().getLocation().getBlockX();
-		int y = event.getVehicle().getLocation().getBlockZ();
-		for (GameWorld<?> m : GameLobby.lobby.games) {
-			if (!(m instanceof PayloadGame))
-				continue;
-			Bounds b = m.getBounds();
-			if (b == null)
-				continue;
-			if (b.contains(x, y))
-				((PayloadGame) m).vehicleCreated(event);
-		}
-	}
-
-	@EventHandler
-	public void onVehicleCollideEntity(VehicleEntityCollisionEvent event) {
-		int x = event.getVehicle().getLocation().getBlockX();
-		int y = event.getVehicle().getLocation().getBlockZ();
-		for (GameWorld<?> m : GameLobby.lobby.games)
-			if (m instanceof PayloadGame) {
-				Bounds b = m.getBounds();
-				if (b == null)
-					continue;
-				if (b.contains(x, y))
-					((PayloadGame) m).vehicleCollision(event);
-			}
-	}
-
-	@EventHandler
-	public void onVehicleUpdate(VehicleUpdateEvent event) {
-		Location vehicleLoc = event.getVehicle().getLocation();
-		for (GameWorld<?> w : GameLobby.lobby.games) {
-			if (!(w instanceof PayloadGame))
-				continue;
-			Bounds b = w.getBounds();
-			if (b == null)
-				continue;
-			if (b.contains(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ())) {
-				((PayloadGame) w).vehicleUpdate(event);
-				return;
-			}
-		}
-	}
-
-	@EventHandler
-	public void onVehicleDestroy(VehicleDestroyEvent event) {
-		Location vehicleLoc = event.getVehicle().getLocation();
-		for (GameWorld<?> w : GameLobby.lobby.games) {
-			if (!(w instanceof PayloadGame))
-				continue;
-			Bounds b = w.getBounds();
-			if (b == null)
-				continue;
-			if (b.contains(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ())) {
-				((PayloadGame) w).vehicleDestroy(event);
-				return;
-			}
-		}
-	}
-
-	@EventHandler
-	public void onVehicleDamage(VehicleDamageEvent event) {
-		Location vehicleLoc = event.getVehicle().getLocation();
-		for (GameWorld<?> w : GameLobby.lobby.games) {
-			if (!(w instanceof PayloadGame))
-				continue;
-			Bounds b = w.getBounds();
-			if (b == null)
-				continue;
-			if (b.contains(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ())) {
-				((PayloadGame) w).vehicleDamage(event);
-				return;
-			}
-		}
-	}
-
-	@EventHandler
-	public void onRegainHealth(EntityRegainHealthEvent event) {
+	public void onEntityCombust(EntityCombustEvent event) {
 		if (!(event.getEntity() instanceof Player))
 			return;
 		Player player = (Player) event.getEntity();
-		for (GameWorld<?> m : GameLobby.lobby.games) {
-			if (!(m instanceof PayloadGame))
-				continue;
-			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(player.getName())) {
-					if (event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED)
-						if (!((PayloadGame) m).canPlayerHealFromHunger(gp))
-							event.setCancelled(true);
-					return;
-				}
-		}
+		PayloadPlayer pp = getPlayer(player);
+		if (pp == null)
+			return;
+		if (!pp.game.canPlayerCombust(pp))
+			event.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
@@ -184,63 +112,62 @@ public class PayloadEventHandler implements Listener {
 		if (!(event.getEntity() instanceof Player))
 			return;
 		Player player = (Player) event.getEntity();
-		for (GameWorld<?> m : GameLobby.lobby.games) {
-			if (!(m instanceof PayloadGame))
-				continue;
-			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(player.getName())) {
-					if (!((PayloadGame) m).canPlayerTakeDamage((PayloadPlayer) gp))
-						event.setCancelled(true);
-					return;
-				}
-		}
+		PayloadPlayer pp = getPlayer(player);
+		if (pp == null)
+			return;
+		if (!pp.game.canPlayerTakeDamage(pp))
+			event.setCancelled(true);
 	}
 
 	@EventHandler
-	public void onEntityCombust(EntityCombustEvent event) {
-		if (!(event.getEntity() instanceof Player))
+	public void onExplode(EntityExplodeEvent event) {
+		Location vehicleLoc = event.getEntity().getLocation();
+		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
+		if (game != null)
+			game.explode(event);
+	}
+
+	// disable fishing minecarts
+	@EventHandler
+	public void onFish(PlayerFishEvent event) {
+		Player player = event.getPlayer();
+		Entity e = event.getCaught();
+		if (e == null || event.getState() != PlayerFishEvent.State.CAUGHT_ENTITY || !(e instanceof Minecart))
 			return;
-		Player player = (Player) event.getEntity();
-		for (GameWorld<?> m : GameLobby.lobby.games) {
-			if (!(m instanceof PayloadGame))
-				continue;
-			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(player.getName())) {
-					if (!((PayloadGame) m).canPlayerCombust((PayloadPlayer) gp))
-						event.setCancelled(true);
-					return;
-				}
+		PayloadPlayer pp = getPlayer(player);
+		if (pp != null)
+			event.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		ItemStack itemInHand = event.getPlayer().getItemInHand();
+		if (itemInHand == null)
+			return;
+		PayloadPlayer pp = getPlayer(event.getPlayer());
+		if (pp == null)
+			return;
+		if (itemInHand.getType() == Material.COMMAND) {
+			pp.getPlayer().chat("/class");
+			return;
+		}
+		if (pp.playerClass == PayloadClass.PYRO) {
+			if (itemInHand.getType() == Material.FIRE) {
+				if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
+					ClassWeapons.flamethrower(pp);
+				else ClassWeapons.airblast(pp);
+			}
 		}
 	}
 
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player player = event.getPlayer();
-		for (GameWorld<?> m : GameLobby.lobby.games) {
-			if (!(m instanceof PayloadGame))
-				continue;
-			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(player.getName())) {
-					if (!((PayloadGame) m).canPlayerMove((PayloadPlayer) gp))
-						return;
-				}
-		}
-	}
-
-	@EventHandler
-	public void onExplode(EntityExplodeEvent event) {
-		Location vehicleLoc = event.getEntity().getLocation();
-		for (GameWorld<?> w : GameLobby.lobby.games) {
-			if (!(w instanceof PayloadGame))
-				continue;
-			Bounds b = w.getBounds();
-			if (b == null)
-				continue;
-			if (b.contains(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ())) {
-				((PayloadGame) w).explode(event);
-				return;
-			}
-		}
+		PayloadPlayer pp = getPlayer(player);
+		if (pp == null)
+			return;
+		if (!pp.game.canPlayerMove(pp))
+			event.setCancelled(true);
 	}
 
 	@EventHandler
@@ -270,4 +197,77 @@ public class PayloadEventHandler implements Listener {
 		}
 	}
 
+	@EventHandler
+	public void onRegainHealth(EntityRegainHealthEvent event) {
+		if (!(event.getEntity() instanceof Player))
+			return;
+		if (event.getRegainReason() != EntityRegainHealthEvent.RegainReason.SATIATED)
+			return;
+		Player player = (Player) event.getEntity();
+		PayloadPlayer pp = getPlayer(player);
+		if (pp == null)
+			return;
+		if (!pp.game.canPlayerHealFromHunger(pp))
+			event.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onVehicleCollideEntity(VehicleEntityCollisionEvent event) {
+		int x = event.getVehicle().getLocation().getBlockX();
+		int y = event.getVehicle().getLocation().getBlockZ();
+		PayloadGame game = getGame(x, y);
+		if (game != null)
+			game.vehicleCollision(event);
+	}
+
+	@EventHandler
+	public void onVehicleDamage(VehicleDamageEvent event) {
+		Location vehicleLoc = event.getVehicle().getLocation();
+		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
+		if (game != null)
+			game.vehicleDamage(event);
+	}
+
+	@EventHandler
+	public void onVehicleDestroy(VehicleDestroyEvent event) {
+		Location vehicleLoc = event.getVehicle().getLocation();
+		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
+		if (game != null)
+			game.vehicleDestroy(event);
+	}
+
+	@EventHandler
+	public void onVehiclePlace(VehicleCreateEvent event) {
+		int x = event.getVehicle().getLocation().getBlockX();
+		int y = event.getVehicle().getLocation().getBlockZ();
+
+		PayloadGame game = getGame(x, y);
+		if (game != null)
+			game.vehicleCreated(event);
+
+	}
+
+	@EventHandler
+	public void onVehicleUpdate(VehicleUpdateEvent event) {
+		Location vehicleLoc = event.getVehicle().getLocation();
+		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
+		if (game != null)
+			game.vehicleUpdate(event);
+	}
+
+	private void tpPlayer(final Player p, final int i, final Minetrackulator t) {
+		Location l = t.rails.get(i).getLocation().clone().add(0.5, 0, 0.5);
+		l.setYaw(p.getLocation().getYaw());
+		l.setPitch(p.getLocation().getPitch());
+		p.teleport(l);
+		if (i + 1 < t.rails.size())
+			Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
+
+				@Override
+				public void run() {
+					tpPlayer(p, i + 1, t);
+				}
+			}, 1);
+		else p.sendMessage(ChatColor.BLUE + "[Rails] Finished");
+	}
 }

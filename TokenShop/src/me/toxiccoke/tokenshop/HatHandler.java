@@ -20,11 +20,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.ItemStack;
 
 public class HatHandler implements Listener {
 
@@ -170,16 +168,6 @@ public class HatHandler implements Listener {
 		if (p.getPassenger() == null) return;
 		if (p.getPassenger() instanceof Player) return;
 		resetRider(p);
-	}
-
-	@EventHandler
-	public static void onInteract(PlayerInteractEvent e) {
-		Player p = e.getPlayer();
-		if (p.getItemInHand() == null) return;
-		ItemStack itemInHand = p.getItemInHand();
-		if (itemInHand.getType().equals(Material.ROTTEN_FLESH)) resetRider(p);
-		else if (itemInHand.getType().equals(Material.MAGMA_CREAM)) setMagmacubeHat(p);
-		else if (itemInHand.getType().equals(Material.SLIME_BALL)) setSlimeHat(p);
 	}
 
 	private static Location getLocation(Player p) {
