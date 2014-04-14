@@ -1,19 +1,18 @@
 package org.corey.autorankup;
 
 import java.io.Serializable;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.OfflinePlayer;
 
 public class PlayTime implements Serializable {
 	private static final long	serialVersionUID	= 8645098772722367950L;
-	UUID						player;
+	String						player;
 	private long				totalTime;
 	private transient long		loginTime;
 
 	public PlayTime(OfflinePlayer p) {
-		player = p.getUniqueId();
+		player = p.getName();
 		loginTime = System.currentTimeMillis();
 		totalTime = 0;
 	}

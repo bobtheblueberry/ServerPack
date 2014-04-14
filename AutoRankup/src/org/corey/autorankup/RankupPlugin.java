@@ -136,7 +136,6 @@ public class RankupPlugin extends JavaPlugin implements Listener {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		String cmd = command.getName().toLowerCase();
 		for (int i = 0; i < args.length; i++)

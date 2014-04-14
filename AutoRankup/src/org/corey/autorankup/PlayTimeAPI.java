@@ -23,7 +23,7 @@ public class PlayTimeAPI {
 
 	public static PlayTime getPlayer(OfflinePlayer p) {
 		for (PlayTime t : players)
-			if (p.getUniqueId().equals(t.player))
+			if (p.getName().equals(t.player))
 				return t;
 		PlayTime pt = new PlayTime(p);
 		players.add(pt);
@@ -32,7 +32,7 @@ public class PlayTimeAPI {
 	
 	public static PlayTime getDontAddPlayer(OfflinePlayer p) {
 		for (PlayTime t : players)
-			if (p.getUniqueId().equals(t.player))
+			if (p.getName().equals(t.player))
 				return t;
 		return null;
 	}
