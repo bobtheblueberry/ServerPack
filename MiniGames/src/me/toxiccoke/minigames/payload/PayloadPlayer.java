@@ -9,7 +9,6 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 	PayloadTeam team;
 	PayloadClass playerClass;
 	PayloadGame game;
-	boolean dead;
 	boolean respawning;
 	boolean classChange;
 	boolean dealtDmg;

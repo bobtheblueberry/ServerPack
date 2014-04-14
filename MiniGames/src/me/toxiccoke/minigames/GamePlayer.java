@@ -19,6 +19,7 @@ public abstract class GamePlayer {
 	OriginalPlayer		originalPlayer;
 	protected int		score;
 	private boolean		inGame	= true;
+	public boolean dead;
 
 	public GamePlayer(Player p) {
 		this.player = p.getName();

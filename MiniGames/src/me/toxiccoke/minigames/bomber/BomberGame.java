@@ -58,6 +58,8 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	@Override
 	public boolean allowDamage(GamePlayer gp) {
+		if (!isStarted)
+			gp.getPlayer().sendMessage(ChatColor.GOLD + "You cannot attack here!");
 		return isStarted;
 	}
 
@@ -98,6 +100,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			reset();
 	}
 
+	@SuppressWarnings("deprecation")
 	protected void initPlayer(BomberPlayer plr) {
 		super.initPlayer(plr);
 		Player p = plr.getPlayer();
@@ -106,6 +109,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 				new ItemStack(Material.ARROW, 64) };
 		i.addItem(s);
 		updateArmor(plr);
+		p.updateInventory();
 		p.setGameMode(GameMode.ADVENTURE);
 	}
 

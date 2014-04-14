@@ -55,7 +55,7 @@ public class ClassWeapons {
 		ArrayList<PayloadPlayer> list = new ArrayList<PayloadPlayer>();
 		for (PayloadPlayer player : game.players) {
 			double distance = player.getPlayer().getLocation().distance(l);
-			if (distance <= dist)
+			if (distance <= dist && !player.dead)
 				list.add(player);
 		}
 		return list;

@@ -121,6 +121,8 @@ public class PayloadEventHandler implements Listener {
 
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
+		if (event.getEntity() == null)
+			return;
 		Location vehicleLoc = event.getEntity().getLocation();
 		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
 		if (game != null)
@@ -146,6 +148,8 @@ public class PayloadEventHandler implements Listener {
 			return;
 		PayloadPlayer pp = getPlayer(event.getPlayer());
 		if (pp == null)
+			return;
+		if(pp.dead)
 			return;
 		if (itemInHand.getType() == Material.COMMAND) {
 			pp.getPlayer().chat("/class");

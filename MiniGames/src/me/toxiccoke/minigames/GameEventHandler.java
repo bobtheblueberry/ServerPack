@@ -237,7 +237,6 @@ public class GameEventHandler implements Listener {
 						// lobby
 						if (!m.allowDamage(gp)) {
 							event.setCancelled(true);
-							at.sendMessage(ChatColor.GOLD + "You cannot attack here!");
 							break main;
 						}
 					}

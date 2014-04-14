@@ -21,7 +21,7 @@ public class Particles implements Listener {
 				for (GamePlayer gp : w.getPlayers())
 					if (gp.player.equals(e.getPlayer().getName())) {
 						Material m = gp.getFeetParticle();
-						if (m != null)
+						if (m != null && !gp.dead)
 							p.getWorld().playEffect(p.getLocation(), Effect.STEP_SOUND, m);
 						return;
 					}

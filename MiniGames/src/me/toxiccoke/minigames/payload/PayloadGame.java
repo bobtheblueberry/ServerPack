@@ -75,7 +75,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean allowDamage(GamePlayer gp) {
-		return false;// damage must be thru unconventional means
+		return false;
 	}
 
 	@Override
@@ -123,11 +123,11 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		return blue;
 	}
 
-	private ItemStack getItem(Material m, String name, String lore) {
-		return getItem(m, name, lore, 0);
+	private ItemStack getItem(Material m, String name, String... lore) {
+		return getItem(m, 0, name, lore);
 	}
 
-	private ItemStack getItem(Material m, String name, String lore, int damage) {
+	private ItemStack getItem(Material m, int damage, String name, String... lore) {
 		ItemStack is = new ItemStack(m, 1, (short) damage);
 		ItemMeta im = is.getItemMeta();
 		im.setDisplayName(name);
@@ -149,7 +149,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	private ArrayList<PayloadPlayer> getBluPlayersWithinDistance(Location l, double dist) {
 		ArrayList<PayloadPlayer> list = new ArrayList<PayloadPlayer>();
 		for (PayloadPlayer player : players) {
-			if (player.team.team == TeamType.RED)
+			if (player.team.team == TeamType.RED || player.dead)
 				continue;
 			double distance = Minetrackulator.getDistance(player.getPlayer().getLocation(), l);
 			if (distance <= dist)
@@ -184,7 +184,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean join(final Player p) {
-		PayloadPlayer plr = new PayloadPlayer(this, p, (players.size() == 0) ? blue : getTeam() , PayloadClass.PYRO);
+		PayloadPlayer plr = new PayloadPlayer(this, p, (players.size() == 0) ? blue : getTeam(), PayloadClass.PYRO);
 		players.add(plr);
 		joinPlayer(plr);
 		if (!isStarted && players.size() == minplayers)
@@ -331,9 +331,10 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		super.save(yml);
 	}
 
-	private void setLore(ItemMeta is, String lore) {
-		ArrayList<String> l = new ArrayList<String>(1);
-		l.add(lore);
+	private void setLore(ItemMeta is, String... lore) {
+		ArrayList<String> l = new ArrayList<String>(lore.length);
+		for (String ll : lore)
+			l.add(ll);
 		is.setLore(l);
 	}
 
@@ -389,7 +390,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			player.removePotionEffect(t.getType());
 		// make them invisible
 		for (PayloadPlayer pp : players) {
-			if (pp == p) continue;
+			if (pp == p)
+				continue;
 			pp.getPlayer().hidePlayer(player);
 		}
 		player.setHealth(20);
@@ -549,7 +551,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 				payloadPlayer.dead = false;
 				payloadPlayer.respawning = false;
 				for (PayloadPlayer pp : players) {
-					if (pp == payloadPlayer) continue;
+					if (pp == payloadPlayer)
+						continue;
 					pp.getPlayer().showPlayer(p);
 				}
 				if (payloadPlayer.classChange) {
@@ -564,7 +567,10 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		Player p = player.getPlayer();
 		p.sendMessage(ChatColor.GREEN + "You are now playing as " + player.playerClass.toString().substring(0, 1) + player.playerClass.toString().substring(1).toLowerCase());
 		if (player.playerClass == PayloadClass.PYRO) {
-			p.getInventory().addItem(getItem(Material.FIRE, ChatColor.RED + "Flame Thrower", ChatColor.GREEN + "10 Ammo per second"));
+			p.getInventory().addItem(getItem(Material.FIRE, ChatColor.RED + "Flame Thrower",
+					ChatColor.RED + "Left Click: Airblast",
+					ChatColor.RED + "Right Click: Burn nearby enemies",
+					ChatColor.GRAY + "10 Ammo per second"));
 		} else if (player.playerClass == PayloadClass.ENGINEER) {
 			p.getInventory().addItem(getItem(Material.DISPENSER, ChatColor.RED + "Sentry Gun", ChatColor.GREEN + "20 Arrows per Second"));
 		} else if (player.playerClass == PayloadClass.MEDIC) {
@@ -574,10 +580,10 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		} else if (player.playerClass == PayloadClass.SNIPER) {
 			p.getInventory().addItem(getItem(Material.BOW, ChatColor.RED + "Sniper Rifle", ChatColor.GREEN + "Deals 20 Damage on head shots"));
 		} else if (player.playerClass == PayloadClass.SCOUT) {
-			p.getInventory().addItem(getItem(Material.RED_ROSE, ChatColor.RED + "Scattergun", ChatColor.GREEN + "Lame", 2));
+			p.getInventory().addItem(getItem(Material.RED_ROSE, 2, ChatColor.RED + "Scattergun", ChatColor.GREEN + "Lame"));
 		}
-		
-		p.getInventory().setItem(8,getItem(Material.COMMAND, ChatColor.YELLOW + "Change Class", ChatColor.GREEN + "Get Classy"));
+
+		p.getInventory().setItem(8, getItem(Material.COMMAND, ChatColor.YELLOW + "Change Class", ChatColor.GREEN + "Get Classy"));
 		player.classChange = false;
 	}
 
