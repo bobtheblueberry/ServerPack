@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -99,10 +100,6 @@ public class CommandHandler implements CommandExecutor {
 
 	@EventHandler
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		if (!(sender instanceof Player)) {
-			sender.sendMessage("You must be a player");
-			return true;
-		}
 		if (cmd.getName().equalsIgnoreCase("kick")) {
 			if (!sender.hasPermission("sc.kick")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
@@ -144,7 +141,7 @@ public class CommandHandler implements CommandExecutor {
 				reason = reason + " " + args[0];
 
 			target.kickPlayer(ChatColor.RED + "You have been banned!\n" + reason);
-			Bukkit.getServer().getBanList(org.bukkit.BanList.Type.NAME)
+			Bukkit.getServer().getBanList(org.bukkit.BanList.Type.UUID)
 					.addBan(target.getName(), reason, null, sender.getName());
 			Bukkit.getServer().broadcastMessage(
 					ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY
@@ -152,6 +149,10 @@ public class CommandHandler implements CommandExecutor {
 			return true;
 		}
 
+		if (!(sender instanceof Player)) {
+			sender.sendMessage("You must be a player");
+			return true;
+		}
 		Player p = (Player) sender;
 		World world = p.getWorld();
 		String cName = cmd.getName().toLowerCase();

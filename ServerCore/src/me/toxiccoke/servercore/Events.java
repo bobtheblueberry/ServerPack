@@ -45,7 +45,7 @@ public class Events implements Listener {
 		Player p = e.getEntity();
 		CommandHandler.instance.addBack(p);
 		p.sendMessage(ChatColor.GOLD + "Do /back to return to the place you died");
-		p.sendMessage(ChatColor.GREEN + "You're a compelte loser!");
+		p.sendMessage(ChatColor.GREEN + "You're a complete loser!");
 		p.sendMessage("https://www.youtube.com/watch?v=BvUZijEuNDQ");
 	}
 }
