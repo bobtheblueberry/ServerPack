@@ -1,0 +1,15 @@
+name: AutoRankup
+version: 1.0
+main: org.corey.autorankup.RankupPlugin
+author: Serge Humphrey
+description: Auto rank up users after they have played a certain amount of time
+depends: [EssentialsGroupManager]
+commands:
+    promote:
+        permission: rankup.command
+        description: Ranks up a user if they have the right playtime
+        usage: /<command>
+    playtime:
+        aliases: [ptime]
+        description: Displays user's time played on the server
+        usage: /<command> <username>

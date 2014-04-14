@@ -1,0 +1,5 @@
+1|Knight|You have been knighted
+2|Warrior|Warrior Get
+4|Lord|Lord rank achieved!
+7|King|You are now King
+0|Member|Your rank: Member
