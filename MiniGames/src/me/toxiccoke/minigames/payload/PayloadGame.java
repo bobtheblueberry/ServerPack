@@ -449,7 +449,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			p.setFireTicks(Math.max(0, ticks - 3));
 		if (p.getHealth() < 20)
 			p.setHealth(Math.min(p.getHealth() + 0.1, 20));
-		player.setAmmo(player.getAmmo() + 10);
+		if (Math.random() * 2 < 1)
+			player.setAmmo(player.getAmmo() + 1);
 	}
 
 	protected void updateCart() {

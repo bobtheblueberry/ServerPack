@@ -51,25 +51,30 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 	@SuppressWarnings("deprecation")
 	public void setAmmo(int ammo) {
 		int a = getAmmo();
-		if (ammo < 0) ammo = 0;
-		Inventory i = getPlayer().getInventory();
+		if (ammo < 0)
+			ammo = 0;
+		Inventory inv = getPlayer().getInventory();
 		if (ammo > a) { // give ammo
-			for (ItemStack s : i.getContents())
+			for (int i = inv.getSize() - 1; i > 0; i--) {
+				ItemStack s = inv.getItem(i);
 				if (s != null && s.getType() == Material.ARROW) {
 					int amount = s.getAmount();
 					if (amount >= 64)
 						continue;
-					s.setAmount(Math.min(64, ammo - a));
+					inv.setItem(i, new ItemStack(Material.ARROW, Math.min(64, amount + ammo - a)));
 					a += (s.getAmount() - amount);
-					if (ammo == a) {
+					if (ammo >= a) {
+						if (a > ammo)
+							System.out.println("error " + (a - ammo));
 						getPlayer().updateInventory();
 						return;
 					}
 				}
+			}
 			int stacks = ((ammo - a) % 64) + 1;
 			for (int j = 0; j < stacks; j++) {
 				int numb = Math.min(64, ammo - a);
-				addAmmo(i, numb);
+				addAmmo(inv, numb);
 				a += numb;
 				if (a == ammo)
 					break;
@@ -78,7 +83,7 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 			while (a != ammo) {
 				// take at most 64 arrows from a stack
 				int amount = Math.min(64, a - ammo);
-				a -= removeAmmo(i, amount);
+				a -= removeAmmo(inv, amount);
 				a -= amount;
 				if (a <= ammo)
 					break;
