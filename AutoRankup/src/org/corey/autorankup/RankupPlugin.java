@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import org.anjocaido.groupmanager.GroupManager;
+import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
 import org.anjocaido.groupmanager.permissions.AnjoPermissionsHandler;
 import org.bukkit.Bukkit;
@@ -95,6 +96,15 @@ public class RankupPlugin extends JavaPlugin implements Listener {
 		return Arrays.asList(handler.getGroups(base.getName()));
 	}
 
+	public boolean groupExists(Player base, String group) {
+		final OverloadedWorldHolder handler = groupManager.getWorldsHolder().getWorldData(base);
+		if (handler == null) { return false; }
+		for (Group g : handler.getGroupList())
+			if (g.getName().equals(group))
+				return true;
+		return false;
+	}
+	
 	private void loadRanks() {
 		ranks = new ArrayList<PromoteRank>();
 		File parent = getDataFolder();
@@ -215,8 +225,12 @@ public class RankupPlugin extends JavaPlugin implements Listener {
 		}
 		if (nrank != null) {
 			if (minutes >= nrank.minutes) {
-				setGroup(player, nrank.rank);
-				player.sendMessage(ChatColor.GREEN + nrank.message);
+				if (!groupExists(player, nrank.rank))
+					player.sendMessage(ChatColor.RED + "GroupManager Error: No such group: " + nrank.rank);
+				else {
+					setGroup(player, nrank.rank);
+					player.sendMessage(ChatColor.GREEN + nrank.message);
+				}
 			} else player.sendMessage(ChatColor.GOLD + "You need " + (nrank.minutes - minutes) + " more minutes to get " + nrank.rank);
 		} else player.sendMessage(ChatColor.GOLD + "You are the highest rank!");
 	}
