@@ -22,7 +22,7 @@ public class PayloadCommand implements CommandExecutor {
 		Player p = (Player) sender;
 		// /padmin track badwater
 		if (args.length < 1) {
-			p.sendMessage(ChatColor.RED + "/" + label + " [track|addcheckpoint|bars] <World>");
+			p.sendMessage(ChatColor.RED + "/" + label + " [track|addcheckpoint|bars|healthpack|ammopack] <World>");
 			return true;
 		} else if (args.length < 2) {
 			p.sendMessage(ChatColor.RED + "/" + label + " " + args[0] + " <World>");
@@ -61,7 +61,17 @@ public class PayloadCommand implements CommandExecutor {
 			PayloadEventHandler.game = game;
 			p.sendMessage(ChatColor.RED + "Click the blocks you want to add, then do /" + label +" bars " + args[1]);
 			return true;
-		}
+		} else if (args[0].equals("healthpack")) {
+			game.healthpacks.add(p.getLocation().getBlock().getLocation());
+			game.save();
+			p.sendMessage(ChatColor.RED + "Health pack added");
+			return true;
+		}  else if (args[0].equals("ammopack")) {
+			game.ammopacks.add(p.getLocation().getBlock().getLocation());
+			game.save();
+			p.sendMessage(ChatColor.RED + "Ammo pack added");
+			return true;
+		} 
 
 		return true;
 	}

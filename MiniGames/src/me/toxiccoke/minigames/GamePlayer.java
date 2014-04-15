@@ -7,7 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -116,7 +116,9 @@ public abstract class GamePlayer {
 			TokenShop.teleportAdvanced(p, location);
 			p.setPlayerListName(tabName);
 			// remove arrows
+			try {
 			((CraftPlayer) p).getHandle().getDataWatcher().watch(9, (byte) 0);
+			} catch(Exception exc){}
 		}
 
 	}

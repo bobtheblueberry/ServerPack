@@ -63,18 +63,22 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 				bluCount++;
 			else redCount++;
 		if (Math.abs(redCount - bluCount) > 1) {
-			E plr = getRandomPlayer(TeamType.RED);
-			if (plr == null)
-				return;
-			Player p = plr.getPlayer();
-			removePlayerFromScoreboard(plr);
+
+			E plr;
 			if (redCount > bluCount) {
+				plr = getRandomPlayer(TeamType.RED);
+				if (plr == null)
+					return;
 				plr.setTeam(getBlue());
-				p.sendMessage(ChatColor.GOLD + "You were switched to the blue team to balance the teams.");
+				plr.getPlayer().sendMessage(ChatColor.GOLD + "You were switched to the blue team to balance the teams.");
 			} else {
+				plr = getRandomPlayer(TeamType.BLUE);
+				if (plr == null)
+					return;
 				plr.setTeam(getRed());
 				plr.getPlayer().sendMessage(ChatColor.GOLD + "You were switched to the red team to balance the teams.");
 			}
+			removePlayerFromScoreboard(plr);
 			initPlayer(plr);
 			spawn(plr);
 			balanceTeams();
@@ -141,11 +145,11 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 
 	protected void fixArmor(Player p) {
 		ItemStack[] armor = p.getInventory().getArmorContents();
-		for (int i = 0; i < 4; i++)
-		{
+		for (int i = 0; i < 4; i++) {
 			ItemStack is = armor[i];
-			if (is == null) continue;
-			is.setDurability((short)0);
+			if (is == null)
+				continue;
+			is.setDurability((short) 0);
 		}
 	}
 
@@ -168,12 +172,12 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		if (isStarted())
 			plr.startGame();
 	}
-	
+
 	protected void sendTeamMessage(String message, T team) {
 		for (E player : getPlayers(team))
 			player.getPlayer().sendMessage(message);
 	}
-	
+
 	protected ArrayList<E> getPlayers(T team) {
 		ArrayList<E> players = new ArrayList<E>();
 		for (E player : getPlayers())
@@ -187,6 +191,8 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 	protected abstract T getRed();
 
 	protected abstract T getBlue();
+
 	protected abstract boolean isStarted();
+
 	protected abstract void updateArmor(E player);
 }

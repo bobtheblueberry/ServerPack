@@ -4,14 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 
 import me.toxiccoke.io.StreamDecoder;
 import me.toxiccoke.io.StreamEncoder;
 
+import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -141,8 +142,13 @@ public class CommandHandler implements CommandExecutor {
 				reason = reason + " " + args[0];
 
 			target.kickPlayer(ChatColor.RED + "You have been banned!\n" + reason);
-			Bukkit.getServer().getBanList(org.bukkit.BanList.Type.UUID)
-					.addBan(target.getName(), reason, null, sender.getName());
+			BanList b = Bukkit.getServer().getBanList(org.bukkit.BanList.Type.UUID);
+			if (b != null)
+				b.addBan(target.getUniqueId().toString(), reason, null, sender.getName());
+			else
+				Bukkit.getLogger().log(Level.WARNING, "Error! Cannot get banlist");
+			
+			
 			Bukkit.getServer().broadcastMessage(
 					ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY
 							+ sender.getName() + "!");

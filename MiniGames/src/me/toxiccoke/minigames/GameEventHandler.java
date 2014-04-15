@@ -2,7 +2,9 @@ package me.toxiccoke.minigames;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
@@ -36,8 +38,8 @@ public class GameEventHandler implements Listener {
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent chat) {
 		String message = chat.getMessage();
-		if (message.startsWith("#"))
-		{// Does this for all player not just ones in minigames
+		if (message.startsWith("#")) {// Does this for all player not just ones
+										// in minigames
 			chat.setMessage(message.substring(1));
 			return;
 		}
@@ -46,10 +48,11 @@ public class GameEventHandler implements Listener {
 			for (GamePlayer gp : m.getPlayers())
 				if (gp.getName().equals(sender.getName())) {
 					chat.setCancelled(true);
-					for (GamePlayer mgp : m.getPlayers())
-						mgp.getPlayer().sendMessage(
-								gp.getTeamColor() + ChatColor.stripColor(gp.getPlayer().getDisplayName()) + ": "
-										+ ChatColor.GRAY + chat.getMessage());
+					for (GamePlayer mgp : m.getPlayers()) {
+						String msg = gp.getTeamColor() + ChatColor.stripColor(gp.getPlayer().getDisplayName()) + ": " + ChatColor.GRAY + chat.getMessage();
+						Bukkit.getLogger().log(Level.INFO, m.getGameName() + "." + m.getWorldName() + " " + msg);
+						mgp.getPlayer().sendMessage(msg);
+					}
 					return;
 				}
 	}
@@ -57,8 +60,7 @@ public class GameEventHandler implements Listener {
 	private boolean allowCommand(String cmd) {
 		String key = "allowed-commands";
 		List<String> cmds = MiniGamesPlugin.plugin.getConfig().getStringList(key);
-		if (cmds == null || cmds.size() == 0)
-		{
+		if (cmds == null || cmds.size() == 0) {
 			cmds = new ArrayList<String>();
 			cmds.add("tell");
 			cmds.add("msg");
@@ -70,7 +72,7 @@ public class GameEventHandler implements Listener {
 			cmds.add("party");
 			cmds.add("friend");
 			cmds.add("class");
-			MiniGamesPlugin.plugin.getConfig().set(key,cmds);
+			MiniGamesPlugin.plugin.getConfig().set(key, cmds);
 			MiniGamesPlugin.plugin.saveConfig();
 		}
 		for (String s : cmds)
@@ -78,14 +80,14 @@ public class GameEventHandler implements Listener {
 				return true;
 		return false;
 	}
-	
+
 	// disable commands
 	@EventHandler
 	public void onPreEvent(PlayerCommandPreprocessEvent event) {
 		String cmd = event.getMessage().toLowerCase();
 		if (cmd.length() < 2)
 			return;
-		if (allowCommand(cmd.substring(1))) 
+		if (allowCommand(cmd.substring(1)))
 			return;
 		Player sender = event.getPlayer();
 		for (GameWorld<?> m : GameLobby.lobby.games)
@@ -202,8 +204,7 @@ public class GameEventHandler implements Listener {
 	@EventHandler
 	public void onInvClick(InventoryClickEvent event) {
 		// diable removing armor
-		if ((event.getSlot() == 39 || event.getSlot() == 38 || event.getSlot() == 37 || event.getSlot() == 36)
-				&& event.getInventory().getHolder() instanceof HumanEntity)
+		if ((event.getSlot() == 39 || event.getSlot() == 38 || event.getSlot() == 37 || event.getSlot() == 36) && event.getInventory().getHolder() instanceof HumanEntity)
 			for (GameWorld<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
 					if (gp.player.equals(event.getWhoClicked().getName())) {
@@ -211,10 +212,11 @@ public class GameEventHandler implements Listener {
 						return;
 					}
 	}
-	
+
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
-		if (event.isCancelled()) return;
+		if (event.isCancelled())
+			return;
 		Entity victim = event.getEntity();
 		Entity attacker = event.getDamager();
 		boolean other = false;
@@ -257,9 +259,9 @@ public class GameEventHandler implements Listener {
 
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
-		if (event.isCancelled()) return;
-		if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.PROJECTILE
-				|| event.getCause() == DamageCause.ENTITY_EXPLOSION)
+		if (event.isCancelled())
+			return;
+		if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.PROJECTILE || event.getCause() == DamageCause.ENTITY_EXPLOSION)
 			return;// handled by
 					// EntityDamageByEntityEvent
 		Entity t = event.getEntity();

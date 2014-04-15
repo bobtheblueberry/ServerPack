@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,6 +28,7 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
@@ -121,7 +123,7 @@ public class PayloadEventHandler implements Listener {
 
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
-		if (event.getEntity() == null)
+		if (event == null || event.getEntity() == null)
 			return;
 		Location vehicleLoc = event.getEntity().getLocation();
 		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
@@ -149,7 +151,7 @@ public class PayloadEventHandler implements Listener {
 		PayloadPlayer pp = getPlayer(event.getPlayer());
 		if (pp == null)
 			return;
-		if(pp.dead)
+		if (pp.dead)
 			return;
 		if (itemInHand.getType() == Material.COMMAND) {
 			pp.getPlayer().chat("/class");
@@ -257,6 +259,19 @@ public class PayloadEventHandler implements Listener {
 		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
 		if (game != null)
 			game.vehicleUpdate(event);
+	}
+
+	@EventHandler
+	public void onPickup(PlayerPickupItemEvent event) {
+		Item i = event.getItem();
+		int x = i.getLocation().getBlockX();
+		int z = i.getLocation().getBlockZ();
+		PayloadGame g = getGame(x, z);
+		if (g == null)
+			return;
+		PayloadPlayer p = getPlayer(event.getPlayer());
+		if (p != null)
+			p.game.pickupItem(p, event);
 	}
 
 	private void tpPlayer(final Player p, final int i, final Minetrackulator t) {

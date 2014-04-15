@@ -2,6 +2,7 @@ package me.toxiccoke.minigames.payload;
 
 import java.util.ArrayList;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -11,6 +12,8 @@ public class ClassWeapons {
 	private ClassWeapons() {}
 
 	public static void flamethrower(PayloadPlayer pl) {
+		if (!takeAmmo(pl, 1))
+			return;
 		Player player = pl.getPlayer();
 		double x = player.getLocation().getX();
 		double y = player.getLocation().getY();
@@ -25,12 +28,15 @@ public class ClassWeapons {
 			if (p.team.team != pl.team.team) {
 				pl.dealtDmg = true;
 				Player plr = p.getPlayer();
+				plr.sendMessage(ChatColor.RED + "Burnt by " + player.getName());
 				plr.setFireTicks(80);
 				plr.damage(0.5);
 			}
 	}
 
 	public static void airblast(PayloadPlayer pl) {
+		if (!takeAmmo(pl, 10))
+			return;
 		Player player = pl.getPlayer();
 		double x = player.getLocation().getX();
 		double y = player.getLocation().getY();
@@ -41,14 +47,20 @@ public class ClassWeapons {
 		double cz = Math.sin(yaw * Math.PI / 180) * dist;
 		x += cx;
 		z += cz;
-		Vector velocity = new Vector(cx, 1.5, cz);
+		Vector velocity = new Vector(cx, 1.2, cz);
 		Location nl = new Location(player.getLocation().getWorld(), x, y, z);
 		ArrayList<PayloadPlayer> players = getPlayersWithinDistance(pl.game, nl, dist);
-		for (PayloadPlayer p : players)
+		for (PayloadPlayer p : players) {
+			Player plr = p.getPlayer();
 			if (p.team.team != pl.team.team) {
 				pl.dealtDmg = true;
-				p.getPlayer().setVelocity(velocity);
-			} else p.getPlayer().setFireTicks(0);
+				plr.setVelocity(velocity);
+				plr.sendMessage(ChatColor.RED + "Airblasted by " + player.getName());
+			} else if (plr.getFireTicks() > 0) {
+				plr.sendMessage(ChatColor.GREEN + "Extinguished by " + player.getName());
+				plr.setFireTicks(0);
+			}
+		}
 	}
 
 	private static ArrayList<PayloadPlayer> getPlayersWithinDistance(PayloadGame game, Location l, double dist) {
@@ -59,5 +71,16 @@ public class ClassWeapons {
 				list.add(player);
 		}
 		return list;
+	}
+
+	private static boolean takeAmmo(PayloadPlayer p, int ammo) {
+		int a = p.getAmmo();
+		if (a >= ammo) 
+			p.setAmmo(a - ammo);
+		else {
+			p.getPlayer().sendMessage(ChatColor.GREEN + "Not Enough Ammunition!");
+			return false;
+		}
+		return true;
 	}
 }

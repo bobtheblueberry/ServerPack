@@ -22,12 +22,13 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class GameLobby implements Runnable, Listener {
 
 	public ArrayList<GameWorld<? extends GamePlayer>>	games;
-	public static GameLobby		lobby;
+	public static GameLobby								lobby;
 
 	public GameLobby() {
 		games = new ArrayList<GameWorld<? extends GamePlayer>>(3);
@@ -36,7 +37,7 @@ public class GameLobby implements Runnable, Listener {
 		// 20 ticks per second
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, this, 0L, 20L);
 	}
-	
+
 	private void load() {
 		File parent = MiniGamesPlugin.plugin.getDataFolder();
 		if (!parent.exists())
@@ -44,14 +45,14 @@ public class GameLobby implements Runnable, Listener {
 		File data = new File(parent, "Worlds.ini");
 		if (!data.exists()) {
 			try {
-			PrintWriter p = new PrintWriter(new BufferedWriter(new FileWriter(data)));
-			p.println("Bomber Greenland");
-			p.println("Bomber Amazon");
-			p.println("Payload Badwater");
-			p.println();
-			p.close();
-			if (data.exists())
-				load();
+				PrintWriter p = new PrintWriter(new BufferedWriter(new FileWriter(data)));
+				p.println("Bomber Greenland");
+				p.println("Bomber Amazon");
+				p.println("Payload Badwater");
+				p.println();
+				p.close();
+				if (data.exists())
+					load();
 			} catch (IOException exc) {
 				System.err.println(exc.getMessage());
 				exc.printStackTrace();
@@ -64,7 +65,7 @@ public class GameLobby implements Runnable, Listener {
 					String game = sc.next();
 					if (sc.hasNext()) {
 						String world = sc.next();
-						if (game.equalsIgnoreCase("Bomber")) 
+						if (game.equalsIgnoreCase("Bomber"))
 							games.add(new BomberGame(world));
 						else if (game.equalsIgnoreCase("Payload"))
 							games.add(new PayloadGame(world));
@@ -116,7 +117,7 @@ public class GameLobby implements Runnable, Listener {
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
-		Player player = (Player) event.getPlayer();
+		Player player = event.getPlayer();
 		Block b = event.getClickedBlock();
 		if (b == null || b.getState() == null)
 			return;
@@ -132,6 +133,11 @@ public class GameLobby implements Runnable, Listener {
 		if (game == null)
 			return;
 		event.setCancelled(true);
+
+		if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+			player.sendMessage(ChatColor.GOLD + "Use the other mouse button");
+			return;
+		}
 		if (!game.isJoinable()) {
 			player.sendMessage(ChatColor.GOLD + "That minigame is unavailable.");
 			return;
@@ -144,8 +150,7 @@ public class GameLobby implements Runnable, Listener {
 		if (Partys.isInParty(player)) {
 			Party p = Partys.getParty(player);
 			if (!Partys.isPartyOwner(player)) {
-				player.sendMessage(ChatColor.GOLD + "Your party owner [" + p.getOwner().getDisplayName()
-						+ ChatColor.GOLD + "] must decide what game for you to join."
+				player.sendMessage(ChatColor.GOLD + "Your party owner [" + p.getOwner().getDisplayName() + ChatColor.GOLD + "] must decide what game for you to join."
 						+ " Do /party leave to leave your party.");
 				return;
 			}

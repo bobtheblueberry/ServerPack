@@ -18,6 +18,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -44,7 +45,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	boolean								isStarted;
 	private BomberTeam					red, blue;
 	private volatile BomberPlayer		bomber;
-	private int							gamelength	= 4;
+	private int							gamelength	= 10;
 
 	// spawn is blue,red,(blue,red)
 	public BomberGame(String worldName) {
@@ -105,7 +106,10 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		super.initPlayer(plr);
 		Player p = plr.getPlayer();
 		Inventory i = p.getInventory();
-		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), new ItemStack(Material.BOW, 1),
+		ItemStack bow = new ItemStack(Material.BOW, 1);
+		bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
+		bow.addEnchantment(Enchantment.DURABILITY, 3);
+		ItemStack[] s = new ItemStack[] { new ItemStack(Material.IRON_SWORD, 1), bow,
 				new ItemStack(Material.ARROW, 64) };
 		i.addItem(s);
 		updateArmor(plr);

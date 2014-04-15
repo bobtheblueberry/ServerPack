@@ -118,7 +118,7 @@ public class ClassMenu implements CommandExecutor, Listener {
 	 */
 	private boolean playerInvClick(InventoryClickEvent event, PayloadPlayer pp, Player p) {
 		int slot = event.getSlot();
-		return slot < 10;
+		return slot < 9;
 	}
 
 	protected static Inventory getMenu() {
