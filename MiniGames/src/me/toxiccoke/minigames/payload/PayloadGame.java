@@ -32,10 +32,12 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -501,10 +503,14 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		event.setCancelled(true);
 		event.setCollisionCancelled(true);
 		event.setPickupCancelled(true);
+		// Hack fix
+		if (trackulator.isCloserToEnd(event.getEntity().getLocation(), minecart.getLocation()))
+			minecart.teleport(minecart.getLocation().add(minecart.getVelocity().multiply(2)), TeleportCause.PLUGIN);
+		
 	}
 
 	public void vehicleCreated(VehicleCreateEvent event) {
-		if (event.getVehicle() instanceof Minecart) {
+		if (event.getVehicle() instanceof Minecart && event.getVehicle() != minecart) {
 			minecartSpawn = event.getVehicle().getLocation();
 			save();
 		}
@@ -524,7 +530,12 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		if (event.getVehicle() != minecart)
 			return;
 	}
-
+	
+	public void vehicleMove(VehicleMoveEvent event) {
+		if (event.getVehicle() != minecart)
+			return;
+	}
+	
 	public boolean canPlayerHealFromHunger(GamePlayer p) {
 		return false;
 	}

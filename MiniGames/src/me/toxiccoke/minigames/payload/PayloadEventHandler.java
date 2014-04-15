@@ -33,6 +33,7 @@ import org.bukkit.event.vehicle.VehicleCreateEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -259,6 +260,14 @@ public class PayloadEventHandler implements Listener {
 		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
 		if (game != null)
 			game.vehicleUpdate(event);
+	}
+	
+	@EventHandler
+	public void onVehicleMove(VehicleMoveEvent event) {
+		Location vehicleLoc = event.getVehicle().getLocation();
+		PayloadGame game = getGame(vehicleLoc.getBlockX(), vehicleLoc.getBlockZ());
+		if (game != null)
+			game.vehicleMove(event);
 	}
 
 	@EventHandler

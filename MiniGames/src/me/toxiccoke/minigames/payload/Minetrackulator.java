@@ -83,7 +83,7 @@ public class Minetrackulator {
 	private boolean compareLocations(Location l1, Location l2) {
 		if (l1.getX() != l2.getX() || l1.getZ() != l2.getZ())
 			return false;
-		int i1 = (int) Math.round(l1.getY() / 8);
+		int i1 = (int) Math.round(l1.getY() / 8);// hack fix
 		int i2 = (int) Math.round(l2.getY() / 8);
 		return i1 == i2;
 	}
@@ -152,6 +152,20 @@ public class Minetrackulator {
 	public boolean headingTowardsEnd(Minecart m) {
 		Location current = m.getLocation();
 		Location future = m.getLocation().clone().add(m.getVelocity());
+		return isCloserToEnd(future, current);
+	}
+
+	/**
+	 * 
+	 * Returns true if l1 is closer to the end than l2
+	 * 
+	 * @param l1
+	 * @param l2
+	 * @return
+	 */
+	public boolean isCloserToEnd(Location l1, Location l2) {
+		Location current = l2;
+		Location future = l1;
 		int d = -1;
 		for (int i = 0; i < rails.size(); i++)
 			if (compareLocations(rails.get(i).getLocation(), current.getBlock().getLocation())) {
@@ -161,7 +175,7 @@ public class Minetrackulator {
 		if (d < 0) { return false; }
 		Block track = rails.get(d);
 		Location next;
-		if (d+1 == rails.size()) {
+		if (d + 1 == rails.size()) {
 			Block prev = rails.get(rails.size() - 2);
 			next = current.clone().add(track.getX() - prev.getX(), 0, track.getZ() - prev.getZ());
 		} else next = rails.get(d + 1).getLocation();
@@ -241,8 +255,7 @@ public class Minetrackulator {
 
 	private boolean isRail(Block b) {
 		Material m = b.getType();
-		return m == Material.RAILS || m == Material.ACTIVATOR_RAIL || m == Material.DETECTOR_RAIL
-				|| m == Material.POWERED_RAIL;
+		return m == Material.RAILS || m == Material.ACTIVATOR_RAIL || m == Material.DETECTOR_RAIL || m == Material.POWERED_RAIL;
 	}
 
 }
