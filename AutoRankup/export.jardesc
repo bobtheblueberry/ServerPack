@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
 <jardesc>
-    <jar path="C:/Users/Serge/bukkit/plugins/AutoRankup.jar"/>
+    <jar path="C:/Users/Serge/AutoRankup.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/AutoRankup/export.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
@@ -14,7 +14,5 @@
         <file path="/AutoRankup/plugin.yml"/>
         <file path="/AutoRankup/rank.txt"/>
         <javaElement handleIdentifier="=AutoRankup/src"/>
-        <file path="/AutoRankup/.classpath"/>
-        <file path="/AutoRankup/.project"/>
     </selectedElements>
 </jardesc>

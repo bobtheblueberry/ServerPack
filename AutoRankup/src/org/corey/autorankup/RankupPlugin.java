@@ -56,11 +56,14 @@ public class RankupPlugin extends JavaPlugin implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPluginEnable(final PluginEnableEvent event) {
+		getGroupManager();
+	}
+
+	private void getGroupManager() {
 		final PluginManager pluginManager = plugin.getServer().getPluginManager();
 		final Plugin GMplugin = pluginManager.getPlugin("GroupManager");
 		if (GMplugin != null && GMplugin.isEnabled()) {
 			groupManager = (GroupManager) GMplugin;
-
 		}
 	}
 
@@ -142,8 +145,11 @@ public class RankupPlugin extends JavaPlugin implements Listener {
 			args[i] = args[i].toLowerCase();
 		if (cmd.equals("promote")) {
 			if (groupManager == null) {
-				sender.sendMessage(ChatColor.RED + "Error! GroupManager not loaded! Derp!");
-				return true;
+				getGroupManager();
+				if (groupManager == null) {
+					sender.sendMessage(ChatColor.RED + "Error! GroupManager not loaded! Derp!");
+					return true;
+				}
 			}
 			if (!(sender instanceof Player)) {
 				sender.sendMessage(ChatColor.RED + "Command must not be run from console");
