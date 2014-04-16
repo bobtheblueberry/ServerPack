@@ -23,7 +23,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 	protected Team	redTeam, blueTeam;
 	protected OfflinePlayer	redScore, blueScore;
 	protected Scoreboard	board;
-	protected Objective		objective;
+	protected Objective		objective,objective2;
 
 	public TwoTeamGame(String gameName, String worldName) {
 		super(gameName, worldName);
@@ -37,18 +37,24 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		redTeam.setDisplayName(ChatColor.DARK_RED + "Red");
 		redTeam.setCanSeeFriendlyInvisibles(true);
 		redTeam.setAllowFriendlyFire(false);
+		redTeam.setPrefix(ChatColor.RED + "");
 		blueTeam = board.registerNewTeam("Blue");
 		blueTeam.setDisplayName(ChatColor.DARK_BLUE + "Blue");
 		blueTeam.setCanSeeFriendlyInvisibles(true);
 		blueTeam.setAllowFriendlyFire(false);
+		blueTeam.setPrefix(ChatColor.BLUE + "");
 		objective = board.registerNewObjective("score", "trigger");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		objective.setDisplayName(ChatColor.GREEN + "Score");
+		objective2 = board.registerNewObjective("player score", "trigger");
+		objective2.setDisplaySlot(DisplaySlot.BELOW_NAME);
+		objective2.setDisplayName(ChatColor.YELLOW + "Kills");
+		
+		
 		// Get a fake offline player
 		blueScore = Bukkit.getOfflinePlayer(ChatColor.BLUE + "Blue Kills:");
 		redScore = Bukkit.getOfflinePlayer(ChatColor.RED + "Red Kills:");
 		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
-
 			@Override
 			public void run() {
 				updateScore();
@@ -120,6 +126,8 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 	protected void updateScore() {
 		objective.getScore(redScore).setScore(getRed().getScore());
 		objective.getScore(blueScore).setScore(getBlue().getScore());
+		for (E p : getPlayers())
+			objective2.getScore(p.getPlayer()).setScore(p.getScore());
 	}
 
 	protected void checkLeader(E p) {
