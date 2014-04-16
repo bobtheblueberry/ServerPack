@@ -28,10 +28,10 @@ import org.bukkit.plugin.Plugin;
 
 public class CommandHandler implements CommandExecutor {
 
-	HashMap<String, Location>	previous;
-	File						pFile;
-	public static CommandHandler instance;
-	
+	HashMap<String, Location>		previous;
+	File							pFile;
+	public static CommandHandler	instance;
+
 	public CommandHandler() {
 		instance = this;
 		previous = new HashMap<String, Location>();
@@ -101,7 +101,8 @@ public class CommandHandler implements CommandExecutor {
 
 	@EventHandler
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		if (cmd.getName().equalsIgnoreCase("kick")) {
+		String cName = cmd.getName().toLowerCase();
+		if (cName.equalsIgnoreCase("kick")) {
 			if (!sender.hasPermission("sc.kick")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
 						+ ChatColor.RED + "You dont have acsses to this command");
@@ -122,7 +123,7 @@ public class CommandHandler implements CommandExecutor {
 					ChatColor.GRAY + "Player " + target.getName() + " has been kicked by " + ChatColor.GRAY
 							+ sender.getName() + "!");
 			return true;
-		} else if (cmd.getName().equalsIgnoreCase("ban")) {
+		} else if (cName.equalsIgnoreCase("ban")) {
 			if (!sender.hasPermission("sc.ban")) {
 				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
 						+ ChatColor.RED + "You dont have access to this command");
@@ -153,6 +154,48 @@ public class CommandHandler implements CommandExecutor {
 					ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY
 							+ sender.getName() + "!");
 			return true;
+		}else if (cName.equalsIgnoreCase("tp")) {
+			if (!sender.hasPermission("sc.tp")) {
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
+						+ ChatColor.RED + "You dont have access to this command");
+				return true;
+			}
+			if (args.length == 0) {
+				sender.sendMessage(ChatColor.RED + " Please specify a player");
+				return true;
+			} else if (args.length == 1) {
+				if (!(sender instanceof Player)) {
+					sender.sendMessage("You must be a player");
+					return true;
+				}
+				Player p = (Player)sender;
+				Player targetPlayer = p.getServer().getPlayer(args[0]);
+				if (targetPlayer == null) {
+					sender.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
+					return true;
+				}
+				addBack(p);
+				teleportAdvanced(p, targetPlayer.getLocation());
+				return true;
+			} else if (args.length == 2) {
+				Player targetPlayer = Bukkit.getServer().getPlayer(args[0]);
+				if (targetPlayer == null) {
+					sender.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
+					return true;
+				}
+				Player targetPlayer1 = Bukkit.getServer().getPlayer(args[1]);
+				if (targetPlayer1 == null) {
+					sender.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[1]);
+					return true;
+				}
+				addBack(targetPlayer);
+				teleportAdvanced(targetPlayer, targetPlayer1.getLocation());
+				return true;
+			}
+			return true;
+		} else if (cName.equals("gm")) {
+			gm(sender, args);
+			return true;
 		}
 
 		if (!(sender instanceof Player)) {
@@ -161,13 +204,7 @@ public class CommandHandler implements CommandExecutor {
 		}
 		Player p = (Player) sender;
 		World world = p.getWorld();
-		String cName = cmd.getName().toLowerCase();
-		// gm command
-		if (cName.equals("gm")) {
-			gm(p, args);
-			return true;
-
-		} else if (cName.equals("back")) {
+		if (cName.equals("back")) {
 			Location l = previous.get(p.getName());
 			if (l == null) {
 				p.sendMessage(ChatColor.GOLD + "No previous location found");
@@ -205,41 +242,6 @@ public class CommandHandler implements CommandExecutor {
 				p.sendMessage(ChatColor.GRAY + "Fly disabled");
 			else p.sendMessage(ChatColor.GRAY + "Fly enabled");
 			p.setAllowFlight(!fly);
-			return true;
-			// tp command
-		} else if (cmd.getName().equalsIgnoreCase("tp")) {
-			if (!sender.hasPermission("sc.tp")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have access to this command");
-				return true;
-			}
-			if (args.length == 0) {
-				p.sendMessage(ChatColor.RED + " Please specify a player");
-				return true;
-			} else if (args.length == 1) {
-				Player targetPlayer = p.getServer().getPlayer(args[0]);
-				if (targetPlayer == null) {
-					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
-					return true;
-				}
-				addBack(p);
-				teleportAdvanced(p, targetPlayer.getLocation());
-				return true;
-			} else if (args.length == 2) {
-				Player targetPlayer = p.getServer().getPlayer(args[0]);
-				if (targetPlayer == null) {
-					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
-					return true;
-				}
-				Player targetPlayer1 = p.getServer().getPlayer(args[1]);
-				if (targetPlayer1 == null) {
-					p.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[1]);
-					return true;
-				}
-				addBack(targetPlayer);
-				teleportAdvanced(targetPlayer, targetPlayer1.getLocation());
-				return true;
-			}
 			return true;
 			// warn command
 		} else if (cmd.getName().equalsIgnoreCase("warn")) {
@@ -449,12 +451,23 @@ public class CommandHandler implements CommandExecutor {
 
 	}
 
-	private void gm(Player p, String[] args) {
+	private void gm(CommandSender sender, String[] args) {
 		if (args.length == 0) {
-			p.sendMessage(ChatColor.RED + "Too Few Arguments");
-			p.sendMessage(ChatColor.GRAY + "/gm <0/1/2> <player (optional)>");
+			sender.sendMessage(ChatColor.RED + "Too Few Arguments");
+			sender.sendMessage(ChatColor.GRAY + "/gm <0/1/2> <player (optional)>");
 		} else if (args.length == 1) {
-			int mode = Integer.parseInt(args[0]);
+			if (!(sender instanceof Player)) {
+				sender.sendMessage("You must be a player");
+				return;
+			}
+			int mode;
+			try {
+			mode = Integer.parseInt(args[0]);
+			} catch (NumberFormatException exc) {
+				sender.sendMessage(ChatColor.DARK_RED + "" + args[0] + ChatColor.RED + " Is Not A Available Gamemode");
+				return;
+			}
+			Player p = (Player)sender;
 			if (mode == 0) {
 				p.setGameMode(GameMode.SURVIVAL);
 				p.sendMessage(ChatColor.GRAY + "You GameMode Has Been Set To" + ChatColor.DARK_GREEN + " Survival");
@@ -474,31 +487,25 @@ public class CommandHandler implements CommandExecutor {
 				Player targetP = Bukkit.getPlayer(targetPlayer);
 				if (mode == 0) {
 					targetP.setGameMode(GameMode.SURVIVAL);
-					targetP.sendMessage(ChatColor.GRAY + "Your GameMode Has Been Set To" + ChatColor.DARK_GREEN
-							+ " Survival");
-					p.sendMessage(ChatColor.GRAY + "You Set " + ChatColor.GRAY + targetP.getName() + ChatColor.GRAY
-							+ " Gamemode to " + ChatColor.DARK_GREEN + "Survival");
+					targetP.sendMessage(ChatColor.GRAY + "Your GameMode Has Been Set To" + ChatColor.DARK_GREEN + " Survival");
+					sender.sendMessage(ChatColor.GRAY + "You Set " + ChatColor.GRAY + targetP.getName() + ChatColor.GRAY + " Gamemode to " + ChatColor.DARK_GREEN + "Survival");
 				} else if (mode == 1) {
 					targetP.setGameMode(GameMode.CREATIVE);
-					targetP.sendMessage(ChatColor.GRAY + "Your GameMode Has Been Set To" + ChatColor.DARK_GREEN
-							+ " Creative");
-					p.sendMessage(ChatColor.GRAY + "You Set " + ChatColor.GRAY + targetP.getName() + ChatColor.GRAY
-							+ " Gamemode to " + ChatColor.DARK_GREEN + "Creative");
+					targetP.sendMessage(ChatColor.GRAY + "Your GameMode Has Been Set To" + ChatColor.DARK_GREEN + " Creative");
+					sender.sendMessage(ChatColor.GRAY + "You Set " + ChatColor.GRAY + targetP.getName() + ChatColor.GRAY + " Gamemode to " + ChatColor.DARK_GREEN + "Creative");
 				} else if (mode == 2) {
 					targetP.setGameMode(GameMode.ADVENTURE);
-					targetP.sendMessage(ChatColor.GRAY + "Your GameMode Has Been Set To" + ChatColor.DARK_GREEN
-							+ " Adventure");
-					p.sendMessage(ChatColor.GRAY + "You Set " + ChatColor.GRAY + targetP.getName() + ChatColor.GRAY
-							+ " Gamemode to " + ChatColor.DARK_GREEN + "Adventure");
+					targetP.sendMessage(ChatColor.GRAY + "Your GameMode Has Been Set To" + ChatColor.DARK_GREEN + " Adventure");
+					sender.sendMessage(ChatColor.GRAY + "You Set " + ChatColor.GRAY + targetP.getName() + ChatColor.GRAY + " Gamemode to " + ChatColor.DARK_GREEN + "Adventure");
 				} else {
-					p.sendMessage(ChatColor.DARK_RED + "" + mode + ChatColor.RED + "Is Not A Available Gamemode");
+					sender.sendMessage(ChatColor.DARK_RED + "" + mode + ChatColor.RED + "Is Not A Available Gamemode");
 				}
 			} else {
-				p.sendMessage(ChatColor.DARK_RED + targetPlayer + ChatColor.RED + "Is Not Online");
+				sender.sendMessage(ChatColor.DARK_RED + targetPlayer + ChatColor.RED + "Is Not Online");
 			}
 		} else {
-			p.sendMessage(ChatColor.RED + "Too Many Arguments!");
-			p.sendMessage(ChatColor.GRAY + "/gm <1/2/3> <Player (optional)>");
+			sender.sendMessage(ChatColor.RED + "Too Many Arguments!");
+			sender.sendMessage(ChatColor.GRAY + "/gm <1/2/3> <Player (optional)>");
 		}
 	}
 
@@ -520,8 +527,7 @@ public class CommandHandler implements CommandExecutor {
 					Method m = p.getClass().getMethod("teleportAdvanced", Player.class, Location.class);
 					m.invoke(p, player, l);
 					return true;
-				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-						| InvocationTargetException e) {
+				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 					e.printStackTrace();
 					return false;
 				}
