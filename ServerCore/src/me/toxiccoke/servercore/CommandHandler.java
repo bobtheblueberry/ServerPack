@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 
 import me.toxiccoke.io.StreamDecoder;
 import me.toxiccoke.io.StreamEncoder;
@@ -104,8 +103,7 @@ public class CommandHandler implements CommandExecutor {
 		String cName = cmd.getName().toLowerCase();
 		if (cName.equalsIgnoreCase("kick")) {
 			if (!sender.hasPermission("sc.kick")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -119,14 +117,11 @@ public class CommandHandler implements CommandExecutor {
 			}
 			target.kickPlayer(ChatColor.RED + "You have been kicked!");
 			Bukkit.getServer().getPluginManager().callEvent(new EnforcerEvent(target, Type.KICK));
-			Bukkit.getServer().broadcastMessage(
-					ChatColor.GRAY + "Player " + target.getName() + " has been kicked by " + ChatColor.GRAY
-							+ sender.getName() + "!");
+			Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Player " + target.getName() + " has been kicked by " + ChatColor.GRAY + sender.getName() + "!");
 			return true;
 		} else if (cName.equalsIgnoreCase("ban")) {
 			if (!sender.hasPermission("sc.ban")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have access to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have access to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -144,20 +139,14 @@ public class CommandHandler implements CommandExecutor {
 
 			target.kickPlayer(ChatColor.RED + "You have been banned!\n" + reason);
 			BanList b = Bukkit.getServer().getBanList(org.bukkit.BanList.Type.UUID);
-			if (b != null)
-				b.addBan(target.getUniqueId().toString(), reason, null, sender.getName());
-			else
-				Bukkit.getLogger().log(Level.WARNING, "Error! Cannot get banlist");
 			
-			
-			Bukkit.getServer().broadcastMessage(
-					ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY
-							+ sender.getName() + "!");
+			b.addBan(target.getUniqueId().toString(), reason, null, sender.getName());
+			Bukkit.getServer().savePlayers();// Save ban list
+			Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY + sender.getName() + "!");
 			return true;
-		}else if (cName.equalsIgnoreCase("tp")) {
+		} else if (cName.equalsIgnoreCase("tp")) {
 			if (!sender.hasPermission("sc.tp")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have access to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have access to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -168,7 +157,7 @@ public class CommandHandler implements CommandExecutor {
 					sender.sendMessage("You must be a player");
 					return true;
 				}
-				Player p = (Player)sender;
+				Player p = (Player) sender;
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
 				if (targetPlayer == null) {
 					sender.sendMessage(ChatColor.GRAY + "Unknown Player: " + args[0]);
@@ -216,8 +205,7 @@ public class CommandHandler implements CommandExecutor {
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("heal")) {
 			if (!sender.hasPermission("sc.heal")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You don't have access to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You don't have access to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -233,8 +221,7 @@ public class CommandHandler implements CommandExecutor {
 			// fly command
 		} else if (cmd.getName().equalsIgnoreCase("fly")) {
 			if (!sender.hasPermission("sc.fly")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			boolean fly = p.getAllowFlight();
@@ -246,8 +233,7 @@ public class CommandHandler implements CommandExecutor {
 			// warn command
 		} else if (cmd.getName().equalsIgnoreCase("warn")) {
 			if (!sender.hasPermission("sc.warn")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -256,80 +242,68 @@ public class CommandHandler implements CommandExecutor {
 			} else if (args.length == 1) {
 				Player targetPlayer = p.getServer().getPlayer(args[0]);
 				p.sendMessage(ChatColor.GRAY + "You have warned " + ChatColor.GRAY + targetPlayer.getDisplayName());
-				targetPlayer.sendMessage(ChatColor.GRAY + "You have been WARNED by " + ChatColor.GRAY
-						+ p.getDisplayName());
+				targetPlayer.sendMessage(ChatColor.GRAY + "You have been WARNED by " + ChatColor.GRAY + p.getDisplayName());
 				targetPlayer.sendMessage(ChatColor.RED + "Next warning will result in ban/kick");
 				return true;
 			}
 			// day command
 		} else if (cmd.getName().equalsIgnoreCase("day")) {
 			if (!sender.hasPermission("sc.day")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			p.sendMessage(ChatColor.GRAY + "You have set the time to day");
 			world.setTime(1500);
-			Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY
-					+ " Set the world time to day ");
+			Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY + " Set the world time to day ");
 			return true;
 			// night command
 		} else if (cmd.getName().equalsIgnoreCase("night")) {
 			if (!sender.hasPermission("sc.night")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			if (args.length == 0) {
 				p.sendMessage(ChatColor.GRAY + " Has set the time to night");
 				world.setTime(13000);
-				Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY
-						+ " Set the world time to night ");
+				Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY + " Set the world time to night ");
 				return true;
 			}
 			// sun command
 		} else if (cmd.getName().equalsIgnoreCase("sun")) {
 			if (!sender.hasPermission("sc.sun")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			p.getLocation().getWorld().setStorm(false);
-			Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY
-					+ " Set the world weather to sun ");
+			Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY + " Set the world weather to sun ");
 
 			return true;
 			// rain command
 		} else if (cmd.getName().equalsIgnoreCase("rain")) {
 			if (!sender.hasPermission("sc.rain")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			p.getLocation().getWorld().setStorm(true);
-			Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY
-					+ " Set the world weather to rain ");
+			Bukkit.broadcastMessage(ChatColor.GRAY + p.getDisplayName() + ChatColor.GRAY + " Set the world weather to rain ");
 			return true;
 			// commands setspawn
 		} else if (cmd.getName().equalsIgnoreCase("setspawn")) {
 			if (!sender.hasPermission("sc.setspawn")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			getConfig().set("spawn.world", p.getLocation().getWorld().getName());
 			getConfig().set("spawn.x", p.getLocation().getX());
 			getConfig().set("spawn.y", p.getLocation().getY());
 			getConfig().set("spawn.z", p.getLocation().getZ());
-			p.getWorld().setSpawnLocation(p.getLocation().getBlockX(), p.getLocation().getBlockY(),
-					p.getLocation().getBlockZ());
+			p.getWorld().setSpawnLocation(p.getLocation().getBlockX(), p.getLocation().getBlockY(), p.getLocation().getBlockZ());
 			Commands.plugin.saveConfig();
 			p.sendMessage(ChatColor.GRAY + "Spawn set!");
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("spawn")) {
 			if (!sender.hasPermission("sc.spawn")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			if (getConfig().getConfigurationSection("spawn") == null) {
@@ -347,8 +321,7 @@ public class CommandHandler implements CommandExecutor {
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("poke")) {
 			if (!sender.hasPermission("sc.poke")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -365,8 +338,7 @@ public class CommandHandler implements CommandExecutor {
 				}
 				p.sendMessage(ChatColor.GRAY + "You have poked " + ChatColor.GRAY + targetPlayer.getDisplayName());
 				targetPlayer.sendMessage(ChatColor.RED + "POKE!!!");
-				targetPlayer.sendMessage(ChatColor.GRAY + "You have been poked by " + ChatColor.GRAY
-						+ p.getDisplayName());
+				targetPlayer.sendMessage(ChatColor.GRAY + "You have been poked by " + ChatColor.GRAY + p.getDisplayName());
 				return true;
 			}
 
@@ -377,8 +349,7 @@ public class CommandHandler implements CommandExecutor {
 			// nickname command
 		} else if (cmd.getName().equalsIgnoreCase("nick")) {
 			if (!sender.hasPermission("sc.nick")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			if (args.length == 0) {
@@ -401,8 +372,7 @@ public class CommandHandler implements CommandExecutor {
 		// help command
 		if (cmd.getName().equalsIgnoreCase("help")) {
 			if (!sender.hasPermission("sc.help")) {
-				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]"
-						+ ChatColor.RED + "You dont have acsses to this command");
+				sender.sendMessage(ChatColor.GRAY + "[" + ChatColor.GOLD + "AquilaMc" + ChatColor.GRAY + "]" + ChatColor.RED + "You dont have acsses to this command");
 				return true;
 			}
 			p.sendMessage(ChatColor.YELLOW + "Help & Information:");
@@ -425,8 +395,7 @@ public class CommandHandler implements CommandExecutor {
 			p.sendMessage(ChatColor.YELLOW + "/sun - Sets world weather to sunny ");
 			p.sendMessage(ChatColor.YELLOW + "/rain - Sets world weather to rain");
 			p.sendMessage(ChatColor.YELLOW + "/nick - Sets a nicknames to a player");
-			p.sendMessage(ChatColor.YELLOW
-					+ "/poke - Poke the  specifyed player to tell the player your trying to speak to them.");
+			p.sendMessage(ChatColor.YELLOW + "/poke - Poke the  specifyed player to tell the player your trying to speak to them.");
 			p.sendMessage(ChatColor.YELLOW + "/v - Vanishes u from players");
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("vanish")) {
@@ -462,12 +431,12 @@ public class CommandHandler implements CommandExecutor {
 			}
 			int mode;
 			try {
-			mode = Integer.parseInt(args[0]);
+				mode = Integer.parseInt(args[0]);
 			} catch (NumberFormatException exc) {
 				sender.sendMessage(ChatColor.DARK_RED + "" + args[0] + ChatColor.RED + " Is Not A Available Gamemode");
 				return;
 			}
-			Player p = (Player)sender;
+			Player p = (Player) sender;
 			if (mode == 0) {
 				p.setGameMode(GameMode.SURVIVAL);
 				p.sendMessage(ChatColor.GRAY + "You GameMode Has Been Set To" + ChatColor.DARK_GREEN + " Survival");
@@ -481,7 +450,13 @@ public class CommandHandler implements CommandExecutor {
 				p.sendMessage(ChatColor.DARK_RED + "" + mode + ChatColor.RED + " Is Not A Available Gamemode");
 			}
 		} else if (args.length == 2) {
-			int mode = Integer.parseInt(args[0]);
+			int mode;
+			try {
+				mode = Integer.parseInt(args[0]);
+			} catch (NumberFormatException exc) {
+				sender.sendMessage(ChatColor.DARK_RED + "" + args[0] + ChatColor.RED + " Is Not A Available Gamemode");
+				return;
+			}
 			String targetPlayer = args[1];
 			if (Bukkit.getPlayer(targetPlayer) != null) {
 				Player targetP = Bukkit.getPlayer(targetPlayer);

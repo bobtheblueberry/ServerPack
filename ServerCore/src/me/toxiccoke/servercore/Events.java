@@ -32,8 +32,8 @@ public class Events implements Listener {
 				.build());
 		fm.setPower(3);
 		f.setFireworkMeta(fm);
-
 	}
+	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		e.setQuitMessage(null);
