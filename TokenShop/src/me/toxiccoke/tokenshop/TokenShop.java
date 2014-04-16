@@ -16,7 +16,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.inventory.Inventory;
@@ -206,20 +205,6 @@ public class TokenShop extends JavaPlugin implements Listener {
 		if (e.getRightClicked().getType() == EntityType.VILLAGER) {
 			e.setCancelled(true);
 			p.chat("/shop");
-		}
-	}
-
-	@EventHandler
-	public void onInteract(PlayerInteractEvent e) {
-		Player p = e.getPlayer();
-		if (p.getItemInHand() == null) return;
-		ItemStack itemInHand = p.getItemInHand();
-		if (itemInHand.getType() == Material.LEATHER_HELMET) {
-			e.setCancelled(true);
-			p.chat("/hatshop");
-		} else if (itemInHand.getType() == Material.BONE) {
-			e.setCancelled(true);
-			p.chat("/petshop");
 		}
 	}
 
