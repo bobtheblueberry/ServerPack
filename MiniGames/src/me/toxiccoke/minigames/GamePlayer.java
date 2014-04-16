@@ -35,6 +35,7 @@ public abstract class GamePlayer {
 		// remove potions
 		for (PotionEffect t : p.getActivePotionEffects())
 			p.removePotionEffect(t.getType());
+		
 	}
 
 	public void leaveGame() {
@@ -68,7 +69,7 @@ public abstract class GamePlayer {
 	public Player getPlayer() {
 		return Bukkit.getPlayer(player);
 	}
-
+	
 	public void startGame() {}
 
 	public boolean equals(Object o) {

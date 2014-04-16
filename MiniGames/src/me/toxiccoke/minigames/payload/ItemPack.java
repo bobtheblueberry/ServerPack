@@ -94,7 +94,7 @@ public class ItemPack {
 			item.remove();
 		}
 		ItemStack stack = new ItemStack(getMaterial(), stackSize, getData());
-		item = getLocation().getWorld().dropItemNaturally(location, stack);
+		item = getLocation().getWorld().dropItem(location, stack);
 		updatedPosition = false;
 		respawning = false;
 	}

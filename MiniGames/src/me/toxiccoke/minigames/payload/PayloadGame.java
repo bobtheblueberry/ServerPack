@@ -28,7 +28,9 @@ import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -47,8 +49,9 @@ import org.bukkit.util.Vector;
 
 public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
+	private static final int			GAME_TIME		= 10;																			// minutes
 	private static final double			MINECART_SPEED	= 0.1;
-	private static final int			ENDGAME_TIME	= 10;
+	private static final int			ENDGAME_TIME	= 10;																			// seconds
 	protected LinkedList<PayloadPlayer>	players;
 	private boolean						isStarted;
 	private PayloadTeam					red, blue;
@@ -61,6 +64,9 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	protected boolean[]					checkedpoints;
 	private String						bossBarTitle	= ChatColor.GREEN + "Payload Cart " + ChatColor.GRAY + "» " + ChatColor.YELLOW;
 	private SetupTimer					setup;
+	private EndofGameTimer				EOGTimer;
+	protected LinkedList<Bullet>		bullets;
+	private BulletUpdater				bulletUpdater;
 
 	// blu spawn 1, blu spawn 2, red spawn
 
@@ -78,10 +84,14 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		blue = new PayloadTeam(this, TeamType.BLUE);
 		initScoreboard();
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, new MinecartUpdater(this), 10, 5);
+		bullets = new LinkedList<Bullet>();
 	}
 
 	@Override
-	public boolean allowDamage(GamePlayer gp) {
+	public boolean allowDamage(GamePlayer gp, EntityDamageByEntityEvent event) {
+		Entity e = event.getEntity();
+		if (e instanceof CustomDamager)
+			return true;
 		return false;
 	}
 
@@ -103,6 +113,10 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	@Override
 	public boolean canPlayerHunger(GamePlayer player) {
 		return false;
+	}
+	
+	public void bowShoot(GamePlayer player, EntityShootBowEvent event) {
+		event.setCancelled(true);
 	}
 
 	private void checkNoPlayers() {
@@ -187,12 +201,16 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean isJoinable() {
-		return spawnLocations.size() > 2 && lobbyLocation != null;
+		return spawnLocations.size() > 2 && lobbyLocation != null && EOGTimer == null;
 	}
 
 	@Override
 	public boolean join(final Player p) {
-		PayloadPlayer plr = new PayloadPlayer(this, p, (players.size() == 0) ? blue : getTeam(), PayloadClass.PYRO);
+		if (EOGTimer != null) {
+			p.sendMessage(ChatColor.GOLD + "Wait for round to finish before joining");
+			return false;
+		}
+		PayloadPlayer plr = new PayloadPlayer(this, p, (players.size() == 0) ? blue : getTeam(), PayloadClass.HEAVY);
 		players.add(plr);
 		joinPlayer(plr);
 		if (!isStarted && players.size() == minplayers)
@@ -219,12 +237,12 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	private void attackLost() {
 		notifyWinningTeam(TeamType.RED);
 		blue.lost = true;
-		new EndofGameTimer(this, ENDGAME_TIME);
+		EOGTimer = new EndofGameTimer(this, ENDGAME_TIME);
 	}
 
 	private void endGame(int seconds) {
 		endTimer.cancelTimer();
-		new EndofGameTimer(this, ENDGAME_TIME);
+		EOGTimer = new EndofGameTimer(this, ENDGAME_TIME);
 	}
 
 	private void notifyWinningTeam(TeamType t) {
@@ -307,6 +325,11 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			endTimer.cancelTimer();
 		if (itemRefresher != null)
 			itemRefresher.cancel();
+		if (bulletUpdater != null)
+			bulletUpdater.cancel();
+		EOGTimer = null;
+		bulletUpdater = null;
+		bullets.clear();
 		itemRefresher = null;
 		endTimer = null;
 		red.lost = false;
@@ -359,18 +382,20 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	protected void spawn(PayloadPlayer p) {
 		if (spawnLocations.size() < 3)
 			return;
-		if (p.getTeam().team == TeamType.BLUE)
+		//FIXME Test change
+	//	if (p.getTeam().team == TeamType.BLUE)
 			TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(0));
-		else TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(2));
+//		else TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(2));
 	}
 
 	private void startGame() {
 		isStarted = true;
 		sendPlayersMessage(ChatColor.GOLD + "Game Started");
 		initMinecart();
-		endTimer = new GameEndTimer(this, 5);
+		endTimer = new GameEndTimer(this, GAME_TIME);
 		sendPlayersMessage(ChatColor.GREEN + "Setup ends in 60 seconds");
 		setup = new SetupTimer(this, 60);
+		bulletUpdater = new BulletUpdater(this);
 		// init health/ammo kits
 		healthitems = new ItemPack[healthpacks.size()];
 		ammoitems = new ItemPack[ammopacks.size()];
@@ -455,30 +480,34 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			player.setAmmo(player.getAmmo() + 1);
 	}
 
+	Location	oldMinecartLocation;
+
 	protected void updateCart() {
 		if (!isStarted || minecart == null || blue.lost)
 			return;
 		if (setup != null && setup.count > 0)
 			return;
 		ArrayList<PayloadPlayer> list = getBluPlayersWithinDistance(minecart.getLocation(), 3);
+		double dist = list.size();
 		for (PayloadPlayer p : list)
 			cartTick(p);
 		int h = (int) (trackulator.getCartPosition(minecart) * 200);
 		for (PayloadPlayer p : players)
 			BarAPI.setBarHealth(p.getPlayer(), h);
-		double dist = list.size();
-		Vector v;
+
+		Vector v = minecart.getVelocity();
 		if (dist > 0)
 			v = trackulator.getVector(minecart.getLocation(), dist * MINECART_SPEED);
-		else {
-			if (trackulator.headingTowardsEnd(minecart))
-				v = trackulator.getVector(minecart.getLocation(), minecart.getVelocity().length() * 0.5);
-			else return;
-		}
-		if (v == null)
-			return;
+		else if (trackulator.headingTowardsEnd(minecart))
+			v = trackulator.getVector(minecart.getLocation(), minecart.getVelocity().length() * 0.5);
+
+		// Hack fix to keep minecarts from being blocked by players
+		if (list.size() > 0 && oldMinecartLocation != null && minecart.getLocation().equals(oldMinecartLocation))
+			minecart.teleport(minecart.getLocation().add(v.clone().multiply(5)), TeleportCause.PLUGIN);
 
 		minecart.setVelocity(v);
+		oldMinecartLocation = minecart.getLocation();
+
 	}
 
 	protected void checkpoint(Location l) {
@@ -501,12 +530,6 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		if (event.getVehicle() != minecart)
 			return;
 		event.setCancelled(true);
-		event.setCollisionCancelled(true);
-		event.setPickupCancelled(true);
-		// Hack fix
-		if (trackulator.isCloserToEnd(event.getEntity().getLocation(), minecart.getLocation()))
-			minecart.teleport(minecart.getLocation().add(minecart.getVelocity().multiply(2)), TeleportCause.PLUGIN);
-		
 	}
 
 	public void vehicleCreated(VehicleCreateEvent event) {
@@ -530,12 +553,12 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		if (event.getVehicle() != minecart)
 			return;
 	}
-	
+
 	public void vehicleMove(VehicleMoveEvent event) {
 		if (event.getVehicle() != minecart)
 			return;
 	}
-	
+
 	public boolean canPlayerHealFromHunger(GamePlayer p) {
 		return false;
 	}
@@ -641,6 +664,10 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	private void changeClass(PayloadPlayer player) {
 		player.getPlayer().getInventory().clear();
 		Player p = player.getPlayer();
+		if (player.classChange)
+			player.playerClass = player.tempClass;
+		player.tempClass = null;
+		player.classChange = false;
 		p.sendMessage(ChatColor.GREEN + "You are now playing as " + player.playerClass.toString().substring(0, 1) + player.playerClass.toString().substring(1).toLowerCase());
 		if (player.playerClass == PayloadClass.PYRO) {
 			p.getInventory().addItem(
@@ -659,7 +686,6 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		}
 
 		p.getInventory().setItem(8, getItem(Material.COMMAND, ChatColor.YELLOW + "Change Class", ChatColor.GREEN + "Get Classy"));
-		player.classChange = false;
 	}
 
 	public boolean canPlayerTakeDamage(PayloadPlayer gp) {

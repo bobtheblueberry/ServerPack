@@ -25,6 +25,7 @@ import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -164,6 +165,16 @@ public class PayloadEventHandler implements Listener {
 					ClassWeapons.flamethrower(pp);
 				else ClassWeapons.airblast(pp);
 			}
+		} else if (pp.playerClass == PayloadClass.HEAVY) {
+			if (itemInHand.getType() == Material.BOW) {
+				if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
+					ClassWeapons.minigun(pp);
+			}
+		} else if (pp.playerClass == PayloadClass.SCOUT) {
+			if (itemInHand.getType() == Material.BOW) {
+				if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
+					ClassWeapons.scattergun(pp);
+			}
 		}
 	}
 
@@ -261,7 +272,7 @@ public class PayloadEventHandler implements Listener {
 		if (game != null)
 			game.vehicleUpdate(event);
 	}
-	
+
 	@EventHandler
 	public void onVehicleMove(VehicleMoveEvent event) {
 		Location vehicleLoc = event.getVehicle().getLocation();
@@ -281,6 +292,16 @@ public class PayloadEventHandler implements Listener {
 		PayloadPlayer p = getPlayer(event.getPlayer());
 		if (p != null)
 			p.game.pickupItem(p, event);
+	}
+
+	@EventHandler
+	public void entityShootBow(EntityShootBowEvent event) {
+		if (event.getEntity() == null || !(event.getEntity() instanceof Player))
+			return;
+		PayloadPlayer player = getPlayer((Player) event.getEntity());
+		if (player == null)
+			return;
+		player.game.bowShoot(player, event);
 	}
 
 	private void tpPlayer(final Player p, final int i, final Minetrackulator t) {

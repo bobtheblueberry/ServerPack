@@ -90,10 +90,11 @@ public class ClassMenu implements CommandExecutor, Listener {
 		else if (m == Material.BOW)
 			cl = PayloadClass.SNIPER;
 		if (cl == p.playerClass || cl == null) {
+			p.classChange = false;
 			closeInv(player);
 			return;
 		}
-		p.playerClass = cl;
+		p.tempClass = cl;
 		p.classChange = true;
 		if (!p.dealtDmg)
 			p.respawn();

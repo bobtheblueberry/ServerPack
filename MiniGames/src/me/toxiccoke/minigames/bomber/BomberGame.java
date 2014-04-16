@@ -29,6 +29,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -58,7 +59,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	}
 
 	@Override
-	public boolean allowDamage(GamePlayer gp) {
+	public boolean allowDamage(GamePlayer gp, EntityDamageByEntityEvent event) {
 		if (!isStarted)
 			gp.getPlayer().sendMessage(ChatColor.GOLD + "You cannot attack here!");
 		return isStarted;

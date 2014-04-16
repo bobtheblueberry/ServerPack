@@ -21,6 +21,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -113,6 +114,10 @@ public abstract class GameWorld<P extends GamePlayer> {
 	public void onPlayerInteract(GamePlayer p, PlayerInteractEvent e) {}
 
 	public void projectileHit(GamePlayer p, ProjectileHitEvent event) {}
+	
+	public World getWorld() {
+		return (pasteLocation == null) ? null : pasteLocation.getWorld();
+	}
 
 	protected YamlConfiguration getSaveYML() {
 		YamlConfiguration yml = new YamlConfiguration();
@@ -370,7 +375,7 @@ public abstract class GameWorld<P extends GamePlayer> {
 
 	public abstract void notifyLeaveCommand(GamePlayer gp);
 
-	public abstract boolean allowDamage(GamePlayer gp);
+	public abstract boolean allowDamage(GamePlayer gp, EntityDamageByEntityEvent event);
 
 	public Bounds getBounds() {
 		if (bounds1 == null || bounds2 == null)

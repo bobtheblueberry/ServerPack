@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public class ClassWeapons {
@@ -63,6 +66,26 @@ public class ClassWeapons {
 		}
 	}
 
+	public static void minigun(PayloadPlayer pl) {
+		if (!takeAmmo(pl, 1))
+			return;
+		pl.dealtDmg = true;
+		Player p = pl.getPlayer();
+		Location l = p.getLocation().add(0, 1, 0);
+		ItemStack stack = new ItemStack(Material.ANVIL);
+		Item item = p.getWorld().dropItem(l, stack);
+		Vector velocity = p.getLocation().getDirection();
+		velocity.add(new Vector((Math.random() - 0.5) / 8, (Math.random() - 0.5) / 8, (Math.random() - 0.5) / 8));
+		item.setVelocity(velocity.multiply(2));
+		pl.game.bullets.add(new Bullet(pl, item, 1));
+	}
+
+	public static void scattergun(PayloadPlayer pl) {
+		if (!takeAmmo(pl, 1))
+			return;
+		pl.dealtDmg = true;
+	}
+
 	private static ArrayList<PayloadPlayer> getPlayersWithinDistance(PayloadGame game, Location l, double dist) {
 		ArrayList<PayloadPlayer> list = new ArrayList<PayloadPlayer>();
 		for (PayloadPlayer player : game.players) {
@@ -75,12 +98,16 @@ public class ClassWeapons {
 
 	private static boolean takeAmmo(PayloadPlayer p, int ammo) {
 		int a = p.getAmmo();
-		if (a >= ammo) 
+		if (a >= ammo)
 			p.setAmmo(a - ammo);
 		else {
 			p.getPlayer().sendMessage(ChatColor.GREEN + "Not Enough Ammunition!");
 			return false;
 		}
 		return true;
+	}
+	
+	public static void damage(PayloadPlayer damager, PayloadPlayer damagee, float damage) {
+		CustomDamager.damage(damager, damagee, damage);
 	}
 }

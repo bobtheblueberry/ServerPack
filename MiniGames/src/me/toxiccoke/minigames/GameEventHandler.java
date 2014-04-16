@@ -237,10 +237,10 @@ public class GameEventHandler implements Listener {
 					if (gp.player.equals(at.getName())) {
 						// Don't let the player attack if they are in the game
 						// lobby
-						if (!m.allowDamage(gp)) {
+						if (!m.allowDamage(gp, event)) {
 							event.setCancelled(true);
-							break main;
 						}
+						break main;
 					}
 		if (!(victim instanceof Player))
 			return;
