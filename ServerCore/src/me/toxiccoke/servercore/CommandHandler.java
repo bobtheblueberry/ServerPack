@@ -139,7 +139,7 @@ public class CommandHandler implements CommandExecutor {
 
 			target.kickPlayer(ChatColor.RED + "You have been banned!\n" + reason);
 			BanList b = Bukkit.getServer().getBanList(org.bukkit.BanList.Type.UUID);
-			
+
 			b.addBan(target.getUniqueId().toString(), reason, null, sender.getName());
 			Bukkit.getServer().savePlayers();// Save ban list
 			Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Player " + target.getName() + " has been banned by " + ChatColor.GRAY + sender.getName() + "!");
@@ -297,6 +297,9 @@ public class CommandHandler implements CommandExecutor {
 			getConfig().set("spawn.x", p.getLocation().getX());
 			getConfig().set("spawn.y", p.getLocation().getY());
 			getConfig().set("spawn.z", p.getLocation().getZ());
+			getConfig().set("spawn.yaw", p.getLocation().getYaw());
+			getConfig().set("spawn.pitch", p.getLocation().getPitch());
+
 			p.getWorld().setSpawnLocation(p.getLocation().getBlockX(), p.getLocation().getBlockY(), p.getLocation().getBlockZ());
 			Commands.plugin.saveConfig();
 			p.sendMessage(ChatColor.GRAY + "Spawn set!");
@@ -314,7 +317,9 @@ public class CommandHandler implements CommandExecutor {
 			double x = getConfig().getDouble("spawn.x");
 			double y = getConfig().getDouble("spawn.y");
 			double z = getConfig().getDouble("spawn.z");
-			Location l = new Location(w, x, y, z);
+			double yaw = getConfig().getDouble("spawn.yaw");
+			double pitch = getConfig().getDouble("spawn.pitch");
+			Location l = new Location(w, x, y, z, (float) yaw, (float) pitch);
 			addBack(p);
 			teleportAdvanced(p, l);
 			p.sendMessage(ChatColor.GRAY + "Welcome to the spawn!");
