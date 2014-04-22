@@ -26,6 +26,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -58,7 +59,7 @@ public class PayloadEventHandler implements Listener {
 		return null;
 	}
 
-	private PayloadPlayer getPlayer(Player p) {
+	protected static PayloadPlayer getPlayer(Player p) {
 		for (GameWorld<?> m : GameLobby.lobby.games) {
 			if (!(m instanceof PayloadGame))
 				continue;
@@ -159,21 +160,23 @@ public class PayloadEventHandler implements Listener {
 			pp.getPlayer().chat("/class");
 			return;
 		}
-		if (pp.playerClass == PayloadClass.PYRO) {
+		if (pp.getPlayerClass() == PayloadClass.PYRO) {
 			if (itemInHand.getType() == Material.FIRE) {
 				if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
 					ClassWeapons.flamethrower(pp);
 				else ClassWeapons.airblast(pp);
 			}
-		} else if (pp.playerClass == PayloadClass.HEAVY) {
-			if (itemInHand.getType() == Material.BOW) {
-				if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
-					ClassWeapons.minigun(pp);
+		} else if (pp.getPlayerClass() == PayloadClass.SOLDIER) {
+			if (itemInHand.getType() == Material.HOPPER && pp.weaponTimer.canFire()) {
+				if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+					ClassWeapons.rocket(pp);
+					pp.weaponTimer.fire();
+				}
 			}
-		} else if (pp.playerClass == PayloadClass.SCOUT) {
-			if (itemInHand.getType() == Material.BOW) {
+		} else if (pp.getPlayerClass() == PayloadClass.MEDIC) {
+			if (itemInHand.getType() == Material.FISHING_ROD) {
 				if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
-					ClassWeapons.scattergun(pp);
+					;// FIXME MediGun
 			}
 		}
 	}
@@ -282,7 +285,7 @@ public class PayloadEventHandler implements Listener {
 	}
 
 	@EventHandler
-	public void onPickup(PlayerPickupItemEvent event) {
+	public void onItemPickup(PlayerPickupItemEvent event) {
 		Item i = event.getItem();
 		int x = i.getLocation().getBlockX();
 		int z = i.getLocation().getBlockZ();
@@ -292,6 +295,17 @@ public class PayloadEventHandler implements Listener {
 		PayloadPlayer p = getPlayer(event.getPlayer());
 		if (p != null)
 			p.game.pickupItem(p, event);
+	}
+
+	@EventHandler
+	public void onItemDrop(PlayerDropItemEvent e) {
+		Player p = e.getPlayer();
+		if (p == null)
+			return;
+		PayloadPlayer pl = getPlayer(p);
+		if (pl == null)
+			return;
+		pl.game.dropItem(pl, e);
 	}
 
 	@EventHandler
@@ -319,4 +333,5 @@ public class PayloadEventHandler implements Listener {
 			}, 1);
 		else p.sendMessage(ChatColor.BLUE + "[Rails] Finished");
 	}
+
 }

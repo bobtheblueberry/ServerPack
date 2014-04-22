@@ -1,7 +1,13 @@
 package me.toxiccoke.minigames.payload;
 
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
+import org.bukkit.FireworkEffect.Type;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.util.Vector;
 
 public class Bullet {
@@ -29,6 +35,7 @@ public class Bullet {
 		Vector itemv = item.getVelocity();
 		double len = itemv.length();
 		PayloadPlayer p;
+		boolean pCollide = false;
 		Location l = item.getLocation();
 		if (len > 1) {
 			double tot = 1 + ((int) len);
@@ -37,16 +44,20 @@ public class Bullet {
 				Vector v = new Vector(itemv.getX() * m, itemv.getY() * m, itemv.getZ() * m);
 				if ((p = collisionCheck(l.clone().add(v), game)) != null) {
 					dead = true;
+					pCollide  = true;
 					collide(p);
 				}
 			}
 		} else {
 			if ((p = collisionCheck(l, game)) != null) {
 				dead = true;
+				pCollide = true;
 				collide(p);
 			}
 		}
-		if (dead || (future != null && !compareLocations(future, item.getLocation())) || len < 0.5) {
+		if (pCollide || (future != null && !compareLocations(future, item.getLocation())) || len < 0.5) {
+			if (!pCollide)
+				surfaceCollisionFirework(item.getLocation());
 			dead = true;
 			item.remove();
 		}
@@ -64,7 +75,24 @@ public class Bullet {
 	private void collide(PayloadPlayer p) {
 		if (p.team.team == shooter.team.team)
 			return;
+		playerCollisionFirework(p.getPlayer());
 		ClassWeapons.damage(shooter, p, damage);
+	}
+
+	private void playerCollisionFirework(Player p) {
+		Firework f = (Firework) p.getWorld().spawn(p.getLocation(), Firework.class);
+		FireworkMeta fm = f.getFireworkMeta();
+		fm.addEffect(FireworkEffect.builder().flicker(false).trail(false).with(Type.BURST).withColor(Color.RED).withFade(Color.ORANGE).build());
+		 fm.setPower(2);
+		f.setFireworkMeta(fm);
+	}
+
+	private void surfaceCollisionFirework(Location l ) {
+		Firework f = (Firework) l.getWorld().spawn(l, Firework.class);
+		FireworkMeta fm = f.getFireworkMeta();
+		fm.addEffect(FireworkEffect.builder().flicker(false).trail(false).with(Type.BURST).withColor(Color.RED).withFade(Color.ORANGE).build());
+		 fm.setPower(1);
+		f.setFireworkMeta(fm);
 	}
 
 	private PayloadPlayer collisionCheck(Location l, PayloadGame game) {

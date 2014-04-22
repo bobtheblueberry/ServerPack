@@ -9,19 +9,32 @@ import org.bukkit.inventory.ItemStack;
 
 public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 
-	PayloadTeam		team;
-	PayloadClass	playerClass;
-	PayloadClass	tempClass;
-	PayloadGame		game;
-	boolean			respawning;
-	boolean			classChange;
-	boolean			dealtDmg;
+	PayloadTeam				team;
+	private PayloadClass	playerClass;
+	PayloadClass			tempClass;
+	PayloadGame				game;
+	boolean					respawning;
+	boolean					classChange;
+	boolean					dealtDmg;
+	WeaponTimeout			weaponTimer;
 
 	public PayloadPlayer(PayloadGame g, Player p, PayloadTeam t, PayloadClass cl) {
 		super(p);
 		this.game = g;
 		this.team = t;
-		this.playerClass = cl;
+		setPlayerClass(cl);
+	}
+
+	public void setPlayerClass(PayloadClass cl) {
+		playerClass = cl;
+		weaponTimer = null;
+		if (cl == PayloadClass.SOLDIER) {
+			weaponTimer = new WeaponTimeout(this, 5, 3);
+		}
+	}
+
+	public PayloadClass getPlayerClass() {
+		return playerClass;
 	}
 
 	@Override

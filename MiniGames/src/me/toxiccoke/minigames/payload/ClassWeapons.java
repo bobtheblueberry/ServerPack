@@ -66,7 +66,7 @@ public class ClassWeapons {
 		}
 	}
 
-	public static void minigun(PayloadPlayer pl) {
+	public static void rocket(PayloadPlayer pl) {
 		if (!takeAmmo(pl, 1))
 			return;
 		pl.dealtDmg = true;
@@ -77,13 +77,7 @@ public class ClassWeapons {
 		Vector velocity = p.getLocation().getDirection();
 		velocity.add(new Vector((Math.random() - 0.5) / 8, (Math.random() - 0.5) / 8, (Math.random() - 0.5) / 8));
 		item.setVelocity(velocity.multiply(2));
-		pl.game.bullets.add(new Bullet(pl, item, 1));
-	}
-
-	public static void scattergun(PayloadPlayer pl) {
-		if (!takeAmmo(pl, 1))
-			return;
-		pl.dealtDmg = true;
+		pl.game.bullets.add(new Bullet(pl, item, 8));
 	}
 
 	private static ArrayList<PayloadPlayer> getPlayersWithinDistance(PayloadGame game, Location l, double dist) {

@@ -72,7 +72,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	private boolean canDestroy(Material m, Location l) {
 
-		if (m == Material.LEAVES || m == Material.LEAVES_2 || m == Material.GLOWSTONE || m == Material.WOOL)
+		if (m == Material.LEAVES || m == Material.LEAVES_2 || m == Material.GLOWSTONE || m == Material.WOOL || m == Material.LADDER)
 			return false;
 		boolean bounds = true;
 		Bounds bound = getBounds();

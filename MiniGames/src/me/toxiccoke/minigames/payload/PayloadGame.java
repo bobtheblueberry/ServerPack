@@ -33,6 +33,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleCreateEvent;
@@ -114,7 +115,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	public boolean canPlayerHunger(GamePlayer player) {
 		return false;
 	}
-	
+
 	public void bowShoot(GamePlayer player, EntityShootBowEvent event) {
 		event.setCancelled(true);
 	}
@@ -210,7 +211,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			p.sendMessage(ChatColor.GOLD + "Wait for round to finish before joining");
 			return false;
 		}
-		PayloadPlayer plr = new PayloadPlayer(this, p, (players.size() == 0) ? blue : getTeam(), PayloadClass.HEAVY);
+		PayloadPlayer plr = new PayloadPlayer(this, p, (players.size() == 0) ? blue : getTeam(), PayloadClass.SOLDIER);
 		players.add(plr);
 		joinPlayer(plr);
 		if (!isStarted && players.size() == minplayers)
@@ -287,6 +288,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public void notifyDeath(GamePlayer gp, Entity damager, DamageCause cause) {
+
 		death(gp);
 	}
 
@@ -382,10 +384,11 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	protected void spawn(PayloadPlayer p) {
 		if (spawnLocations.size() < 3)
 			return;
-		//FIXME Test change
-	//	if (p.getTeam().team == TeamType.BLUE)
-			TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(0));
-//		else TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(2));
+		// FIXME Test change
+		// if (p.getTeam().team == TeamType.BLUE)
+		TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(0));
+		// else TokenShop.teleportAdvanced(p.getPlayer(),
+		// spawnLocations.get(2));
 	}
 
 	private void startGame() {
@@ -665,24 +668,24 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		player.getPlayer().getInventory().clear();
 		Player p = player.getPlayer();
 		if (player.classChange)
-			player.playerClass = player.tempClass;
+			player.setPlayerClass(player.tempClass);
 		player.tempClass = null;
 		player.classChange = false;
-		p.sendMessage(ChatColor.GREEN + "You are now playing as " + player.playerClass.toString().substring(0, 1) + player.playerClass.toString().substring(1).toLowerCase());
-		if (player.playerClass == PayloadClass.PYRO) {
+		p.sendMessage(ChatColor.GREEN + "You are now playing as " + player.getPlayerClass().toString().substring(0, 1) + player.getPlayerClass().toString().substring(1).toLowerCase());
+		if (player.getPlayerClass() == PayloadClass.PYRO) {
 			p.getInventory().addItem(
 					getItem(Material.FIRE, ChatColor.RED + "Flame Thrower", ChatColor.RED + "Left Click: Airblast", ChatColor.RED + "Right Click: Burn nearby enemies", ChatColor.GRAY
 							+ "10 Ammo per second"));
-		} else if (player.playerClass == PayloadClass.ENGINEER) {
+		} else if (player.getPlayerClass() == PayloadClass.ENGINEER) {
 			p.getInventory().addItem(getItem(Material.DISPENSER, ChatColor.RED + "Sentry Gun", ChatColor.GREEN + "20 Arrows per Second"));
-		} else if (player.playerClass == PayloadClass.MEDIC) {
+		} else if (player.getPlayerClass() == PayloadClass.MEDIC) {
 			p.getInventory().addItem(getItem(Material.FISHING_ROD, ChatColor.RED + "Medi-Gun", ChatColor.GREEN + "1/2 Heart per Second"));
-		} else if (player.playerClass == PayloadClass.HEAVY) {
-			p.getInventory().addItem(getItem(Material.BOW, ChatColor.RED + "Sasha", ChatColor.GREEN + "Fires 60 Rounds per Second"));
-		} else if (player.playerClass == PayloadClass.SNIPER) {
+		} else if (player.getPlayerClass() == PayloadClass.SOLDIER) {
+			p.getInventory().addItem(getItem(Material.HOPPER, ChatColor.RED + "Rocket Launcher", ChatColor.GREEN + "Blast 'em"));
+		} else if (player.getPlayerClass() == PayloadClass.SNIPER) {
 			p.getInventory().addItem(getItem(Material.BOW, ChatColor.RED + "Sniper Rifle", ChatColor.GREEN + "Deals 20 Damage on head shots"));
-		} else if (player.playerClass == PayloadClass.SCOUT) {
-			p.getInventory().addItem(getItem(Material.RED_ROSE, 2, ChatColor.RED + "Scattergun", ChatColor.GREEN + "Lame"));
+		} else if (player.getPlayerClass() == PayloadClass.SCOUT) {
+			p.getInventory().addItem(getItem(Material.DIAMOND_SPADE, 2, ChatColor.RED + "Scout Shovel", ChatColor.GREEN + "Lame"));
 		}
 
 		p.getInventory().setItem(8, getItem(Material.COMMAND, ChatColor.YELLOW + "Change Class", ChatColor.GREEN + "Get Classy"));
@@ -708,5 +711,10 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		if (event.getEntity() != minecart)
 			return;
 		defendLost();
+	}
+
+	public void dropItem(PayloadPlayer pl, PlayerDropItemEvent e) {
+		// FIXME: Call for medic
+		e.setCancelled(true);
 	}
 }

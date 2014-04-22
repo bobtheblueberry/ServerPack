@@ -20,7 +20,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -261,7 +260,7 @@ public class GameEventHandler implements Listener {
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (event.isCancelled())
 			return;
-		if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.PROJECTILE || event.getCause() == DamageCause.ENTITY_EXPLOSION)
+		if (event instanceof EntityDamageByEntityEvent)
 			return;// handled by
 					// EntityDamageByEntityEvent
 		Entity t = event.getEntity();

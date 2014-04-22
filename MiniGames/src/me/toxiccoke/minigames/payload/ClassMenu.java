@@ -34,7 +34,9 @@ public class ClassMenu implements CommandExecutor, Listener {
 		if (!command.getName().equalsIgnoreCase("class"))
 			return false;
 		Player p = (Player) sender;
-		p.openInventory(getMenu());
+		PayloadPlayer plr = PayloadEventHandler.getPlayer(p);//make sure they are in the game
+		if (plr != null)
+			p.openInventory(getMenu());
 		return true;
 	}
 
@@ -82,14 +84,14 @@ public class ClassMenu implements CommandExecutor, Listener {
 		else if (m == Material.FIRE)
 			cl = PayloadClass.PYRO;
 		else if (m == Material.ANVIL)
-			cl = PayloadClass.HEAVY;
+			cl = PayloadClass.SOLDIER;
 		else if (m == Material.IRON_BLOCK)
 			cl = PayloadClass.ENGINEER;
 		else if (m == Material.GOLDEN_APPLE)
 			cl = PayloadClass.MEDIC;
 		else if (m == Material.BOW)
 			cl = PayloadClass.SNIPER;
-		if (cl == p.playerClass || cl == null) {
+		if (cl == p.getPlayerClass() || cl == null) {
 			p.classChange = false;
 			closeInv(player);
 			return;
@@ -127,7 +129,7 @@ public class ClassMenu implements CommandExecutor, Listener {
 		// scout,#soldier,pyro #demo,heavy,engie medic,sniper,#spy
 		i.addItem(createItem(Material.RED_ROSE, 1, 2, ChatColor.GREEN + "Scout", "Waste 'em"));
 		i.addItem(createItem(Material.FIRE, 1, 0, ChatColor.GREEN + "Pyro", "Burn 'em up"));
-		i.addItem(createItem(Material.ANVIL, 1, 0, ChatColor.GREEN + "Heavy", "Destroy tiny baby men"));
+		i.addItem(createItem(Material.ANVIL, 1, 0, ChatColor.GREEN + "Soldier", "Destroy tiny baby men"));
 		i.addItem(createItem(Material.IRON_BLOCK, 1, 0, ChatColor.GREEN + "Engineer", "Build Sentries"));
 		i.addItem(createItem(Material.GOLDEN_APPLE, 1, 0, ChatColor.GREEN + "Medic", "Heal 'em"));
 		i.addItem(createItem(Material.BOW, 1, 0, ChatColor.GREEN + "Sniper", "Snipe 'em"));

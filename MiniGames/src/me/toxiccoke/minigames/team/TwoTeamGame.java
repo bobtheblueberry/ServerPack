@@ -117,9 +117,9 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 
 	protected void removePlayerFromScoreboard(E plr) {
 		if (plr.getTeam().team == TeamType.BLUE) {
-			blueTeam.removePlayer(Bukkit.getOfflinePlayer(plr.getName()));
+			blueTeam.removePlayer(plr.getPlayer());
 		} else {
-			redTeam.removePlayer(Bukkit.getOfflinePlayer(plr.getName()));
+			redTeam.removePlayer(plr.getPlayer());
 		}
 	}
 
