@@ -1,13 +1,13 @@
 package me.toxiccoke.minigames.payload;
 
+import me.toxiccoke.minigames.team.TeamType;
+import me.toxiccoke.minigames.util.FireworkUtils;
+
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
-import org.bukkit.FireworkEffect.Type;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.util.Vector;
 
 public class Bullet {
@@ -80,19 +80,25 @@ public class Bullet {
 	}
 
 	private void playerCollisionFirework(Player p) {
-		Firework f = (Firework) p.getWorld().spawn(p.getLocation(), Firework.class);
-		FireworkMeta fm = f.getFireworkMeta();
-		fm.addEffect(FireworkEffect.builder().flicker(false).trail(false).with(Type.BURST).withColor(Color.RED).withFade(Color.ORANGE).build());
-		 fm.setPower(2);
-		f.setFireworkMeta(fm);
+		FireworkEffect ef = FireworkEffect
+				.builder()
+				.with(FireworkEffect.Type.BURST)
+				.flicker(false)
+				.trail(false)
+				.withColor((shooter.team.team == TeamType.BLUE) ? Color.BLUE : Color.RED)
+				.withFade((shooter.team.team == TeamType.BLUE) ? Color.BLACK : Color.MAROON).build();
+		FireworkUtils.playFirework(item.getLocation(), ef);
 	}
 
 	private void surfaceCollisionFirework(Location l ) {
-		Firework f = (Firework) l.getWorld().spawn(l, Firework.class);
-		FireworkMeta fm = f.getFireworkMeta();
-		fm.addEffect(FireworkEffect.builder().flicker(false).trail(false).with(Type.BURST).withColor(Color.RED).withFade(Color.ORANGE).build());
-		 fm.setPower(1);
-		f.setFireworkMeta(fm);
+		FireworkEffect ef = FireworkEffect
+				.builder()
+				.with(FireworkEffect.Type.BALL)
+				.flicker(false)
+				.trail(false)
+				.withColor((shooter.team.team == TeamType.BLUE) ? Color.BLUE : Color.RED)
+				.withFade((shooter.team.team == TeamType.BLUE) ? Color.BLACK : Color.MAROON).build();
+		FireworkUtils.playFirework(item.getLocation(), ef);
 	}
 
 	private PayloadPlayer collisionCheck(Location l, PayloadGame game) {

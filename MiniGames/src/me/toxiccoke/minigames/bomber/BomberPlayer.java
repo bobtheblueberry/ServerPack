@@ -11,8 +11,8 @@ public class BomberPlayer extends TwoTeamPlayer<BomberTeam> implements Runnable 
 	BomberTeam	team;
 	private boolean canFireball;
 
-	public BomberPlayer(Player p, BomberTeam t) {
-		super(p);
+	public BomberPlayer(BomberGame game, Player p, BomberTeam t) {
+		super(p, game);
 		this.team = t;
 	}
 	

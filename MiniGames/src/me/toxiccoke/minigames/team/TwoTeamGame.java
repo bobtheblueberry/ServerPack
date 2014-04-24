@@ -11,7 +11,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -151,15 +150,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		}
 	}
 
-	protected void fixArmor(Player p) {
-		ItemStack[] armor = p.getInventory().getArmorContents();
-		for (int i = 0; i < 4; i++) {
-			ItemStack is = armor[i];
-			if (is == null)
-				continue;
-			is.setDurability((short) 0);
-		}
-	}
+
 
 	protected void initPlayer(E plr) {
 		Player p = plr.getPlayer();

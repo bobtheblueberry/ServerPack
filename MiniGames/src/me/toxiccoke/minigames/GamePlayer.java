@@ -20,10 +20,12 @@ public abstract class GamePlayer {
 	protected int		score;
 	private boolean		inGame	= true;
 	public boolean dead;
+	public GameWorld<?> game;
 
-	public GamePlayer(Player p) {
+	public GamePlayer(Player p, GameWorld<?> game) {
 		this.player = p.getName();
 		this.originalPlayer = new OriginalPlayer(p);
+		this.game = game;
 		p.getInventory().setArmorContents(null);
 		p.getInventory().clear();
 		p.setExhaustion(0);

@@ -76,7 +76,7 @@ public class ClassWeapons {
 		Item item = p.getWorld().dropItem(l, stack);
 		Vector velocity = p.getLocation().getDirection();
 		velocity.add(new Vector((Math.random() - 0.5) / 8, (Math.random() - 0.5) / 8, (Math.random() - 0.5) / 8));
-		item.setVelocity(velocity.multiply(2));
+		item.setVelocity(velocity.multiply(1+Math.random()));
 		pl.game.bullets.add(new Bullet(pl, item, 8));
 	}
 

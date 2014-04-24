@@ -29,6 +29,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 
 public class GameEventHandler implements Listener {
@@ -211,7 +212,6 @@ public class GameEventHandler implements Listener {
 						return;
 					}
 	}
-
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		if (event.isCancelled())
@@ -236,9 +236,8 @@ public class GameEventHandler implements Listener {
 					if (gp.player.equals(at.getName())) {
 						// Don't let the player attack if they are in the game
 						// lobby
-						if (!m.allowDamage(gp, event)) {
+						if (!m.allowDamage(gp, event))
 							event.setCancelled(true);
-						}
 						break main;
 					}
 		if (!(victim instanceof Player))
@@ -252,10 +251,21 @@ public class GameEventHandler implements Listener {
 						// Respawn player instead of having them die
 						m.notifyDeath(gp, event.getDamager(), event.getCause());
 						event.setCancelled(true);
+						fixArmor(gp.getPlayer());
 						return;
 					}
 	}
-
+	
+	private void fixArmor(Player p) {
+		ItemStack[] armor = p.getInventory().getArmorContents();
+		for (int i = 0; i < 4; i++) {
+			ItemStack is = armor[i];
+			if (is == null)
+				continue;
+			is.setDurability((short) 0);
+		}
+	}
+	
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (event.isCancelled())
@@ -270,23 +280,26 @@ public class GameEventHandler implements Listener {
 
 		if (((Damageable) player).getHealth() - event.getDamage() > 0)
 			return;
-		for (GameWorld<?> m : GameLobby.lobby.games)
-			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(player.getName())) {
-					m.notifyDeath(gp, event);
-					event.setCancelled(true);
-					return;
-				}
+		GamePlayer pl = getPlayer(player);
+		if (pl != null) {
+			pl.game.notifyDeath(pl, event);
+			event.setCancelled(true);
+			fixArmor(player);
+			return;
+		}
 	}
 
 	@EventHandler
 	public void onEntityQuit(PlayerQuitEvent event) {
-		Player player = event.getPlayer();
+		GamePlayer pl = getPlayer(event.getPlayer());
+		if (pl != null)
+			pl.game.notifyQuitGame(pl);
+	}
+
+	private GamePlayer getPlayer(Player player) {
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(player.getName())) {
-					m.notifyQuitGame(gp);
-					return;
-				}
+				if (gp.player.equals(player.getName())) { return gp; }
+		return null;
 	}
 }

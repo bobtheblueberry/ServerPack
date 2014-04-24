@@ -130,9 +130,10 @@ public class ClassMenu implements CommandExecutor, Listener {
 		i.addItem(createItem(Material.RED_ROSE, 1, 2, ChatColor.GREEN + "Scout", "Waste 'em"));
 		i.addItem(createItem(Material.FIRE, 1, 0, ChatColor.GREEN + "Pyro", "Burn 'em up"));
 		i.addItem(createItem(Material.ANVIL, 1, 0, ChatColor.GREEN + "Soldier", "Destroy tiny baby men"));
-		i.addItem(createItem(Material.IRON_BLOCK, 1, 0, ChatColor.GREEN + "Engineer", "Build Sentries"));
-		i.addItem(createItem(Material.GOLDEN_APPLE, 1, 0, ChatColor.GREEN + "Medic", "Heal 'em"));
-		i.addItem(createItem(Material.BOW, 1, 0, ChatColor.GREEN + "Sniper", "Snipe 'em"));
+		//TODO: Add these classes
+	//	i.addItem(createItem(Material.IRON_BLOCK, 1, 0, ChatColor.GREEN + "Engineer", "Build Sentries"));
+	//	i.addItem(createItem(Material.GOLDEN_APPLE, 1, 0, ChatColor.GREEN + "Medic", "Heal 'em"));
+	//	i.addItem(createItem(Material.BOW, 1, 0, ChatColor.GREEN + "Sniper", "Snipe 'em"));
 
 		i.setItem(35, createItem(Material.MINECART, 1, 0, ChatColor.RED + "Cancel", "Close this menu"));
 		return i;

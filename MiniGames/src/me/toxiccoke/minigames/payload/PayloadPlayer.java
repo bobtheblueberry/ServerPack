@@ -19,7 +19,7 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 	WeaponTimeout			weaponTimer;
 
 	public PayloadPlayer(PayloadGame g, Player p, PayloadTeam t, PayloadClass cl) {
-		super(p);
+		super(p, g);
 		this.game = g;
 		this.team = t;
 		setPlayerClass(cl);
@@ -29,7 +29,7 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 		playerClass = cl;
 		weaponTimer = null;
 		if (cl == PayloadClass.SOLDIER) {
-			weaponTimer = new WeaponTimeout(this, 5, 3);
+			weaponTimer = new WeaponTimeout(this, 15, 3);
 		}
 	}
 

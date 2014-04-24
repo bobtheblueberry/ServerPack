@@ -8,8 +8,8 @@ import org.bukkit.entity.Player;
 
 public abstract class TwoTeamPlayer<T extends TwoTeamTeam<?>> extends GamePlayer {
 
-	public TwoTeamPlayer(Player p) {
-		super(p);
+	public TwoTeamPlayer(Player p, TwoTeamGame<?, ?> game) {
+		super(p, game);
 	}
 
 	@Override

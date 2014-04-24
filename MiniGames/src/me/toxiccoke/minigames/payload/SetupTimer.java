@@ -15,7 +15,7 @@ public class SetupTimer extends BukkitRunnable {
 		this.game = game;
 		this.setupTime = setuptime;
 		this.count = setuptime;
-		runTaskTimer(MiniGamesPlugin.plugin, 0, 2);
+		runTaskTimer(MiniGamesPlugin.plugin, 0, 20);
 	}
 
 	private void update() {

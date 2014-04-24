@@ -241,7 +241,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			if (players.size() >= maxplayers)
 				return false;
 			BomberTeam t = (BomberTeam) getTeam();
-			bgp = new BomberPlayer(p, t);
+			bgp = new BomberPlayer(this, p, t);
 			players.add(bgp);
 			initPlayer(bgp);
 			joined = true;
@@ -437,7 +437,6 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 				p.setHealth(((Damageable) p.getPlayer()).getMaxHealth());
 				p.setFoodLevel(20);
 				p.setFireTicks(0);
-				fixArmor(p);
 			}
 		}, 4);
 	}

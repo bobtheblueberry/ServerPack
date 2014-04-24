@@ -46,6 +46,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
@@ -64,7 +65,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	protected ItemPack[]				healthitems, ammoitems;
 	protected boolean[]					checkedpoints;
 	private String						bossBarTitle	= ChatColor.GREEN + "Payload Cart " + ChatColor.GRAY + "» " + ChatColor.YELLOW;
-	private SetupTimer					setup;
+	protected SetupTimer				setup;
 	private EndofGameTimer				EOGTimer;
 	protected LinkedList<Bullet>		bullets;
 	private BulletUpdater				bulletUpdater;
@@ -90,6 +91,13 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public boolean allowDamage(GamePlayer gp, EntityDamageByEntityEvent event) {
+		if (!(gp instanceof PayloadPlayer))
+			return false;
+		PayloadPlayer pp = (PayloadPlayer) gp;
+		if (!gp.dead && !pp.team.lost && pp.getPlayerClass() == PayloadClass.SCOUT) {
+			event.setDamage(2);
+			return true;
+		}
 		Entity e = event.getEntity();
 		if (e instanceof CustomDamager)
 			return true;
@@ -384,11 +392,9 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	protected void spawn(PayloadPlayer p) {
 		if (spawnLocations.size() < 3)
 			return;
-		// FIXME Test change
-		// if (p.getTeam().team == TeamType.BLUE)
-		TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(0));
-		// else TokenShop.teleportAdvanced(p.getPlayer(),
-		// spawnLocations.get(2));
+		if (p.getTeam().team == TeamType.BLUE)
+			TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(0));
+		else TokenShop.teleportAdvanced(p.getPlayer(), spawnLocations.get(2));
 	}
 
 	private void startGame() {
@@ -396,8 +402,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		sendPlayersMessage(ChatColor.GOLD + "Game Started");
 		initMinecart();
 		endTimer = new GameEndTimer(this, GAME_TIME);
-		sendPlayersMessage(ChatColor.GREEN + "Setup ends in 60 seconds");
-		setup = new SetupTimer(this, 60);
+		sendPlayersMessage(ChatColor.GREEN + "Setup ends in 10 seconds");
+		setup = new SetupTimer(this, 10);
 		bulletUpdater = new BulletUpdater(this);
 		// init health/ammo kits
 		healthitems = new ItemPack[healthpacks.size()];
@@ -478,7 +484,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		if (ticks > 0)
 			p.setFireTicks(Math.max(0, ticks - 3));
 		if (p.getHealth() < 20)
-			p.setHealth(Math.min(p.getHealth() + 0.1, 20));
+			p.setHealth(Math.min(p.getHealth() + 0.1, p.getMaxHealth()));
 		if (Math.random() * 2 < 1)
 			player.setAmmo(player.getAmmo() + 1);
 	}
@@ -570,7 +576,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		Material type = event.getItem().getItemStack().getType();
 		if (type == Material.GOLDEN_APPLE) {
 			Player pl = event.getPlayer();
-			pl.setHealth(Math.min(pl.getHealth() + 8, 20));
+			pl.setHealth(Math.min(pl.getHealth() + 8, pl.getMaxHealth()));
+			pl.setFireTicks(0);
 			respawnHealthItem(event.getItem());
 			event.setCancelled(true);
 			event.getPlayer().sendMessage(ChatColor.AQUA + "\u2665\u2665\u2665\u2665 Health added!");
@@ -660,6 +667,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 					changeClass(payloadPlayer);
 				}
 				payloadPlayer.setAmmo(300);
+				if (payloadPlayer.getPlayerClass() == PayloadClass.SCOUT)
+					doScoutPotions(p);
 			}
 		}, 4);
 	}
@@ -685,10 +694,17 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		} else if (player.getPlayerClass() == PayloadClass.SNIPER) {
 			p.getInventory().addItem(getItem(Material.BOW, ChatColor.RED + "Sniper Rifle", ChatColor.GREEN + "Deals 20 Damage on head shots"));
 		} else if (player.getPlayerClass() == PayloadClass.SCOUT) {
-			p.getInventory().addItem(getItem(Material.DIAMOND_SPADE, 2, ChatColor.RED + "Scout Shovel", ChatColor.GREEN + "Lame"));
+			p.getInventory().addItem(getItem(Material.DIAMOND_SPADE, 0, ChatColor.RED + "Scout Shovel", ChatColor.GREEN + "Lame"));
+			doScoutPotions(p);
 		}
 
 		p.getInventory().setItem(8, getItem(Material.COMMAND, ChatColor.YELLOW + "Change Class", ChatColor.GREEN + "Get Classy"));
+	}
+
+	private void doScoutPotions(Player p) {
+		p.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, Integer.MAX_VALUE, 1));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 4));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 4));
 	}
 
 	public boolean canPlayerTakeDamage(PayloadPlayer gp) {
@@ -714,7 +730,6 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	}
 
 	public void dropItem(PayloadPlayer pl, PlayerDropItemEvent e) {
-		// FIXME: Call for medic
 		e.setCancelled(true);
 	}
 }
