@@ -174,14 +174,14 @@ public class GameLobby implements Runnable, Listener {
 	public boolean isInGame(Player p) {
 		for (GameWorld<?> w : games)
 			for (GamePlayer gp : w.getPlayers())
-				if (p.getName().equals(gp.player))
+				if (p.equals(gp.player))
 					return true;
 		return false;
 	}
 
 	public boolean isInGame(Player p, GameWorld<?> w) {
 		for (GamePlayer gp : w.getPlayers())
-			if (p.getName().equals(gp.player))
+			if (p.equals(gp.player))
 				return true;
 		return false;
 	}

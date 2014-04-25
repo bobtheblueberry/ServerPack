@@ -17,6 +17,7 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 	boolean					classChange;
 	boolean					dealtDmg;
 	WeaponTimeout			weaponTimer;
+	private PayloadPlayer	burner;
 
 	public PayloadPlayer(PayloadGame g, Player p, PayloadTeam t, PayloadClass cl) {
 		super(p, g);
@@ -28,9 +29,15 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 	public void setPlayerClass(PayloadClass cl) {
 		playerClass = cl;
 		weaponTimer = null;
+		getPlayer().setLevel(0);
 		if (cl == PayloadClass.SOLDIER) {
 			weaponTimer = new WeaponTimeout(this, 15, 3);
 		}
+	}
+	
+	public void tick() {
+		if (getPlayer().getFireTicks() < 1)
+			burner = null;
 	}
 
 	public PayloadClass getPlayerClass() {
@@ -132,5 +139,13 @@ public class PayloadPlayer extends TwoTeamPlayer<PayloadTeam> {
 			}
 		}
 		return 0;
+	}
+
+	public PayloadPlayer getBurner() {
+		return burner;
+	}
+
+	public void setBurner(PayloadPlayer burner) {
+		this.burner = burner;
 	}
 }

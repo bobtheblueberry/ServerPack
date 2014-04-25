@@ -1,12 +1,16 @@
 package me.toxiccoke.minigames;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import me.toxiccoke.minigames.payload.CustomDamager.FakeEntity;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftHumanEntity;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -46,7 +50,7 @@ public class GameEventHandler implements Listener {
 		Player sender = chat.getPlayer();
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(sender.getName())) {
+				if (gp.getName().equals(sender)) {
 					chat.setCancelled(true);
 					for (GamePlayer mgp : m.getPlayers()) {
 						String msg = gp.getTeamColor() + ChatColor.stripColor(gp.getPlayer().getDisplayName()) + ": " + ChatColor.GRAY + chat.getMessage();
@@ -92,7 +96,7 @@ public class GameEventHandler implements Listener {
 		Player sender = event.getPlayer();
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(sender.getName())) {
+				if (gp.getName().equals(sender)) {
 					sender.sendMessage(ChatColor.GOLD + "Do /leave to leave the game");
 					event.setCancelled(true);
 					return;
@@ -104,7 +108,7 @@ public class GameEventHandler implements Listener {
 	public void onFoodLevelChange(FoodLevelChangeEvent event) {
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(event.getEntity().getName())) {
+				if (gp.player.equals(event.getEntity())) {
 					if (!m.canPlayerHunger(gp))
 						event.setCancelled(true);
 					return;
@@ -115,7 +119,7 @@ public class GameEventHandler implements Listener {
 	public void blockBreak(BlockBreakEvent event) {
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(event.getPlayer().getName())) {
+				if (gp.player.equals(event.getPlayer())) {
 					if (!m.canBreakBlock(gp, event)) {
 						event.setCancelled(true);
 					}
@@ -127,7 +131,7 @@ public class GameEventHandler implements Listener {
 	public void blockPlace(BlockPlaceEvent event) {
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(event.getPlayer().getName())) {
+				if (gp.player.equals(event.getPlayer())) {
 					if (!m.canPlaceBlock(gp, event)) {
 						event.setBuild(false);
 					}
@@ -146,7 +150,7 @@ public class GameEventHandler implements Listener {
 			Player p = (Player) arrow.getShooter();
 			for (GameWorld<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
-					if (gp.player.equals(p.getName())) {
+					if (gp.player.equals(p)) {
 						m.projectileHit(gp, event);
 						return;
 					}
@@ -179,7 +183,7 @@ public class GameEventHandler implements Listener {
 		Player p = event.getPlayer();
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(p.getName())) {
+				if (gp.player.equals(p)) {
 					m.onPlayerInteract(gp, event);
 					return;
 				}
@@ -195,7 +199,7 @@ public class GameEventHandler implements Listener {
 			return;
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(event.getPlayer().getName())) {
+				if (gp.player.equals(event.getPlayer())) {
 					event.setCancelled(true);
 					return;
 				}
@@ -207,7 +211,7 @@ public class GameEventHandler implements Listener {
 		if ((event.getSlot() == 39 || event.getSlot() == 38 || event.getSlot() == 37 || event.getSlot() == 36) && event.getInventory().getHolder() instanceof HumanEntity)
 			for (GameWorld<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
-					if (gp.player.equals(event.getWhoClicked().getName())) {
+					if (gp.player.equals(event.getWhoClicked())) {
 						event.setCancelled(true);
 						return;
 					}
@@ -217,13 +221,33 @@ public class GameEventHandler implements Listener {
 		if (event.isCancelled())
 			return;
 		Entity victim = event.getEntity();
+		if (!(victim instanceof Player))
+			return;
 		Entity attacker = event.getDamager();
 		boolean other = false;
-		if (!(attacker instanceof Player) && !(attacker instanceof Projectile))
+		if (!(attacker instanceof Player) && !(attacker instanceof Projectile) && !(attacker instanceof HumanEntity))
 			other = true;
 		Player at = null;
 		if (attacker instanceof Player)
 			at = ((Player) attacker);
+		else if (attacker instanceof HumanEntity) {
+			CraftHumanEntity ch = (CraftHumanEntity)attacker;
+			Field f;
+			try {
+				f = ch.getClass().getSuperclass().getSuperclass().getDeclaredField("entity");
+				f.setAccessible(true);
+				FakeEntity e = (FakeEntity) f.get(ch);
+				at = e.getDamager().getPlayer();
+			} catch (NoSuchFieldException e1) {
+				e1.printStackTrace();
+			} catch (SecurityException e1) {
+				e1.printStackTrace();
+			} catch (IllegalArgumentException e1) {
+				e1.printStackTrace();
+			} catch (IllegalAccessException e1) {
+				e1.printStackTrace();
+			}
+		}
 		else if (!other) {
 			ProjectileSource ps = ((Projectile) attacker).getShooter();
 			if (ps instanceof Player)
@@ -233,21 +257,19 @@ public class GameEventHandler implements Listener {
 		if (!other)
 			main: for (GameWorld<? extends GamePlayer> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
-					if (gp.player.equals(at.getName())) {
+					if (gp.player.equals(at)) {
 						// Don't let the player attack if they are in the game
 						// lobby
 						if (!m.allowDamage(gp, event))
 							event.setCancelled(true);
 						break main;
 					}
-		if (!(victim instanceof Player))
-			return;
 
 		Player v = (Player) victim;
 		if (((Damageable) victim).getHealth() - event.getDamage() <= 0)
 			for (GameWorld<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
-					if (gp.player.equals(v.getName())) {
+					if (gp.player.equals(v)) {
 						// Respawn player instead of having them die
 						m.notifyDeath(gp, event.getDamager(), event.getCause());
 						event.setCancelled(true);
@@ -299,7 +321,7 @@ public class GameEventHandler implements Listener {
 	private GamePlayer getPlayer(Player player) {
 		for (GameWorld<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(player.getName())) { return gp; }
+				if (gp.player.equals(player)) { return gp; }
 		return null;
 	}
 }

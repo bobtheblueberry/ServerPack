@@ -19,7 +19,7 @@ public class Particles implements Listener {
 				&& (p.getLocation().subtract(0, 1, 0).getBlock().getType() != Material.AIR) && (!p.isFlying())) {
 			for (GameWorld<?> w : GameLobby.lobby.games)
 				for (GamePlayer gp : w.getPlayers())
-					if (gp.player.equals(e.getPlayer().getName())) {
+					if (gp.player.equals(e.getPlayer())) {
 						Material m = gp.getFeetParticle();
 						if (m != null && !gp.dead)
 							p.getWorld().playEffect(p.getLocation(), Effect.STEP_SOUND, m);

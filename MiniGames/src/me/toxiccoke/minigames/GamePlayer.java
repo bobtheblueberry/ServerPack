@@ -2,7 +2,6 @@ package me.toxiccoke.minigames;
 
 import me.toxiccoke.tokenshop.TokenShop;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -15,15 +14,15 @@ import org.bukkit.potion.PotionEffect;
 
 public abstract class GamePlayer {
 
-	protected String	player;
+	protected Player	player;
 	OriginalPlayer		originalPlayer;
 	protected int		score;
 	private boolean		inGame	= true;
-	public boolean dead;
-	public GameWorld<?> game;
+	public boolean		dead;
+	public GameWorld<?>	game;
 
 	public GamePlayer(Player p, GameWorld<?> game) {
-		this.player = p.getName();
+		this.player = p;
 		this.originalPlayer = new OriginalPlayer(p);
 		this.game = game;
 		p.getInventory().setArmorContents(null);
@@ -37,7 +36,7 @@ public abstract class GamePlayer {
 		// remove potions
 		for (PotionEffect t : p.getActivePotionEffects())
 			p.removePotionEffect(t.getType());
-		
+
 	}
 
 	public void leaveGame() {
@@ -49,7 +48,7 @@ public abstract class GamePlayer {
 	}
 
 	public String getName() {
-		return player;
+		return player.getName();
 	}
 
 	public abstract ChatColor getTeamColor();
@@ -69,18 +68,10 @@ public abstract class GamePlayer {
 	public abstract Material getFeetParticle();
 
 	public Player getPlayer() {
-		return Bukkit.getPlayer(player);
+		return player;
 	}
-	
-	public void startGame() {}
 
-	public boolean equals(Object o) {
-		if (o == null)
-			return false;
-		if (!(o instanceof GamePlayer))
-			return false;
-		return ((GamePlayer) o).player.equals(player);
-	}
+	public void startGame() {}
 
 	class OriginalPlayer {
 		Location	location;
@@ -120,10 +111,22 @@ public abstract class GamePlayer {
 			p.setPlayerListName(tabName);
 			// remove arrows
 			try {
-			((CraftPlayer) p).getHandle().getDataWatcher().watch(9, (byte) 0);
-			} catch(Exception exc){}
+				((CraftPlayer) p).getHandle().getDataWatcher().watch(9, (byte) 0);
+			} catch (Exception exc) {}
 		}
 
+	}
+
+	public boolean equals(Object o) {
+		if (o == null)
+			return false;
+		if (o instanceof String)
+			return player != null && o.equals(getName());
+		if (o instanceof Player)
+			return player.equals(o);
+		if (o instanceof GamePlayer)
+			return ((GamePlayer) o).player.equals(player);
+		return false;
 	}
 
 	public void restorePlayer() {

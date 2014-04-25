@@ -64,7 +64,7 @@ public class PayloadEventHandler implements Listener {
 			if (!(m instanceof PayloadGame))
 				continue;
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(p.getName())) { return (PayloadPlayer) gp; }
+				if (gp.equals(p)) { return (PayloadPlayer) gp; }
 		}
 		return null;
 	}
@@ -154,12 +154,12 @@ public class PayloadEventHandler implements Listener {
 		PayloadPlayer pp = getPlayer(event.getPlayer());
 		if (pp == null)
 			return;
-		if (pp.dead)
-			return;
 		if (itemInHand.getType() == Material.COMMAND) {
 			pp.getPlayer().chat("/class");
 			return;
 		}
+		if (pp.dead)
+			return;
 		if (pp.getPlayerClass() == PayloadClass.PYRO) {
 			if (itemInHand.getType() == Material.FIRE) {
 				if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)

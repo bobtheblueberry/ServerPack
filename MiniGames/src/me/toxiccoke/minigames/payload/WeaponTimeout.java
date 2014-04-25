@@ -27,7 +27,7 @@ public class WeaponTimeout {
 			level = 0;
 		else level--;
 		// setup timer changes xp level
-		if (player.game.setup.count < 1)
+		if (player.game.setup == null || player.game.setup.count < 1)
 			player.getPlayer().setLevel(level);
 		if (task != null)
 			task.cancel();
@@ -43,7 +43,7 @@ public class WeaponTimeout {
 		public void run() {
 			level++;
 			// setup timer changes xp level
-			if (player.game.setup.count < 1)
+			if (player.game.setup == null || player.game.setup.count < 1)
 				player.getPlayer().setLevel(level);
 			if (level < maxlevel)
 				doRun();

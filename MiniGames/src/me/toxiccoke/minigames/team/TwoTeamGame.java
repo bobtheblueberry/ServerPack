@@ -99,6 +99,14 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 			return null;
 		return temp.get((int) (Math.random() * temp.size()));
 	}
+	
+	public E getPlayer(String player) {
+		for (E p : getPlayers())
+			if (p.equals(player))
+				return p;
+		return null;
+	}
+	
 
 	protected T getTeam() {
 		int redCount = 0, bluCount = 0;

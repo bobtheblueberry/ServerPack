@@ -4,11 +4,11 @@ import me.toxiccoke.minigames.MiniGamesPlugin;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class BulletUpdater extends BukkitRunnable {
+public class TickUpdater extends BukkitRunnable {
 
 	PayloadGame game;
 	
-	public BulletUpdater(PayloadGame game) {
+	public TickUpdater(PayloadGame game) {
 		this.game = game;
 		runTaskTimer(MiniGamesPlugin.plugin, 1, 1);
 	}
@@ -17,6 +17,8 @@ public class BulletUpdater extends BukkitRunnable {
 	public void run() {
 		for (Bullet b : game.bullets)
 			b.update(game);
+		for (PayloadPlayer p : game.getPlayers())
+			p.tick();
 	}
 
 }

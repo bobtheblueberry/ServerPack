@@ -32,8 +32,9 @@ public class ClassWeapons {
 				pl.dealtDmg = true;
 				Player plr = p.getPlayer();
 				plr.sendMessage(ChatColor.RED + "Burnt by " + player.getName());
+				p.setBurner(pl);
 				plr.setFireTicks(80);
-				plr.damage(0.5);
+				damage(pl, p, 0.5f);
 			}
 	}
 
@@ -76,7 +77,7 @@ public class ClassWeapons {
 		Item item = p.getWorld().dropItem(l, stack);
 		Vector velocity = p.getLocation().getDirection();
 		velocity.add(new Vector((Math.random() - 0.5) / 8, (Math.random() - 0.5) / 8, (Math.random() - 0.5) / 8));
-		item.setVelocity(velocity.multiply(1+Math.random()));
+		item.setVelocity(velocity.multiply(1 + Math.random()));
 		pl.game.bullets.add(new Bullet(pl, item, 8));
 	}
 
@@ -100,7 +101,7 @@ public class ClassWeapons {
 		}
 		return true;
 	}
-	
+
 	public static void damage(PayloadPlayer damager, PayloadPlayer damagee, float damage) {
 		CustomDamager.damage(damager, damagee, damage);
 	}

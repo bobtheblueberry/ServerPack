@@ -184,13 +184,6 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		return is;
 	}
 
-	public BomberPlayer getPlayer(String player) {
-		for (BomberPlayer p : players)
-			if (p.getName().equals(player))
-				return p;
-		return null;
-	}
-
 	@Override
 	public int getPlayerCount() {
 		return players.size();
@@ -230,7 +223,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			return false;
 		boolean isInGame = false;
 		for (BomberPlayer bp : players)
-			if (bp.getName().equals(p.getName())) {
+			if (bp.equals(p)) {
 				isInGame = true;
 				break;
 			}
@@ -298,7 +291,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			Projectile dmg = (Projectile) damager;
 			if (dmg.getShooter() instanceof Player) {
 				Player dmger = (Player) dmg.getShooter();
-				if (dmger.getName().equals(gp.getName())) {
+				if (dmger.equals(gp)) {
 					enemy = "himself";
 				} else {
 					if (dmg instanceof Arrow)
@@ -323,7 +316,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		boolean custom = false;
 		if ((e.getCause() == DamageCause.BLOCK_EXPLOSION || e.getCause() == DamageCause.PROJECTILE)) {
 			if (bomber != null) {
-				if (!bomber.getName().equals(gp.getName())) {
+				if (!bomber.equals(gp)) {
 					cause = bomber.getName() + "'s explosive arrow";
 					if (bomber.team.team != ((BomberPlayer) gp).team.team) {
 						// no points for friendly fire

@@ -1,5 +1,6 @@
 package me.toxiccoke.minigames.payload;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.MiniGamesPlugin;
+import me.toxiccoke.minigames.payload.CustomDamager.FakeEntity;
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
 import me.toxiccoke.minigames.util.BarAPI;
@@ -21,8 +23,10 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftHumanEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
@@ -30,9 +34,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -68,7 +72,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	protected SetupTimer				setup;
 	private EndofGameTimer				EOGTimer;
 	protected LinkedList<Bullet>		bullets;
-	private BulletUpdater				bulletUpdater;
+	private TickUpdater				tickUpdater;
 
 	// blu spawn 1, blu spawn 2, red spawn
 
@@ -98,9 +102,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			event.setDamage(2);
 			return true;
 		}
-		Entity e = event.getEntity();
-		if (e instanceof CustomDamager)
-			return true;
+		Entity e = event.getDamager();
+		if (e instanceof HumanEntity && !(e instanceof Player)) { return true; }
 		return false;
 	}
 
@@ -296,12 +299,71 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
 	@Override
 	public void notifyDeath(GamePlayer gp, Entity damager, DamageCause cause) {
-
+		PayloadPlayer p = (PayloadPlayer) gp;
+		if (damager instanceof HumanEntity && !(damager instanceof Player)) {
+			CraftHumanEntity ch = (CraftHumanEntity) damager;
+			Field f;
+			PayloadPlayer d = null;
+			try {
+				f = ch.getClass().getSuperclass().getSuperclass().getDeclaredField("entity");
+				f.setAccessible(true);
+				FakeEntity e = (FakeEntity) f.get(ch);
+				d = e.getDamager();
+			} catch (NoSuchFieldException e1) {
+				e1.printStackTrace();
+			} catch (SecurityException e1) {
+				e1.printStackTrace();
+			} catch (IllegalArgumentException e1) {
+				e1.printStackTrace();
+			} catch (IllegalAccessException e1) {
+				e1.printStackTrace();
+			}
+			if (d == null) {
+				System.out.println("error! notify death/damager is null");
+				return;
+			}
+			sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was killed by " + d.getName());
+			d.getPlayer().sendMessage(ChatColor.GOLD + "You killed " + p.getName());
+			if (d.team.team != p.team.team) {
+				d.addScore(1);
+				updateScore();
+			} else {
+				sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was killed by friendly fire");
+			}
+		} else if (damager instanceof Player) {
+			PayloadPlayer pp = getPlayer(((Player) damager).getName());
+			if (pp == null) {
+				sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was killed by hacker " + ((Player) damager).getName());
+			} else {
+				if (pp.team.team != p.team.team) {
+					pp.addScore(1);
+					updateScore();
+				}
+				sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was killed by " + pp.getName());
+				pp.getPlayer().sendMessage(ChatColor.GOLD + "You killed " + p.getName());
+				updateScore();
+			}
+		} else {
+			sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was killed by Herobrine");
+		}
 		death(gp);
 	}
 
 	@Override
 	public void notifyDeath(GamePlayer gp, EntityDamageEvent e) {
+		PayloadPlayer pp = (PayloadPlayer) gp;
+		if (e.getCause() == DamageCause.FIRE_TICK && pp.getBurner() != null) {
+			// pyro
+			if (pp.team.team != pp.getBurner().team.team) {
+				pp.getBurner().addScore(1);
+				updateScore();
+			}
+			sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was toasted by " + pp.getBurner().getName());
+			pp.getBurner().getPlayer().sendMessage(ChatColor.GOLD + "You killed " + gp.getName());
+			updateScore();
+		} else if (e.getCause() == DamageCause.FIRE || e.getCause() == DamageCause.LAVA || e.getCause() == DamageCause.FIRE_TICK) {
+			sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was burned to death");
+		} else sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was killed by " + e.getCause().toString().substring(0, 1).toUpperCase() + e.getCause().toString().substring(1).toLowerCase());
 		death(gp);
 	}
 
@@ -335,10 +397,10 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 			endTimer.cancelTimer();
 		if (itemRefresher != null)
 			itemRefresher.cancel();
-		if (bulletUpdater != null)
-			bulletUpdater.cancel();
+		if (tickUpdater != null)
+			tickUpdater.cancel();
 		EOGTimer = null;
-		bulletUpdater = null;
+		tickUpdater = null;
 		bullets.clear();
 		itemRefresher = null;
 		endTimer = null;
@@ -404,7 +466,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		endTimer = new GameEndTimer(this, GAME_TIME);
 		sendPlayersMessage(ChatColor.GREEN + "Setup ends in 10 seconds");
 		setup = new SetupTimer(this, 10);
-		bulletUpdater = new BulletUpdater(this);
+		tickUpdater = new TickUpdater(this);
 		// init health/ammo kits
 		healthitems = new ItemPack[healthpacks.size()];
 		ammoitems = new ItemPack[ammopacks.size()];
@@ -454,7 +516,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		}
 		player.setHealth(20);
 		player.setFireTicks(0);
-		sendPlayersMessage(ChatColor.DARK_GRAY + p.getName() + " died.");
+
+		player.sendMessage(ChatColor.GOLD + "You Died!");
 		player.sendMessage(ChatColor.GOLD + "Respawning in 15 seconds.");
 		new RespawnTimer(plr, 15);
 	}
@@ -666,7 +729,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 				if (payloadPlayer.classChange) {
 					changeClass(payloadPlayer);
 				}
-				payloadPlayer.setAmmo(300);
+				payloadPlayer.setAmmo(100);
 				if (payloadPlayer.getPlayerClass() == PayloadClass.SCOUT)
 					doScoutPotions(p);
 			}
@@ -676,6 +739,9 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	private void changeClass(PayloadPlayer player) {
 		player.getPlayer().getInventory().clear();
 		Player p = player.getPlayer();
+
+		for (PotionEffect t : p.getActivePotionEffects())
+			p.removePotionEffect(t.getType());
 		if (player.classChange)
 			player.setPlayerClass(player.tempClass);
 		player.tempClass = null;
@@ -684,7 +750,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		if (player.getPlayerClass() == PayloadClass.PYRO) {
 			p.getInventory().addItem(
 					getItem(Material.FIRE, ChatColor.RED + "Flame Thrower", ChatColor.RED + "Left Click: Airblast", ChatColor.RED + "Right Click: Burn nearby enemies", ChatColor.GRAY
-							+ "10 Ammo per second"));
+							+ "2 Ammo per second"));
 		} else if (player.getPlayerClass() == PayloadClass.ENGINEER) {
 			p.getInventory().addItem(getItem(Material.DISPENSER, ChatColor.RED + "Sentry Gun", ChatColor.GREEN + "20 Arrows per Second"));
 		} else if (player.getPlayerClass() == PayloadClass.MEDIC) {

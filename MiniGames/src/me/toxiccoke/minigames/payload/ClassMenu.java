@@ -55,7 +55,7 @@ public class ClassMenu implements CommandExecutor, Listener {
 			if (!(w instanceof PayloadGame))
 				continue;
 			for (GamePlayer plr : w.getPlayers())
-				if (plr.getName().equals(player.getName())) {
+				if (plr.equals(player)) {
 					p = (PayloadPlayer) plr;
 					break main;
 				}
