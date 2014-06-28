@@ -7,7 +7,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -32,7 +31,7 @@ public abstract class GamePlayer {
 		p.setFireTicks(0);
 		p.setExp(0);
 		p.setLevel(0);
-		p.setHealth(((Damageable) p).getMaxHealth());
+		p.setHealth(p.getMaxHealth());
 		// remove potions
 		for (PotionEffect t : p.getActivePotionEffects())
 			p.removePotionEffect(t.getType());
@@ -88,7 +87,7 @@ public abstract class GamePlayer {
 			inv = p.getInventory().getContents();
 			armor = p.getInventory().getArmorContents();
 			location = p.getLocation();
-			health = ((Damageable) p).getHealth();
+			health = p.getHealth();
 			hunger = p.getFoodLevel();
 			xp = p.getExp();
 			xpLevel = p.getLevel();

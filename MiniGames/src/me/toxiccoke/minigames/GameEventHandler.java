@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -212,6 +211,7 @@ public class GameEventHandler implements Listener {
 						return;
 					}
 	}
+
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		if (event.isCancelled())
@@ -227,24 +227,17 @@ public class GameEventHandler implements Listener {
 		if (attacker instanceof Player)
 			at = ((Player) attacker);
 		/*
-		else if (attacker instanceof HumanEntity) {
-			CraftHumanEntity ch = (CraftHumanEntity)attacker;
-			Field f;
-			try {
-				f = ch.getClass().getSuperclass().getSuperclass().getDeclaredField("entity");
-				f.setAccessible(true);
-				FakeEntity e = (FakeEntity) f.get(ch);
-				at = e.getDamager().getPlayer();
-			} catch (NoSuchFieldException e1) {
-				e1.printStackTrace();
-			} catch (SecurityException e1) {
-				e1.printStackTrace();
-			} catch (IllegalArgumentException e1) {
-				e1.printStackTrace();
-			} catch (IllegalAccessException e1) {
-				e1.printStackTrace();
-			}
-		}*/
+		 * else if (attacker instanceof HumanEntity) { CraftHumanEntity ch =
+		 * (CraftHumanEntity)attacker; Field f; try { f =
+		 * ch.getClass().getSuperclass
+		 * ().getSuperclass().getDeclaredField("entity"); f.setAccessible(true);
+		 * FakeEntity e = (FakeEntity) f.get(ch); at =
+		 * e.getDamager().getPlayer(); } catch (NoSuchFieldException e1) {
+		 * e1.printStackTrace(); } catch (SecurityException e1) {
+		 * e1.printStackTrace(); } catch (IllegalArgumentException e1) {
+		 * e1.printStackTrace(); } catch (IllegalAccessException e1) {
+		 * e1.printStackTrace(); } }
+		 */
 		else if (!other) {
 			ProjectileSource ps = ((Projectile) attacker).getShooter();
 			if (ps instanceof Player)
@@ -263,7 +256,7 @@ public class GameEventHandler implements Listener {
 					}
 
 		Player v = (Player) victim;
-		if (((Damageable) victim).getHealth() - event.getDamage() <= 0)
+		if (v.getHealth() - event.getDamage() <= 0)
 			for (GameWorld<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
 					if (gp.player.equals(v)) {
@@ -274,7 +267,7 @@ public class GameEventHandler implements Listener {
 						return;
 					}
 	}
-	
+
 	private void fixArmor(Player p) {
 		ItemStack[] armor = p.getInventory().getArmorContents();
 		for (int i = 0; i < 4; i++) {
@@ -284,7 +277,7 @@ public class GameEventHandler implements Listener {
 			is.setDurability((short) 0);
 		}
 	}
-	
+
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (event.isCancelled())
@@ -297,7 +290,7 @@ public class GameEventHandler implements Listener {
 			return;
 		Player player = (Player) t;
 
-		if (((Damageable) player).getHealth() - event.getDamage() > 0)
+		if (player.getHealth() - event.getDamage() > 0)
 			return;
 		GamePlayer pl = getPlayer(player);
 		if (pl != null) {

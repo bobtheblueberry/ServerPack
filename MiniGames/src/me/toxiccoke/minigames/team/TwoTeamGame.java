@@ -9,7 +9,6 @@ import me.toxiccoke.minigames.MiniGamesPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -162,7 +161,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 
 	protected void initPlayer(E plr) {
 		Player p = plr.getPlayer();
-		p.setHealth(((Damageable) p).getMaxHealth());
+		p.setHealth(p.getMaxHealth());
 		if (plr.getTeam().team == TeamType.BLUE) {
 			blueTeam.addPlayer(p);
 			String name = ChatColor.DARK_BLUE + p.getName();

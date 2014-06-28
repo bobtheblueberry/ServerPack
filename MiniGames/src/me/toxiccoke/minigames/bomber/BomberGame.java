@@ -20,7 +20,6 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
@@ -122,10 +121,10 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		killer.sendMessage(ChatColor.GOLD + "You scored 1 point for killing " + victim.getDisplayName());
 		// Steal some of their health
 		if (stealHp) {
-			double steal = (((Damageable) victim).getHealth() / 2);
+			double steal = (victim.getHealth() / 2);
 
 			killer.sendMessage(ChatColor.RED + "+" + Math.round(steal));
-			double newHealth = ((Damageable) killer).getHealth() + steal;
+			double newHealth = killer.getHealth() + steal;
 			killer.setHealth((newHealth > 20) ? 20 : newHealth);
 		}
 		getPlayer(killer.getName()).addScore(1);
@@ -427,7 +426,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 			@Override
 			public void run() {
-				p.setHealth(((Damageable) p.getPlayer()).getMaxHealth());
+				p.setHealth(p.getPlayer().getMaxHealth());
 				p.setFoodLevel(20);
 				p.setFireTicks(0);
 			}
