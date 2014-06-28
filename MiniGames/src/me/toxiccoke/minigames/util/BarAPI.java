@@ -1,5 +1,6 @@
-/*package me.toxiccoke.minigames.util;
-
+package me.toxiccoke.minigames.util;
+public class BarAPI{}
+/*
 import java.lang.reflect.Field;
 
 import net.minecraft.server.v1_7_R3.DataWatcher;

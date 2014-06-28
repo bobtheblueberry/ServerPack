@@ -1,6 +1,6 @@
-/*
 package me.toxiccoke.minigames.payload;
- 
+public class CustomDamager {}
+/* 
 
 import java.lang.reflect.Field;
 
