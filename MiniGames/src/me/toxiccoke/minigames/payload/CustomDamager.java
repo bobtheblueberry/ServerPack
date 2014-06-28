@@ -1,4 +1,6 @@
+/*
 package me.toxiccoke.minigames.payload;
+ 
 
 import java.lang.reflect.Field;
 
@@ -135,3 +137,4 @@ public class CustomDamager extends CraftPlayer {
 
 	}
 }
+*/

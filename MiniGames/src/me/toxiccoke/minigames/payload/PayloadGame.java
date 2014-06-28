@@ -8,10 +8,10 @@ import java.util.List;
 import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.MiniGamesPlugin;
-import me.toxiccoke.minigames.payload.CustomDamager.FakeEntity;
+//import me.toxiccoke.minigames.payload.CustomDamager.FakeEntity;
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
-import me.toxiccoke.minigames.util.BarAPI;
+//import me.toxiccoke.minigames.util.BarAPI;
 import me.toxiccoke.tokenshop.TokenShop;
 
 import org.bukkit.Bukkit;
@@ -23,7 +23,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftHumanEntity;
+//import org.bukkit.craftbukkit.v1_7_R3.entity.CraftHumanEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
@@ -298,7 +298,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 	}
 
 	@Override
-	public void notifyDeath(GamePlayer gp, Entity damager, DamageCause cause) {
+	public void notifyDeath(GamePlayer gp, Entity damager, DamageCause cause) {/*
 		PayloadPlayer p = (PayloadPlayer) gp;
 		if (damager instanceof HumanEntity && !(damager instanceof Player)) {
 			CraftHumanEntity ch = (CraftHumanEntity) damager;
@@ -346,7 +346,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		} else {
 			sendPlayersMessage(ChatColor.DARK_GRAY + gp.getName() + " was killed by Herobrine");
 		}
-		death(gp);
+		death(gp);*/
 	}
 
 	@Override
@@ -481,7 +481,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		plr.setScoreboard(board);
 		initPlayer(p);
 		spawn(p);
-		BarAPI.displayText(bossBarTitle, plr, 0);
+		//BarAPI.displayText(bossBarTitle, plr, 0);
 	}
 
 	/**
@@ -528,7 +528,7 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		gp.restorePlayer();
 		checkNoPlayers();
 		updateScore();
-		BarAPI.destroy(gp.getPlayer());
+		//BarAPI.destroy(gp.getPlayer());
 		gp.leaveGame();
 	}
 
@@ -564,8 +564,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		for (PayloadPlayer p : list)
 			cartTick(p);
 		int h = (int) (trackulator.getCartPosition(minecart) * 200);
-		for (PayloadPlayer p : players)
-			BarAPI.setBarHealth(p.getPlayer(), h);
+	//	for (PayloadPlayer p : players)
+		//	BarAPI.setBarHealth(p.getPlayer(), h);
 
 		Vector v = minecart.getVelocity();
 		if (dist > 0)
@@ -594,8 +594,8 @@ public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 		endTimer.cancelTimer();
 		endTimer = new GameEndTimer(this, endTimer.getCountdown() + 2);
 		String title = bossBarTitle + getCheckpointsDone();
-		for (PayloadPlayer p : players)
-			BarAPI.setBarText(p.getPlayer(), title);
+		//for (PayloadPlayer p : players)
+			//BarAPI.setBarText(p.getPlayer(), title);
 	}
 
 	public void vehicleCollision(VehicleEntityCollisionEvent event) {

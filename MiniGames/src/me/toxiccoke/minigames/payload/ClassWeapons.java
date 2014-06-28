@@ -103,6 +103,6 @@ public class ClassWeapons {
 	}
 
 	public static void damage(PayloadPlayer damager, PayloadPlayer damagee, float damage) {
-		CustomDamager.damage(damager, damagee, damage);
+		//CustomDamager.damage(damager, damagee, damage);
 	}
 }

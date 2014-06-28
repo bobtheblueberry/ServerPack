@@ -1,4 +1,4 @@
-package me.toxiccoke.minigames.util;
+/*package me.toxiccoke.minigames.util;
 
 import java.lang.reflect.Field;
 
@@ -186,3 +186,4 @@ public class BarAPI {
 		entityPlayer.playerConnection.sendPacket(packet);
 	}
 }
+*/

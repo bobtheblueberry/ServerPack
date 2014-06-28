@@ -1,16 +1,12 @@
 package me.toxiccoke.minigames;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import me.toxiccoke.minigames.payload.CustomDamager.FakeEntity;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftHumanEntity;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -230,6 +226,7 @@ public class GameEventHandler implements Listener {
 		Player at = null;
 		if (attacker instanceof Player)
 			at = ((Player) attacker);
+		/*
 		else if (attacker instanceof HumanEntity) {
 			CraftHumanEntity ch = (CraftHumanEntity)attacker;
 			Field f;
@@ -247,7 +244,7 @@ public class GameEventHandler implements Listener {
 			} catch (IllegalAccessException e1) {
 				e1.printStackTrace();
 			}
-		}
+		}*/
 		else if (!other) {
 			ProjectileSource ps = ((Projectile) attacker).getShooter();
 			if (ps instanceof Player)
