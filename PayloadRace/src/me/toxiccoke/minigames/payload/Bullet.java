@@ -1,7 +1,7 @@
 package me.toxiccoke.minigames.payload;
 
+import me.toxiccoke.minigames.payload.util.FireworkUtils;
 import me.toxiccoke.minigames.team.TeamType;
-import me.toxiccoke.minigames.util.FireworkUtils;
 
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
