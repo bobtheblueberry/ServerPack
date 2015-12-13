@@ -1,4 +1,4 @@
-package me.toxiccoke.minigames.util;
+package me.toxiccoke.minigames.payload.util;
 
 import java.lang.reflect.Field;
 
@@ -48,8 +48,8 @@ public class BarAPI {
 		a.setAccessible(true);
 		try {
 			a.set(packet, new int[] { ENTITY_ID });
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+		} catch (IllegalArgumentException ex) {
+			ex.printStackTrace();
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}
@@ -180,7 +180,7 @@ public class BarAPI {
 		sendPacket(player, destroyEntityPacket);
 	}
 
-	private static void sendPacket(Player player, Packet packet) {
+	private static void sendPacket(Player player, Packet<?> packet) {
 		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
 
 		entityPlayer.playerConnection.sendPacket(packet);

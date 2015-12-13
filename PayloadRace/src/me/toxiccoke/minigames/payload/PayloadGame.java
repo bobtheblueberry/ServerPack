@@ -48,9 +48,9 @@ import me.toxiccoke.minigames.GameEndTimer;
 import me.toxiccoke.minigames.GamePlayer;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 import me.toxiccoke.minigames.payload.CustomDamager.FakeEntity;
+import me.toxiccoke.minigames.payload.util.BarAPI;
 import me.toxiccoke.minigames.team.TeamType;
 import me.toxiccoke.minigames.team.TwoTeamGame;
-import me.toxiccoke.minigames.util.BarAPI;
 
 public class PayloadGame extends TwoTeamGame<PayloadPlayer, PayloadTeam> {
 
