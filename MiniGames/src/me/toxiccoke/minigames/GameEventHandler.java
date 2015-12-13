@@ -1,6 +1,6 @@
 package me.toxiccoke.minigames;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -17,6 +17,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -34,6 +35,20 @@ import org.bukkit.projectiles.ProjectileSource;
 
 public class GameEventHandler implements Listener {
 
+	protected List<String> allowedCmds;
+
+	public GameEventHandler() {
+		String key = "allowed-commands";
+
+		allowedCmds = MiniGamesPlugin.plugin.getConfig().getStringList(key);
+		if (allowedCmds.size() < 1) {
+			MiniGamesPlugin.plugin.getConfig().set(key,
+					new String[] { "tell", "msg", "leave", "r", "m", "reply", "say", "party" });
+			allowedCmds = MiniGamesPlugin.plugin.getConfig().getStringList(key);
+			MiniGamesPlugin.plugin.saveConfig();
+		}
+	}
+
 	// Mini Game Chat
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent chat) {
@@ -49,7 +64,8 @@ public class GameEventHandler implements Listener {
 				if (gp.getName().equals(sender.getName())) {
 					chat.setCancelled(true);
 					for (GamePlayer mgp : m.getPlayers()) {
-						String msg = gp.getTeamColor() + ChatColor.stripColor(gp.getPlayer().getDisplayName()) + ": " + ChatColor.GRAY + chat.getMessage();
+						String msg = gp.getTeamColor() + ChatColor.stripColor(gp.getPlayer().getDisplayName()) + ": "
+								+ ChatColor.GRAY + chat.getMessage();
 						Bukkit.getLogger().log(Level.INFO, m.getGameName() + "." + m.getArenaName() + " " + msg);
 						mgp.getPlayer().sendMessage(msg);
 					}
@@ -58,36 +74,20 @@ public class GameEventHandler implements Listener {
 	}
 
 	private boolean allowCommand(String cmd) {
-		String key = "allowed-commands";
-		List<String> cmds = MiniGamesPlugin.plugin.getConfig().getStringList(key);
-		if (cmds == null || cmds.size() == 0) {
-			cmds = new ArrayList<String>();
-			cmds.add("tell");
-			cmds.add("msg");
-			cmds.add("leave");
-			cmds.add("r");
-			cmds.add("m");
-			cmds.add("reply");
-			cmds.add("say");
-			cmds.add("party");
-			cmds.add("friend");
-			cmds.add("class");
-			MiniGamesPlugin.plugin.getConfig().set(key, cmds);
-			MiniGamesPlugin.plugin.saveConfig();
-		}
-		for (String s : cmds)
+		for (String s : allowedCmds)
 			if (s.startsWith(cmd))
 				return true;
 		return false;
 	}
 
-	// disable commands
+	// disable commands when in minigame
 	@EventHandler
 	public void onPreEvent(PlayerCommandPreprocessEvent event) {
 		String cmd = event.getMessage().toLowerCase();
-		if (cmd.length() < 2)
+		if (cmd.length() < 1)
 			return;
-		if (allowCommand(cmd.substring(1)))
+		String c = cmd.substring(1);
+		if (c.equals("leave") || allowCommand(c))
 			return;
 		Player sender = event.getPlayer();
 		for (GameArena<?> m : GameLobby.lobby.games)
@@ -154,23 +154,40 @@ public class GameEventHandler implements Listener {
 	}
 
 	@EventHandler
-	public void onExplode(EntityExplodeEvent event) {
+	public void onBlockExplode(BlockExplodeEvent event) {
 		for (GameArena<?> m : GameLobby.lobby.games) {
-
 			Bounds bounds = m.getExcessBounds();
 			if (bounds == null)
 				continue;
-			ArrayList<Block> blocks = new ArrayList<Block>();
-
-			if (bounds.contains(event.getLocation().getBlockX(), event.getLocation().getBlockY(), event.getLocation().getBlockZ()))
+			LinkedList<Block> blocks = new LinkedList<Block>();
+			if (bounds.contains(event.getBlock().getLocation())) {
+				event.setYield(1);
 				for (Block b : event.blockList()) {
-					event.setYield(1);
+					if (!m.canExplodeBlock(b, null))
+						blocks.add(b);
+				}
+			}
+			for (Block b : blocks)
+				event.blockList().remove(b);
+		}
+	}
+
+	@EventHandler
+	public void onEntityExplode(EntityExplodeEvent event) {
+		for (GameArena<?> m : GameLobby.lobby.games) {
+			Bounds bounds = m.getExcessBounds();
+			if (bounds == null)
+				continue;
+			LinkedList<Block> blocks = new LinkedList<Block>();
+			if (bounds.contains(event.getLocation())) {
+				event.setYield(1);
+				for (Block b : event.blockList()) {
 					if (!m.canExplodeBlock(b, event.getEntity()))
 						blocks.add(b);
 				}
+			}
 			for (Block b : blocks)
 				event.blockList().remove(b);
-
 		}
 	}
 
@@ -204,7 +221,8 @@ public class GameEventHandler implements Listener {
 	@EventHandler
 	public void onInvClick(InventoryClickEvent event) {
 		// diable removing armor
-		if ((event.getSlot() == 39 || event.getSlot() == 38 || event.getSlot() == 37 || event.getSlot() == 36) && event.getInventory().getHolder() instanceof HumanEntity)
+		if ((event.getSlot() == 39 || event.getSlot() == 38 || event.getSlot() == 37 || event.getSlot() == 36)
+				&& event.getInventory().getHolder() instanceof HumanEntity)
 			for (GameArena<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
 					if (gp.player.getName().equals(event.getWhoClicked().getName())) {
@@ -212,6 +230,7 @@ public class GameEventHandler implements Listener {
 						return;
 					}
 	}
+
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		if (event.isCancelled())
@@ -226,29 +245,23 @@ public class GameEventHandler implements Listener {
 		Player at = null;
 		if (attacker instanceof Player)
 			at = ((Player) attacker);
-		else if (attacker instanceof HumanEntity) {/*
-			CraftHumanEntity ch = (CraftHumanEntity)attacker;
-			Field f;
-			try {
-				f = ch.getClass().getSuperclass().getSuperclass().getDeclaredField("entity");
-				f.setAccessible(true);
-				FakeEntity e = (FakeEntity) f.get(ch);
-				at = e.getDamager().getPlayer();
-			} catch (NoSuchFieldException e1) {
-				e1.printStackTrace();
-			} catch (SecurityException e1) {
-				e1.printStackTrace();
-			} catch (IllegalArgumentException e1) {
-				e1.printStackTrace();
-			} catch (IllegalAccessException e1) {
-				e1.printStackTrace();
-			}*/
-		}
-		else if (!other) {
+		else if (attacker instanceof HumanEntity) {
+			/*
+			 * CraftHumanEntity ch = (CraftHumanEntity) attacker; Field f; try {
+			 * f = ch.getClass(). getSuperclass(). getSuperclass().
+			 * getDeclaredField("entity" ); f.setAccessible(true); FakeEntity e
+			 * = (FakeEntity) f.get(ch); at = e.getDamager().getPlayer( ); }
+			 * catch (NoSuchFieldException e1) { e1.printStackTrace(); } catch
+			 * (SecurityException e1) { e1.printStackTrace(); } catch
+			 * (IllegalArgumentException e1) { e1.printStackTrace(); } catch
+			 * (IllegalAccessException e1) { e1.printStackTrace(); }
+			 */
+		} else if (!other) {
 			ProjectileSource ps = ((Projectile) attacker).getShooter();
 			if (ps instanceof Player)
 				at = (Player) ps;
-			else other = true;
+			else
+				other = true;
 		}
 		if (!other)
 			main: for (GameArena<? extends GamePlayer> m : GameLobby.lobby.games)
@@ -273,7 +286,7 @@ public class GameEventHandler implements Listener {
 						return;
 					}
 	}
-	
+
 	private void fixArmor(Player p) {
 		ItemStack[] armor = p.getInventory().getArmorContents();
 		for (int i = 0; i < 4; i++) {
@@ -283,7 +296,7 @@ public class GameEventHandler implements Listener {
 			is.setDurability((short) 0);
 		}
 	}
-	
+
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (event.isCancelled())
@@ -317,7 +330,9 @@ public class GameEventHandler implements Listener {
 	private GamePlayer getPlayer(Player player) {
 		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.getName().equals(player.getName())) { return gp; }
+				if (gp.player.getName().equals(player.getName())) {
+					return gp;
+				}
 		return null;
 	}
 }

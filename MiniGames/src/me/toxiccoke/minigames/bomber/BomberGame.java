@@ -46,7 +46,6 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	boolean isStarted;
 	private BomberTeam red, blue;
 	private volatile BomberPlayer bomber;
-	private int gamelength = 10;
 	private Random random;
 
 	// spawn is blue,red,(blue,red)
@@ -74,9 +73,9 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	private boolean canDestroy(Material m, Location l) {
 
-		if (m == Material.LEAVES || m == Material.LEAVES_2 || m == Material.GLOWSTONE || m == Material.WOOL
-				|| m == Material.LADDER)
-			return false;
+		for (Material unacceptableeee : indestructibles)
+			if (m == unacceptableeee)
+				return false;
 		return isStarted && checkBounds(l);
 	}
 
@@ -89,14 +88,14 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	@Override
 	public boolean canPlaceBlock(GamePlayer p, BlockPlaceEvent event) {
-		
+
 		return isStarted && checkBounds(event.getBlock().getLocation());
 	}
 
 	private boolean checkBounds(Location l) {
 		Bounds bound = getBounds();
 		if (bound != null) {
-			return bound.contains((int)l.getX(), (int)l.getY(), (int)l.getZ());
+			return bound.contains((int) l.getX(), (int) l.getY(), (int) l.getZ());
 		}
 		System.err.println("Warning! No minigame bounds set");
 		return true;
@@ -326,8 +325,8 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			if (bomber != null) {
 				if (!bomber.equals(gp)) {
 					cause = bomber.getName() + "'s explosive arrow";
+					// no points for friendly fire
 					if (bomber.team.team != ((BomberPlayer) gp).team.team) {
-						// no points for friendly fire
 						Player b = bomber.getPlayer();
 						doKillPoints(b, p, false);
 					}
@@ -345,6 +344,9 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		} else if (e.getCause() == DamageCause.FALL) {
 			custom = true;
 			cause = " fell to their death";
+		} else if (e.getCause() == DamageCause.SUFFOCATION) {
+			custom = true;
+			cause = " suffocated";
 		}
 		spawn((BomberPlayer) gp);
 		undeath(p);
@@ -357,7 +359,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 	@Override
 	public void notifyLeaveCommand(GamePlayer player) {
 		Player p = player.getPlayer();
-		p.sendMessage(ChatColor.GOLD + "Leaving Bomber");
+		p.sendMessage(ChatColor.GOLD + "Leaving " + arenaName);
 		removePlayer(player);
 		player.leaveGame();
 	}

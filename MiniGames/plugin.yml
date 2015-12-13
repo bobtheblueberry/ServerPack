@@ -1,9 +1,9 @@
-name: BomberMiniGame
-version: 1.0
+name: BomberPvP
+version: 1.1
 main: me.toxiccoke.minigames.MiniGamesPlugin
 author: Serge Humphrey
 description: MiniGames plugin
-depends: [WorldEdit, GroupManager]
+depends: [WorldEdit]
 commands:
     bomber:
         permission: bomberminigame.admin

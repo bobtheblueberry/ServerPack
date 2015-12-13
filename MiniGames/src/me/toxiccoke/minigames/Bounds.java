@@ -1,5 +1,7 @@
 package me.toxiccoke.minigames;
 
+import org.bukkit.Location;
+
 public class Bounds {
 
 	int x1, x2, y1, y2, z1, z2;
@@ -14,6 +16,10 @@ public class Bounds {
 	}
 
 	public boolean contains(int x, int y, int z) {
-		return (x >= x1 && x <= x2)  && (y >= y1 && y <= y2) && (z >= z1 && z <= z2);
+		return x >= x1 && x <= x2 && y >= y1 && y <= y2 && z >= z1 && z <= z2;
+	}
+
+	public boolean contains(Location l) {
+		return this.contains(l.getBlockX(), l.getBlockY(), l.getBlockZ());
 	}
 }

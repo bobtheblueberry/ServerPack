@@ -11,7 +11,7 @@ public class SkullUtils {
 	private SkullUtils(){}
 	public static BlockFace getPlayerBlockFace(Location loc) {
 
-		BlockFace dir = null;
+		BlockFace dir;
 		float y = loc.getYaw();
 		if (y < 0) {
 			y += 360;

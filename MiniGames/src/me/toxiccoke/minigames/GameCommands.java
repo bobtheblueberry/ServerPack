@@ -106,7 +106,7 @@ public class GameCommands implements CommandExecutor {
 					ChatColor.GRAY + "Minimum players needed to start game: " + ChatColor.YELLOW + minigame.minplayers);
 			p.sendMessage(
 					ChatColor.GRAY + "Maximum players allowed in game: " + ChatColor.YELLOW + minigame.maxplayers);
-
+			p.sendMessage(ChatColor.GRAY + "Game length: " + ChatColor.YELLOW + minigame.gamelength);
 			p.sendMessage(ChatColor.GRAY + "Number of red team spawn locations: " + ChatColor.YELLOW
 					+ minigame.redSpawnLocations.size());
 			p.sendMessage(ChatColor.GRAY + "Number of blue team spawn locations: " + ChatColor.YELLOW
@@ -133,7 +133,8 @@ public class GameCommands implements CommandExecutor {
 			return true;
 		} else if (operation.equals("setpaste")) {
 			Location l = p.getLocation();
-			minigame.pasteLocation = new Location(l.getWorld(), (int) l.getX(), (int) l.getY(), (int) l.getZ());
+			minigame.pasteLocation = new Location(l.getWorld(), (int) Math.floor(l.getX()), (int) Math.floor(l.getY()),
+					(int) Math.floor(l.getZ()));
 			minigame.save();
 			p.sendMessage(ChatColor.BLUE + "Set paste location to " + getLocationString(minigame.pasteLocation));
 			return true;
@@ -217,10 +218,11 @@ public class GameCommands implements CommandExecutor {
 			Location l = p.getLocation();
 			minigame.leaderboard = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
 			minigame.save();
-			p.sendMessage(ChatColor.BLUE + "Set leaderboard to " + getLocationString(minigame.leaderboard));
+			p.sendMessage(ChatColor.BLUE + "Set leaderboard location to " + getLocationString(minigame.leaderboard));
 			minigame.updateLeaderboard();
 			return true;
-		} else if (operation.equals("minplayers") || operation.equals("maxplayers")) {
+		} else if (operation.equals("setminplayers") || operation.equals("setmaxplayers")
+				|| operation.equals("setgamelength")) {
 			if (args.length < 3) {
 				p.sendMessage(ChatColor.RED + "Specify a number");
 				return true;
@@ -232,13 +234,15 @@ public class GameCommands implements CommandExecutor {
 				p.sendMessage(ChatColor.RED + args[2] + " is not a number");
 				return true;
 			}
-			boolean min = operation.equals("minplayers");
-			if (min) {
+			if (operation.equals("setminplayers")) {
 				minigame.minplayers = i;
-				p.sendMessage(ChatColor.BLUE + "Set minplayers to " + i);
-			} else {
+				p.sendMessage(ChatColor.BLUE + "Set minimum players to " + i);
+			} else if (operation.equals("setmaxplayers")) {
 				minigame.maxplayers = i;
-				p.sendMessage(ChatColor.BLUE + "Set maxplayers to " + i);
+				p.sendMessage(ChatColor.BLUE + "Set maximum players to " + i);
+			} else {// setgamelength
+				minigame.gamelength = i;
+				p.sendMessage(ChatColor.BLUE + "Set game length to " + i);
 			}
 			minigame.save();
 			return true;
@@ -254,7 +258,7 @@ public class GameCommands implements CommandExecutor {
 	private void showHelpMsg(Player p, String label, String arena) {
 		p.sendMessage(ChatColor.RED + "/" + label + " " + arena
 				+ " <info | setsign | setpaste | addbluespawn | addredspawn | resetspawn | setlobby | tp | reset | schematic "
-				+ "| setbounds1 | setbounds2 | maxplayers | minplayers | setleaderboard>");
+				+ "| setbounds1 | setbounds2 | setmaxplayers | setminplayers | setleaderboard | setgamelength>");
 	}
 
 	private String getLocationString(Location l) {

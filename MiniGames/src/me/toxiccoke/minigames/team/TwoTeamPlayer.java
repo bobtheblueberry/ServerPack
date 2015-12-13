@@ -16,7 +16,7 @@ public abstract class TwoTeamPlayer<T extends TwoTeamTeam<?>> extends GamePlayer
 	public Material getFeetParticle() {
 		if (getTeam().team == TeamType.BLUE)
 			return Material.LAPIS_BLOCK;
-		else return Material.REDSTONE_WIRE;
+		else return Material.REDSTONE_BLOCK;
 	}
 
 	public ChatColor getTeamColor() {

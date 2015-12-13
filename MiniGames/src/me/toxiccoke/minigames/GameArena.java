@@ -3,10 +3,9 @@ package me.toxiccoke.minigames;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
-
-import me.monowii.mwschematics.Utils;
-import me.toxiccoke.minigames.util.SkullUtils;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -27,6 +26,9 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import me.monowii.mwschematics.Utils;
+import me.toxiccoke.minigames.util.SkullUtils;
+
 public abstract class GameArena<P extends GamePlayer> {
 
 	protected String gameName;
@@ -35,7 +37,9 @@ public abstract class GameArena<P extends GamePlayer> {
 	protected String arenaName;
 	protected ArrayList<Location> redSpawnLocations;
 	protected ArrayList<Location> blueSpawnLocations;
+	protected ArrayList<Material> indestructibles;
 	protected int minplayers = 2, maxplayers = 6;
+	protected int gamelength = 10;
 	protected Leader leader1, leader2, leader3;
 
 	protected class Leader {
@@ -58,6 +62,7 @@ public abstract class GameArena<P extends GamePlayer> {
 
 		redSpawnLocations = new ArrayList<Location>();
 		blueSpawnLocations = new ArrayList<Location>();
+		indestructibles = new ArrayList<Material>();
 	}
 
 	public String getGameName() {
@@ -144,7 +149,11 @@ public abstract class GameArena<P extends GamePlayer> {
 		yml.set("arena.schematic", schematic);
 		yml.set("minplayers", minplayers);
 		yml.set("maxplayers", maxplayers);
-
+		yml.set("gamelength", gamelength);
+		String[] indes = new String[indestructibles.size()];
+		for (int i = 0; i < indes.length; i++)
+			indes[i] = indestructibles.get(i).name();
+		yml.set("indestructibles", indes);
 		if (pasteLocation != null) {
 			yml.set("paste.world", pasteLocation.getWorld().getName());
 			yml.set("paste.x", pasteLocation.getBlockX());
@@ -240,6 +249,7 @@ public abstract class GameArena<P extends GamePlayer> {
 		return Bukkit.getServer().getWorld(name);
 	}
 
+	@SuppressWarnings("deprecation")
 	protected YamlConfiguration getLoadYML() {
 		File f = new File(MiniGamesPlugin.plugin.getDataFolder(), getGameName() + getArenaName() + ".yml");
 		if (!f.exists())
@@ -250,7 +260,23 @@ public abstract class GameArena<P extends GamePlayer> {
 							// anything
 		maxplayers = yml.getInt("maxplayers");
 		minplayers = yml.getInt("minplayers");
-
+		gamelength = yml.getInt("gamelength");
+		indestructibles.clear();
+		Iterator<String> it = yml.getStringList("indestructibles").iterator();
+		while (it.hasNext()) {
+			String s = it.next();
+			Material m = Material.getMaterial(s);
+			if (m == null) {
+				// it may be listed as a number
+				try {
+					m = Material.getMaterial(Integer.parseInt(s));
+				} catch (NumberFormatException exc) {
+					Bukkit.getLogger().log(Level.WARNING, "Unknwon indestructible material for Bomber PVP: " + s, exc);
+				}
+			}
+			if (m != null)
+				indestructibles.add(m);
+		}
 		arenaName = yml.getString("arena.name");
 		schematic = yml.getString("arena.schematic");
 		if (yml.contains("leader1.name")) {
@@ -361,17 +387,20 @@ public abstract class GameArena<P extends GamePlayer> {
 
 	protected abstract void endGame();
 
-	@SuppressWarnings("deprecation")
 	public void updateLeaderboard() {
 		if (leaderboard == null)
 			return;
 		BlockFace f = BlockFace.SOUTH;
+
+		org.bukkit.material.Sign sss = new org.bukkit.material.Sign(Material.WALL_SIGN);
+		sss.setFacingDirection(f);
 		if (leader1 != null) {
 			SkullUtils.PlaceSkull(leaderboard.clone().add(0, 2, 0), leader1.name, f);
 			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(0, 1, 1));
 			s.setType(Material.WALL_SIGN);
-			s.setData((byte) 3);
 			Sign sign = (Sign) s.getState();
+
+			sign.setData(sss);
 			sign.setLine(0, "1st");
 			sign.setLine(1, leader1.name);
 			sign.setLine(2, leader1.score + " Kills");
@@ -380,8 +409,8 @@ public abstract class GameArena<P extends GamePlayer> {
 			SkullUtils.PlaceSkull(leaderboard.clone().add(0, 2, 0), "Herobrine", f);
 			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(0, 1, 1));
 			s.setType(Material.WALL_SIGN);
-			s.setData((byte) 3);
 			Sign sign = (Sign) s.getState();
+			sign.setData(sss);
 			sign.setLine(0, "1st");
 			sign.setLine(1, "Herobrine");
 			sign.setLine(2, "Kills: " + ChatColor.MAGIC + "9001");
@@ -392,8 +421,8 @@ public abstract class GameArena<P extends GamePlayer> {
 			SkullUtils.PlaceSkull(leaderboard.clone().add(-1, 1, 0), leader2.name, f);
 			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(-1, 0, 1));
 			s.setType(Material.WALL_SIGN);
-			s.setData((byte) 3);
 			Sign sign = (Sign) s.getState();
+			sign.setData(sss);
 			sign.setLine(0, "2nd");
 			sign.setLine(1, leader2.name);
 			sign.setLine(2, leader2.score + " Kills");
@@ -405,8 +434,8 @@ public abstract class GameArena<P extends GamePlayer> {
 			SkullUtils.PlaceSkull(leaderboard.clone().add(1, 1, 0), leader3.name, f);
 			Block s = leaderboard.getWorld().getBlockAt(leaderboard.clone().add(1, 0, 1));
 			s.setType(Material.WALL_SIGN);
-			s.setData((byte) 3);
 			Sign sign = (Sign) s.getState();
+			sign.setData(sss);
 			sign.setLine(0, "3rd");
 			sign.setLine(1, leader3.name);
 			sign.setLine(2, leader3.score + " Kills");

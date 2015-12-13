@@ -3,12 +3,8 @@ package me.toxiccoke.minigames.team;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import me.toxiccoke.minigames.GameArena;
-import me.toxiccoke.minigames.MiniGamesPlugin;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -17,10 +13,13 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
+import me.toxiccoke.minigames.GameArena;
+import me.toxiccoke.minigames.MiniGamesPlugin;
+
 public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamTeam<E>> extends GameArena<E> {
 
 	protected Team	redTeam, blueTeam;
-	protected OfflinePlayer	redScore, blueScore;
+	protected String	redScore, blueScore;
 	protected Scoreboard	board;
 	protected Objective		objective,objective2;
 
@@ -51,8 +50,8 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		
 		
 		// Get a fake offline player
-		blueScore = Bukkit.getOfflinePlayer(ChatColor.BLUE + "Blue Kills:");
-		redScore = Bukkit.getOfflinePlayer(ChatColor.RED + "Red Kills:");
+		blueScore = ChatColor.BLUE + "Blue Kills:";
+		redScore = ChatColor.RED + "Red Kills:";
 		Bukkit.getScheduler().scheduleSyncDelayedTask(MiniGamesPlugin.plugin, new Runnable() {
 			@Override
 			public void run() {
@@ -124,9 +123,9 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 
 	protected void removePlayerFromScoreboard(E plr) {
 		if (plr.getTeam().team == TeamType.BLUE) {
-			blueTeam.removePlayer(plr.getPlayer());
+			blueTeam.removeEntry(plr.getName());
 		} else {
-			redTeam.removePlayer(plr.getPlayer());
+			redTeam.removeEntry(plr.getName());
 		}
 	}
 
@@ -134,7 +133,7 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		objective.getScore(redScore).setScore(getRed().getScore());
 		objective.getScore(blueScore).setScore(getBlue().getScore());
 		for (E p : getPlayers())
-			objective2.getScore(p.getPlayer()).setScore(p.getScore());
+			objective2.getScore(p.getName()).setScore(p.getScore());
 	}
 
 	protected void checkLeader(E p) {
@@ -164,13 +163,13 @@ public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamT
 		Player p = plr.getPlayer();
 		p.setHealth(((Damageable) p).getMaxHealth());
 		if (plr.getTeam().team == TeamType.BLUE) {
-			blueTeam.addPlayer(p);
+			blueTeam.addEntry(p.getName());
 			String name = ChatColor.DARK_BLUE + p.getName();
 			if (name.length() > 16)
 				name = name.substring(0, 15);
 			p.setPlayerListName(name);
 		} else {
-			redTeam.addPlayer(p);
+			redTeam.addEntry(p.getName());
 			String name = ChatColor.DARK_RED + p.getName();
 			if (name.length() > 16)
 				name = name.substring(0, 15);

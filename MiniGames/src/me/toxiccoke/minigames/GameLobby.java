@@ -9,10 +9,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -69,7 +71,11 @@ public class GameLobby implements Runnable, Listener {
 	}
 
 	public void createNewArena(String name) {
-		games.add(new BomberGame(name));
+		BomberGame bg = new BomberGame(name);
+
+		bg.indestructibles = new ArrayList<Material>(Arrays.asList(new Material[] { Material.LEAVES, Material.LEAVES_2,
+				Material.GLOWSTONE, Material.WOOL, Material.LADDER }));
+		games.add(bg);
 		save();
 	}
 
@@ -87,10 +93,11 @@ public class GameLobby implements Runnable, Listener {
 		}
 
 	}
-	
+
 	public boolean removeArena(String name) {
 		GameArena<? extends GamePlayer> ga = getArena(name);
-		if (ga == null) return false;
+		if (ga == null)
+			return false;
 		boolean t = games.remove(ga);
 		save();
 		return t;
