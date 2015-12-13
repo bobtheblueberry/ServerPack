@@ -1,21 +1,19 @@
-name: MiniGames
+name: BomberMiniGame
 version: 1.0
 main: me.toxiccoke.minigames.MiniGamesPlugin
 author: Serge Humphrey
 description: MiniGames plugin
-depends: [TokenShop, ServerCore]
+depends: [WorldEdit, GroupManager]
 commands:
-    madmin:
-        permission: minigames.admin
+    bomber:
+        permission: bomberminigame.admin
+        description: Minigame world info
+        usage: /<list|create|delete>
+    bconfig:
+        permission: bomberminigame.admin
         description: Configures a minigame world
         usage: /<command>
+        
     leave:
-    class:
-    party:
-        usage: /<command>
-        description: Party Commands
-        aliases: [p]
-    padmin:
-        permission: minigames.admin
-        description: Configures a Payload game world
+        description: Leaves minigame
         usage: /<command>

@@ -1,12 +1,10 @@
 package me.toxiccoke.minigames;
 
-import me.toxiccoke.tokenshop.TokenShop;
-
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,9 +17,9 @@ public abstract class GamePlayer {
 	protected int		score;
 	private boolean		inGame	= true;
 	public boolean		dead;
-	public GameWorld<?>	game;
+	public GameArena<?>	game;
 
-	public GamePlayer(Player p, GameWorld<?> game) {
+	public GamePlayer(Player p, GameArena<?> game) {
 		this.player = p;
 		this.originalPlayer = new OriginalPlayer(p);
 		this.game = game;
@@ -107,7 +105,7 @@ public abstract class GamePlayer {
 			p.setExp(xp);
 			p.setLevel(xpLevel);
 			p.setGameMode(gm);
-			TokenShop.teleportAdvanced(p, location);
+			p.teleport(location);
 			p.setPlayerListName(tabName);
 			// remove arrows
 			try {
@@ -123,9 +121,9 @@ public abstract class GamePlayer {
 		if (o instanceof String)
 			return player != null && o.equals(getName());
 		if (o instanceof Player)
-			return player.equals(o);
+			return player.getName().equals(((Player)o).getName());
 		if (o instanceof GamePlayer)
-			return ((GamePlayer) o).player.equals(player);
+			return ((GamePlayer) o).player.getName().equals(player.getName());
 		return false;
 	}
 

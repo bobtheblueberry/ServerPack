@@ -1,14 +1,7 @@
 package me.toxiccoke.minigames.bomber;
 
 import java.util.LinkedList;
-
-import me.toxiccoke.minigames.Bounds;
-import me.toxiccoke.minigames.GameEndTimer;
-import me.toxiccoke.minigames.GamePlayer;
-import me.toxiccoke.minigames.MiniGamesPlugin;
-import me.toxiccoke.minigames.team.TeamType;
-import me.toxiccoke.minigames.team.TwoTeamGame;
-import me.toxiccoke.tokenshop.TokenShop;
+import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -38,24 +31,33 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import me.toxiccoke.minigames.Bounds;
+import me.toxiccoke.minigames.GameEndTimer;
+import me.toxiccoke.minigames.GamePlayer;
+import me.toxiccoke.minigames.MiniGamesPlugin;
+import me.toxiccoke.minigames.team.TeamType;
+import me.toxiccoke.minigames.team.TwoTeamGame;
+
 public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
-	protected LinkedList<BomberPlayer>	players;
-	private BomberLobbyTimer			lobbyTimer;
-	private GameEndTimer				endTimer;
-	boolean								isStarted;
-	private BomberTeam					red, blue;
-	private volatile BomberPlayer		bomber;
-	private int							gamelength	= 10;
+	protected LinkedList<BomberPlayer> players;
+	private BomberLobbyTimer lobbyTimer;
+	private GameEndTimer endTimer;
+	boolean isStarted;
+	private BomberTeam red, blue;
+	private volatile BomberPlayer bomber;
+	private int gamelength = 10;
+	private Random random;
 
 	// spawn is blue,red,(blue,red)
-	public BomberGame(String worldName) {
-		super("Bomber", worldName);
+	public BomberGame(String arenaName) {
+		super("Bomber", arenaName);
 		load();
 		players = new LinkedList<BomberPlayer>();
 		red = new BomberTeam(this, TeamType.RED);
 		blue = new BomberTeam(this, TeamType.BLUE);
 		initScoreboard();
+		random = new Random();
 	}
 
 	@Override
@@ -72,14 +74,10 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	private boolean canDestroy(Material m, Location l) {
 
-		if (m == Material.LEAVES || m == Material.LEAVES_2 || m == Material.GLOWSTONE || m == Material.WOOL || m == Material.LADDER)
+		if (m == Material.LEAVES || m == Material.LEAVES_2 || m == Material.GLOWSTONE || m == Material.WOOL
+				|| m == Material.LADDER)
 			return false;
-		boolean bounds = true;
-		Bounds bound = getBounds();
-		if (bound != null) {
-			bounds = bound.contains(l.getBlockX(), l.getBlockZ());
-		}
-		return isStarted && bounds && l.getY() < heightLimit;
+		return isStarted && checkBounds(l);
 	}
 
 	@Override
@@ -91,7 +89,17 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	@Override
 	public boolean canPlaceBlock(GamePlayer p, BlockPlaceEvent event) {
-		return isStarted && event.getBlock().getLocation().getY() < heightLimit;
+		
+		return isStarted && checkBounds(event.getBlock().getLocation());
+	}
+
+	private boolean checkBounds(Location l) {
+		Bounds bound = getBounds();
+		if (bound != null) {
+			return bound.contains((int)l.getX(), (int)l.getY(), (int)l.getZ());
+		}
+		System.err.println("Warning! No minigame bounds set");
+		return true;
 	}
 
 	private void checkNoPlayers() {
@@ -115,7 +123,7 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		i.addItem(s);
 		updateArmor(plr);
 		p.updateInventory();
-		p.setGameMode(GameMode.ADVENTURE);
+		p.setGameMode(GameMode.SURVIVAL);
 	}
 
 	private void doKillPoints(Player killer, Player victim, boolean stealHp) {
@@ -149,7 +157,8 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			Player p = plr.getPlayer();
 			if (plr.team.team == TeamType.RED)
 				p.sendMessage(ChatColor.GOLD + redMsg);
-			else p.sendMessage(ChatColor.GOLD + bluMsg);
+			else
+				p.sendMessage(ChatColor.GOLD + bluMsg);
 			checkLeader(plr);
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 			plr.restorePlayer();
@@ -178,8 +187,8 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		is[2].setItemMeta(lam);
 		is[3] = new ItemStack(Material.LEATHER_HELMET, 1);
 		lam = (LeatherArmorMeta) is[3].getItemMeta();
-		lam.setColor(Color.fromRGB((r == 0) ? (int) (Math.random() * 256) : r, (g == 0) ? (int) (Math.random() * 256)
-				: g, (b == 0) ? (int) (Math.random() * 256) : b));
+		lam.setColor(Color.fromRGB((r == 0) ? (int) (Math.random() * 256) : r,
+				(g == 0) ? (int) (Math.random() * 256) : g, (b == 0) ? (int) (Math.random() * 256) : b));
 		is[3].setItemMeta(lam);
 		return is;
 	}
@@ -196,30 +205,25 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	public void spawn(BomberPlayer p) {
 		if (!isStarted) {
-			TokenShop.teleportAdvanced(p.getPlayer(), lobbyLocation);
+			p.getPlayer().teleport(lobbyLocation);
 			return;
 		}
 		Location l;
-		int i;
 		if (p.getTeam().team == TeamType.BLUE)
-			i = 0;
-		else i = 1;
-		// allow 2 spawn locations
-		if (spawnLocations.size() > 3)
-			if (Math.random() < 0.5)
-				i += 2;
-		l = spawnLocations.get(i);
-		TokenShop.teleportAdvanced(p.getPlayer(), l);
+			l = blueSpawnLocations.get(random.nextInt(blueSpawnLocations.size()));
+		else
+			l = redSpawnLocations.get(random.nextInt(redSpawnLocations.size()));
+		p.getPlayer().teleport(l);
 	}
 
 	@Override
 	public boolean isJoinable() {
-		return spawnLocations.size() >= 2 && lobbyLocation != null;
+		return redSpawnLocations.size() > 0 && blueSpawnLocations.size() > 0 && lobbyLocation != null;
 	}
 
 	@Override
 	public boolean join(Player p) {
-		if (lobbyLocation == null || spawnLocations.size() < 2 || p == null)
+		if (lobbyLocation == null || (redSpawnLocations.size() < 1 && blueSpawnLocations.size() < 1) || p == null)
 			return false;
 		boolean isInGame = false;
 		for (BomberPlayer bp : players)
@@ -238,7 +242,8 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 			players.add(bgp);
 			initPlayer(bgp);
 			joined = true;
-		} else bgp = getPlayer(p.getName());
+		} else
+			bgp = getPlayer(p.getName());
 
 		if (isStarted) {
 			p.setScoreboard(board);
@@ -246,10 +251,12 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		}
 
 		spawn(bgp);
-		p.sendMessage(ChatColor.YELLOW + "Joined Bomber! World: " + ChatColor.GREEN + worldName);
+		p.sendMessage(ChatColor.YELLOW + "Joined Bomber! Arena: " + ChatColor.GREEN + arenaName);
+		p.sendMessage(ChatColor.LIGHT_PURPLE + "Use /leave to leave the arena");
 		if (bgp.team.team == TeamType.BLUE)
 			p.sendMessage(ChatColor.DARK_BLUE + "You are in the blue team");
-		else p.sendMessage(ChatColor.DARK_RED + "You are in the red team");
+		else
+			p.sendMessage(ChatColor.DARK_RED + "You are in the red team");
 		if (joined) {
 			// lobby timer
 			if (players.size() == minplayers && lobbyTimer == null && !isStarted) {
@@ -298,7 +305,8 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 						enemy = dmger.getName() + "'s Arrow";
 					else if (dmg instanceof Fireball)
 						enemy = dmger.getName() + "'s Fireball";
-					else enemy = dmger.getName() + "'s Projectile";
+					else
+						enemy = dmger.getName() + "'s Projectile";
 					doKillPoints(dmger, p, false);
 				}
 			}
@@ -323,8 +331,10 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 						Player b = bomber.getPlayer();
 						doKillPoints(b, p, false);
 					}
-				} else cause = "their own explosive arrow";
-			} else cause = "Herobrine's explosive arrow";
+				} else
+					cause = "their own explosive arrow";
+			} else
+				cause = "Herobrine's explosive arrow";
 		} else if (e.getCause() == DamageCause.FIRE || e.getCause() == DamageCause.FIRE_TICK
 				|| e.getCause() == DamageCause.LAVA) {
 			custom = true;
@@ -340,7 +350,8 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		undeath(p);
 		if (custom)
 			sendPlayersMessage(ChatColor.GRAY + p.getName() + cause);
-		else sendPlayersMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + p.getName() + " was killed by " + cause);
+		else
+			sendPlayersMessage(ChatColor.GRAY + "" + ChatColor.ITALIC + p.getName() + " was killed by " + cause);
 	}
 
 	@Override

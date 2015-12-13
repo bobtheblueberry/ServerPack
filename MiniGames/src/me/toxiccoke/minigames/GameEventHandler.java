@@ -1,16 +1,12 @@
 package me.toxiccoke.minigames;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import me.toxiccoke.minigames.payload.CustomDamager.FakeEntity;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftHumanEntity;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -48,13 +44,13 @@ public class GameEventHandler implements Listener {
 			return;
 		}
 		Player sender = chat.getPlayer();
-		for (GameWorld<?> m : GameLobby.lobby.games)
+		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(sender)) {
+				if (gp.getName().equals(sender.getName())) {
 					chat.setCancelled(true);
 					for (GamePlayer mgp : m.getPlayers()) {
 						String msg = gp.getTeamColor() + ChatColor.stripColor(gp.getPlayer().getDisplayName()) + ": " + ChatColor.GRAY + chat.getMessage();
-						Bukkit.getLogger().log(Level.INFO, m.getGameName() + "." + m.getWorldName() + " " + msg);
+						Bukkit.getLogger().log(Level.INFO, m.getGameName() + "." + m.getArenaName() + " " + msg);
 						mgp.getPlayer().sendMessage(msg);
 					}
 					return;
@@ -94,9 +90,9 @@ public class GameEventHandler implements Listener {
 		if (allowCommand(cmd.substring(1)))
 			return;
 		Player sender = event.getPlayer();
-		for (GameWorld<?> m : GameLobby.lobby.games)
+		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.getName().equals(sender)) {
+				if (gp.getName().equals(sender.getName())) {
 					sender.sendMessage(ChatColor.GOLD + "Do /leave to leave the game");
 					event.setCancelled(true);
 					return;
@@ -106,9 +102,9 @@ public class GameEventHandler implements Listener {
 	// no hunger
 	@EventHandler
 	public void onFoodLevelChange(FoodLevelChangeEvent event) {
-		for (GameWorld<?> m : GameLobby.lobby.games)
+		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(event.getEntity())) {
+				if (gp.player.getName().equals(event.getEntity().getName())) {
 					if (!m.canPlayerHunger(gp))
 						event.setCancelled(true);
 					return;
@@ -117,9 +113,9 @@ public class GameEventHandler implements Listener {
 
 	@EventHandler
 	public void blockBreak(BlockBreakEvent event) {
-		for (GameWorld<?> m : GameLobby.lobby.games)
+		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(event.getPlayer())) {
+				if (gp.player.getName().equals(event.getPlayer().getName())) {
 					if (!m.canBreakBlock(gp, event)) {
 						event.setCancelled(true);
 					}
@@ -129,9 +125,9 @@ public class GameEventHandler implements Listener {
 
 	@EventHandler
 	public void blockPlace(BlockPlaceEvent event) {
-		for (GameWorld<?> m : GameLobby.lobby.games)
+		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(event.getPlayer())) {
+				if (gp.player.getName().equals(event.getPlayer().getName())) {
 					if (!m.canPlaceBlock(gp, event)) {
 						event.setBuild(false);
 					}
@@ -148,9 +144,9 @@ public class GameEventHandler implements Listener {
 		Arrow arrow = (Arrow) proj;
 		if (arrow.getShooter() instanceof Player) {
 			Player p = (Player) arrow.getShooter();
-			for (GameWorld<?> m : GameLobby.lobby.games)
+			for (GameArena<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
-					if (gp.player.equals(p)) {
+					if (gp.player.getName().equals(p.getName())) {
 						m.projectileHit(gp, event);
 						return;
 					}
@@ -159,14 +155,14 @@ public class GameEventHandler implements Listener {
 
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
-		for (GameWorld<?> m : GameLobby.lobby.games) {
+		for (GameArena<?> m : GameLobby.lobby.games) {
 
 			Bounds bounds = m.getExcessBounds();
 			if (bounds == null)
 				continue;
 			ArrayList<Block> blocks = new ArrayList<Block>();
 
-			if (bounds.contains(event.getLocation().getBlockX(), event.getLocation().getBlockZ()))
+			if (bounds.contains(event.getLocation().getBlockX(), event.getLocation().getBlockY(), event.getLocation().getBlockZ()))
 				for (Block b : event.blockList()) {
 					event.setYield(1);
 					if (!m.canExplodeBlock(b, event.getEntity()))
@@ -181,9 +177,9 @@ public class GameEventHandler implements Listener {
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		Player p = event.getPlayer();
-		for (GameWorld<?> m : GameLobby.lobby.games)
+		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(p)) {
+				if (gp.player.getName().equals(p.getName())) {
 					m.onPlayerInteract(gp, event);
 					return;
 				}
@@ -197,9 +193,9 @@ public class GameEventHandler implements Listener {
 			return;
 		if (p.getVehicle() != null)
 			return;
-		for (GameWorld<?> m : GameLobby.lobby.games)
+		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(event.getPlayer())) {
+				if (gp.player.getName().equals(event.getPlayer().getName())) {
 					event.setCancelled(true);
 					return;
 				}
@@ -209,9 +205,9 @@ public class GameEventHandler implements Listener {
 	public void onInvClick(InventoryClickEvent event) {
 		// diable removing armor
 		if ((event.getSlot() == 39 || event.getSlot() == 38 || event.getSlot() == 37 || event.getSlot() == 36) && event.getInventory().getHolder() instanceof HumanEntity)
-			for (GameWorld<?> m : GameLobby.lobby.games)
+			for (GameArena<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
-					if (gp.player.equals(event.getWhoClicked())) {
+					if (gp.player.getName().equals(event.getWhoClicked().getName())) {
 						event.setCancelled(true);
 						return;
 					}
@@ -230,7 +226,7 @@ public class GameEventHandler implements Listener {
 		Player at = null;
 		if (attacker instanceof Player)
 			at = ((Player) attacker);
-		else if (attacker instanceof HumanEntity) {
+		else if (attacker instanceof HumanEntity) {/*
 			CraftHumanEntity ch = (CraftHumanEntity)attacker;
 			Field f;
 			try {
@@ -246,7 +242,7 @@ public class GameEventHandler implements Listener {
 				e1.printStackTrace();
 			} catch (IllegalAccessException e1) {
 				e1.printStackTrace();
-			}
+			}*/
 		}
 		else if (!other) {
 			ProjectileSource ps = ((Projectile) attacker).getShooter();
@@ -255,9 +251,9 @@ public class GameEventHandler implements Listener {
 			else other = true;
 		}
 		if (!other)
-			main: for (GameWorld<? extends GamePlayer> m : GameLobby.lobby.games)
+			main: for (GameArena<? extends GamePlayer> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
-					if (gp.player.equals(at)) {
+					if (gp.player.getName().equals(at.getName())) {
 						// Don't let the player attack if they are in the game
 						// lobby
 						if (!m.allowDamage(gp, event))
@@ -267,9 +263,9 @@ public class GameEventHandler implements Listener {
 
 		Player v = (Player) victim;
 		if (((Damageable) victim).getHealth() - event.getDamage() <= 0)
-			for (GameWorld<?> m : GameLobby.lobby.games)
+			for (GameArena<?> m : GameLobby.lobby.games)
 				for (GamePlayer gp : m.getPlayers())
-					if (gp.player.equals(v)) {
+					if (gp.player.getName().equals(v.getName())) {
 						// Respawn player instead of having them die
 						m.notifyDeath(gp, event.getDamager(), event.getCause());
 						event.setCancelled(true);
@@ -319,9 +315,9 @@ public class GameEventHandler implements Listener {
 	}
 
 	private GamePlayer getPlayer(Player player) {
-		for (GameWorld<?> m : GameLobby.lobby.games)
+		for (GameArena<?> m : GameLobby.lobby.games)
 			for (GamePlayer gp : m.getPlayers())
-				if (gp.player.equals(player)) { return gp; }
+				if (gp.player.getName().equals(player.getName())) { return gp; }
 		return null;
 	}
 }

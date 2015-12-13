@@ -5,9 +5,9 @@ import org.bukkit.Bukkit;
 public class GameEndTimer implements Runnable{
 
 	boolean canceled;
-	GameWorld<?> world;
+	GameArena<?> world;
 	int countdown;
-	public GameEndTimer(GameWorld<?> w, int minutes) {
+	public GameEndTimer(GameArena<?> w, int minutes) {
 		this.world = w;
 		this.countdown = minutes;
 		schedule();

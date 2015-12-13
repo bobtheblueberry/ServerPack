@@ -3,7 +3,7 @@ package me.toxiccoke.minigames.team;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import me.toxiccoke.minigames.GameWorld;
+import me.toxiccoke.minigames.GameArena;
 import me.toxiccoke.minigames.MiniGamesPlugin;
 
 import org.bukkit.Bukkit;
@@ -17,15 +17,15 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
-public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamTeam<E>> extends GameWorld<E> {
+public abstract class TwoTeamGame<E extends TwoTeamPlayer<T>, T extends TwoTeamTeam<E>> extends GameArena<E> {
 
 	protected Team	redTeam, blueTeam;
 	protected OfflinePlayer	redScore, blueScore;
 	protected Scoreboard	board;
 	protected Objective		objective,objective2;
 
-	public TwoTeamGame(String gameName, String worldName) {
-		super(gameName, worldName);
+	public TwoTeamGame(String gameName, String arenaName) {
+		super(gameName, arenaName);
 		initScoreboard();
 	}
 

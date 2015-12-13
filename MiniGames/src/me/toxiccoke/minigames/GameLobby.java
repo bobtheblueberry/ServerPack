@@ -11,10 +11,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import me.toxiccoke.minigames.Partys.Party;
-import me.toxiccoke.minigames.bomber.BomberGame;
-import me.toxiccoke.minigames.payload.PayloadGame;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -25,38 +21,33 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import me.toxiccoke.minigames.bomber.BomberGame;
+
 public class GameLobby implements Runnable, Listener {
 
-	public ArrayList<GameWorld<? extends GamePlayer>>	games;
-	public static GameLobby								lobby;
+	public ArrayList<GameArena<? extends GamePlayer>> games;
+	public static GameLobby lobby;
 
 	public GameLobby() {
-		games = new ArrayList<GameWorld<? extends GamePlayer>>(3);
+		games = new ArrayList<GameArena<? extends GamePlayer>>(3);
 		lobby = this;
 		load();
 		// 20 ticks per second
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MiniGamesPlugin.plugin, this, 0L, 20L);
 	}
 
-	private void load() {
+	private File getSaveFile() {
 		File parent = MiniGamesPlugin.plugin.getDataFolder();
 		if (!parent.exists())
 			parent.mkdirs();
-		File data = new File(parent, "Worlds.ini");
+		return new File(parent, "Worlds.ini");
+	}
+
+	private void load() {
+		File data = getSaveFile();
 		if (!data.exists()) {
-			try {
-				PrintWriter p = new PrintWriter(new BufferedWriter(new FileWriter(data)));
-				p.println("Bomber Greenland");
-				p.println("Bomber Amazon");
-				p.println("Payload Badwater");
-				p.println();
-				p.close();
-				if (data.exists())
-					load();
-			} catch (IOException exc) {
-				System.err.println(exc.getMessage());
-				exc.printStackTrace();
-			}
+			// make a new file
+			save();
 		} else {
 			// load data
 			try {
@@ -64,11 +55,9 @@ public class GameLobby implements Runnable, Listener {
 				while (sc.hasNext()) {
 					String game = sc.next();
 					if (sc.hasNext()) {
-						String world = sc.next();
+						String arena = sc.next();
 						if (game.equalsIgnoreCase("Bomber"))
-							games.add(new BomberGame(world));
-						else if (game.equalsIgnoreCase("Payload"))
-							games.add(new PayloadGame(world));
+							games.add(new BomberGame(arena));
 					}
 				}
 				sc.close();
@@ -79,8 +68,43 @@ public class GameLobby implements Runnable, Listener {
 		}
 	}
 
+	public void createNewArena(String name) {
+		games.add(new BomberGame(name));
+		save();
+	}
+
+	private void save() {
+		try {
+			PrintWriter p = new PrintWriter(new BufferedWriter(new FileWriter(getSaveFile())));
+			for (GameArena<? extends GamePlayer> ga : games) {
+				p.println(ga.gameName + " " + ga.arenaName);
+			}
+			p.println();
+			p.close();
+		} catch (IOException exc) {
+			System.err.println(exc.getMessage());
+			exc.printStackTrace();
+		}
+
+	}
+	
+	public boolean removeArena(String name) {
+		GameArena<? extends GamePlayer> ga = getArena(name);
+		if (ga == null) return false;
+		boolean t = games.remove(ga);
+		save();
+		return t;
+	}
+
+	public GameArena<? extends GamePlayer> getArena(String name) {
+		for (GameArena<? extends GamePlayer> g : games)
+			if (g.getArenaName().equalsIgnoreCase(name))
+				return g;
+		return null;
+	}
+
 	public void updateSigns() {
-		for (GameWorld<?> w : games) {
+		for (GameArena<?> w : games) {
 			Sign s = w.getSign();
 			if (s == null)
 				continue;
@@ -88,10 +112,11 @@ public class GameLobby implements Runnable, Listener {
 			String[] newText = new String[4];
 			if (w.isFull())
 				newText[0] = ChatColor.BLUE + "[Full]";
-			else newText[0] = (w.isJoinable()) ? ChatColor.GREEN + "[Join]" : ChatColor.RED + "[NotJoinable]";
+			else
+				newText[0] = (w.isJoinable()) ? ChatColor.GREEN + "[Join]" : ChatColor.RED + "[NotJoinable]";
 			newText[1] = ChatColor.DARK_GRAY + w.getGameName();
 			newText[2] = ChatColor.DARK_GRAY + "" + w.getPlayerCount() + "/" + w.getMaxPlayers();
-			newText[3] = ChatColor.DARK_GRAY + w.getWorldName();
+			newText[3] = ChatColor.DARK_GRAY + w.getArenaName();
 
 			boolean changed = false;
 			if (old != null)
@@ -124,8 +149,8 @@ public class GameLobby implements Runnable, Listener {
 		if (!(b.getState() instanceof Sign))
 			return;
 		Sign s = (Sign) b.getState();
-		GameWorld<?> game = null;
-		for (GameWorld<?> w : games)
+		GameArena<?> game = null;
+		for (GameArena<?> w : games)
 			if (w.signLocation != null && w.signLocation.equals(s.getLocation())) {
 				game = w;
 				break;
@@ -146,40 +171,23 @@ public class GameLobby implements Runnable, Listener {
 			player.sendMessage(ChatColor.GOLD + "You are in a game!");
 			return;
 		}
-		// Parties!!
-		if (Partys.isInParty(player)) {
-			Party p = Partys.getParty(player);
-			if (!Partys.isPartyOwner(player)) {
-				player.sendMessage(ChatColor.GOLD + "Your party owner [" + p.getOwner().getDisplayName() + ChatColor.GOLD + "] must decide what game for you to join."
-						+ " Do /party leave to leave your party.");
-				return;
-			}
-			// is there enough room?
-			if ((game.getPlayerCount() + p.players.size() + 1) > game.getMaxPlayers()) {
-				player.sendMessage("There is not enough room in this minigame for your party");
-				return;
-			}
-			game.join(p.getOwner());
-			for (Player plr : p.getPlayers())
-				if (!isInGame(plr))
-					game.join(plr);
-		} else {
-			if (game.join(player))
-				;
-			else player.sendMessage(ChatColor.GOLD + "Can't join " + game.getGameName());
-		}
+
+		if (game.join(player))
+			;
+		else
+			player.sendMessage(ChatColor.GOLD + "Can't join " + game.getGameName());
 
 	}
 
 	public boolean isInGame(Player p) {
-		for (GameWorld<?> w : games)
+		for (GameArena<?> w : games)
 			for (GamePlayer gp : w.getPlayers())
 				if (p.equals(gp.player))
 					return true;
 		return false;
 	}
 
-	public boolean isInGame(Player p, GameWorld<?> w) {
+	public boolean isInGame(Player p, GameArena<?> w) {
 		for (GamePlayer gp : w.getPlayers())
 			if (p.equals(gp.player))
 				return true;

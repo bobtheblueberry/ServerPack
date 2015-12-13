@@ -8,6 +8,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Skull;
 
 public class SkullUtils {
+	private SkullUtils(){}
 	public static BlockFace getPlayerBlockFace(Location loc) {
 
 		BlockFace dir = null;
