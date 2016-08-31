@@ -4,7 +4,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -109,7 +108,13 @@ public abstract class GamePlayer {
 			p.setPlayerListName(tabName);
 			// remove arrows
 			try {
-				((CraftPlayer) p).getHandle().getDataWatcher().watch(9, (byte) 0);
+				//TODO: Fix this
+				// no longer works..
+				//	((CraftPlayer)getPlayer()).getHandle().getDataWatcher().watch(9, (byte) 0);
+
+			//	DataWatcherObject<Float> h = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.c);
+				
+				//((CraftPlayer) p).getHandle().getDataWatcher().set(h, (Float)0.0f);
 			} catch (Exception exc) {}
 		}
 

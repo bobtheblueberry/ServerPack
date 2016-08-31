@@ -1,8 +1,8 @@
-name: BomberPvP
-version: 1.1
+name: Blitzkrieg
+version: 1.1_2
 main: me.toxiccoke.minigames.MiniGamesPlugin
 author: Serge Humphrey
-description: MiniGames plugin
+description: Blitzkrieg MiniGame plugin
 depends: [WorldEdit]
 commands:
     bomber:
