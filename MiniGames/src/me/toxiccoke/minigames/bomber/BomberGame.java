@@ -146,11 +146,25 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 		if (bs == rs)
 			bluMsg = redMsg = "Scores tied at " + rs + " points.";
 		else if (bs > rs) {
-			bluMsg = "You won the game by " + (bs - rs) + " points!";
-			redMsg = "You lost the game by " + (bs - rs) + " points!";
+			if ((bs - rs) == 1)
+
+				bluMsg = "You won the game by " + (bs - rs) + " point!";
+			else
+				bluMsg = "You won the game by " + (bs - rs) + " points!";
+			if ((bs - rs) == 1)
+				redMsg = "You lost the game by " + (bs - rs) + " point!";
+			else
+				redMsg = "You lost the game by " + (bs - rs) + " points!";
 		} else {
-			redMsg = "You won the game by " + (rs - bs) + " points!";
-			bluMsg = "You lost the game by " + (rs - bs) + " points!";
+			if ((rs - bs) == 1)
+				redMsg = "You won the game by " + (rs - bs) + " point!";
+			else
+				redMsg = "You won the game by " + (rs - bs) + " points!";
+			if ((rs - bs) == 1)
+				bluMsg = "You lost the game by " + (rs - bs) + " point!";
+			else
+
+				bluMsg = "You lost the game by " + (rs - bs) + " points!";
 		}
 		for (BomberPlayer plr : players) {
 			Player p = plr.getPlayer();
@@ -388,7 +402,11 @@ public class BomberGame extends TwoTeamGame<BomberPlayer, BomberTeam> {
 
 	private void removePlayer(GamePlayer gp) {
 		players.remove(gp);
-		gp.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+		try {
+			gp.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+		} catch (Exception e) {
+			// whatever. Exception can be caused if player already logged out
+		}
 		removePlayerFromScoreboard((BomberPlayer) gp);
 		gp.restorePlayer();
 		checkNoPlayers();
